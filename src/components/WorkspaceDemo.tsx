@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -68,7 +68,8 @@ export function WorkspaceDemo({
     return clearTimers;
   }, [department]);
 
-  const activeScenario = customRun ?? department.scenarios[selectedScenarioIndex] ?? department.scenarios[0];
+  const activeScenario =
+    customRun ?? department.scenarios[selectedScenarioIndex] ?? department.scenarios[0];
 
   const runSimulation = (stepsTotal: number) => {
     clearTimers();
@@ -119,10 +120,10 @@ export function WorkspaceDemo({
         botId: chief.id,
         botName: chief.name,
         role: chief.role,
-        actionTag: "PhÃ¢n tÃ­ch & Giao viá»‡c",
-        message: `ÄÃ£ tiáº¿p nháº­n yÃªu cáº§u: "${cleaned}". PhÃ¢n cÃ´ng @${firstWorker.name} xá»­ lÃ½ dá»¯ liá»‡u chÃ­nh vÃ  @${secondWorker.name} chuáº©n hÃ³a Ä‘áº§u ra.${
+        actionTag: "Phân tích & Giao việc",
+        message: `Đã tiếp nhận yêu cầu: "${cleaned}". Phân công @${firstWorker.name} xử lý dữ liệu chính và @${secondWorker.name} chuẩn hóa đầu ra.${
           lockedBot
-            ? ` (LÆ°u Ã½: @${lockedBot.name} Ä‘ang khÃ³a trÃªn Báº£n CÃ i MÃ¡y â€” nÃ¢ng cáº¥p Cloud 24/7 Ä‘á»ƒ má»Ÿ khÃ³a tá»± Ä‘á»™ng hÃ³a toÃ n diá»‡n.)`
+            ? ` (Lưu ý: @${lockedBot.name} đang khóa trên Bản Cài Máy — nâng cấp Cloud 24/7 để mở khóa tự động hóa toàn diện.)`
             : ""
         }`,
         durationLabel: "00:02",
@@ -131,18 +132,19 @@ export function WorkspaceDemo({
         botId: firstWorker.id,
         botName: firstWorker.name,
         role: firstWorker.role,
-        actionTag: "Thá»±c thi chuyÃªn mÃ´n",
-        message: `Äang Ã¡p dá»¥ng quy trÃ¬nh chuáº©n cá»§a ${department.shortName} cho yÃªu cáº§u "${cleaned}". ÄÃ£ tÃ¡ch danh sÃ¡ch háº¡ng má»¥c Æ°u tiÃªn vÃ  rÃ  soÃ¡t rá»§i ro sai sÃ³t.`,
-        deliverable: `Báº£n phÃ¢n tÃ­ch chuyÃªn mÃ´n tá»« ${firstWorker.name}`,
+        actionTag: "Thực thi chuyên môn",
+        message: `Đang áp dụng quy trình chuẩn của ${department.shortName} cho yêu cầu "${cleaned}". Đã tách danh sách hạng mục ưu tiên và rà soát rủi ro sai sót.`,
+        deliverable: `Bản phân tích chuyên môn từ ${firstWorker.name}`,
         durationLabel: "00:07",
       },
       {
         botId: secondWorker.id,
         botName: secondWorker.name,
         role: secondWorker.role,
-        actionTag: "ÄÃ³ng gÃ³i káº¿t quáº£",
-        message: `ÄÃ£ biÃªn táº­p káº¿t quáº£ dá»… Ä‘á»c, sáºµn sÃ ng Ä‘á»ƒ chá»§ nhÃ¢n duyá»‡t vÃ  Ã¡p dá»¥ng ngay trong cÃ´ng viá»‡c thá»±c táº¿.`,
-        deliverable: "Báº£ng káº¿ hoáº¡ch & máº«u hÃ nh Ä‘á»™ng sáºµn sÃ ng dÃ¹ng",
+        actionTag: "Đóng gói kết quả",
+        message:
+          "Đã biên tập kết quả dễ đọc, sẵn sàng để chủ nhân duyệt và áp dụng ngay trong công việc thực tế.",
+        deliverable: "Bảng kế hoạch & mẫu hành động sẵn sàng dùng",
         durationLabel: "00:12",
       },
     ];
@@ -150,8 +152,10 @@ export function WorkspaceDemo({
     setCustomRun({
       userPrompt: cleaned,
       steps: generatedSteps,
-      finalOutcome: `PhÃ²ng ${department.shortName} Ä‘Ã£ hoÃ n táº¥t mÃ´ phá»ng giao viá»‡c chÃ©o giá»¯a ${
-        editionMode === "desktop" ? "3 bot (Báº£n CÃ i MÃ¡y)" : `${department.bots.length} bot (Báº£n Cloud 24/7)`
+      finalOutcome: `Phòng ${department.shortName} đã hoàn tất mô phỏng giao việc chéo giữa ${
+        editionMode === "desktop"
+          ? "3 bot (Bản Cài Máy)"
+          : `${department.bots.length} bot (Bản Cloud 24/7)`
       }.`,
     });
     setActiveTab("war-room");
@@ -174,22 +178,22 @@ export function WorkspaceDemo({
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200/80">
               <Sparkles className="h-3.5 w-3.5" />
-              Cá»•ng Tráº£i Nghiá»‡m TÆ°Æ¡ng TÃ¡c Trá»±c Tiáº¿p
+              Cổng Trải Nghiệm Tương Tác Trực Tiếp
             </span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Xem Ä‘á»™i ngÅ© AI Ä‘a bot tá»± phá»‘i há»£p giao viá»‡c theo tá»«ng ngÃ nh
+              Xem đội ngũ AI đa bot tự phối hợp giao việc theo từng ngành
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
-              Chuyá»ƒn qua láº¡i 4 phÃ²ng ban dá»±ng sáºµn, cháº¡y thá»­ ká»‹ch báº£n phÃ²ng há»p Ä‘a bot vÃ  báº­t/táº¯t
-              cháº¿ Ä‘á»™ <strong>Báº£n CÃ i MÃ¡y</strong> vs <strong>Báº£n ThuÃª Cloud 24/7</strong> Ä‘á»ƒ tháº¥y
-              rÃµ sá»± khÃ¡c biá»‡t trÆ°á»›c khi chá»n gÃ³i.
+              Chuyển qua lại 4 phòng ban dựng sẵn, chạy thử kịch bản phòng họp đa bot và bật/tắt
+              chế độ <strong>Bản Cài Máy</strong> vs <strong>Bản Thuê Cloud 24/7</strong> để thấy
+              rõ sự khác biệt trước khi chọn gói.
             </p>
           </div>
 
           <div
             className="inline-flex self-start rounded-xl border border-slate-200 bg-white p-1 shadow-xs"
             role="group"
-            aria-label="Chuyá»ƒn cháº¿ Ä‘á»™ xem Báº£n CÃ i MÃ¡y hoáº·c Cloud"
+            aria-label="Chuyển chế độ xem Bản Cài Máy hoặc Cloud"
           >
             <button
               type="button"
@@ -201,7 +205,7 @@ export function WorkspaceDemo({
               }`}
             >
               <Laptop className="h-4 w-4" />
-              Báº£n CÃ i MÃ¡y (3 bot)
+              Bản Cài Máy (3 bot)
             </button>
             <button
               type="button"
@@ -213,7 +217,7 @@ export function WorkspaceDemo({
               }`}
             >
               <Cloud className="h-4 w-4" />
-              Báº£n Cloud 24/7
+              Bản Cloud 24/7
             </button>
           </div>
         </div>
@@ -222,7 +226,7 @@ export function WorkspaceDemo({
         <div
           className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4"
           role="tablist"
-          aria-label="Chá»n phÃ²ng ban AI tráº£i nghiá»‡m"
+          aria-label="Chọn phòng ban AI trải nghiệm"
         >
           {DEPARTMENTS.map((dept, idx) => {
             const isActive = dept.id === department.id;
@@ -240,7 +244,7 @@ export function WorkspaceDemo({
                 }`}
               >
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  PhÃ²ng ban 0{idx + 1}
+                  Phòng ban 0{idx + 1}
                 </span>
                 <span
                   className={`mt-0.5 text-sm font-bold ${
@@ -267,7 +271,7 @@ export function WorkspaceDemo({
               <div className="text-xs sm:text-sm">
                 <span className="font-semibold text-white">{department.name}</span>
                 <span className="ml-2 hidden text-slate-400 sm:inline">
-                  Â· {activeBotCount}/{department.bots.length} bot hoáº¡t Ä‘á»™ng
+                  · {activeBotCount}/{department.bots.length} bot hoạt động
                 </span>
               </div>
             </div>
@@ -276,12 +280,12 @@ export function WorkspaceDemo({
               {editionMode === "cloud" ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-400/30">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  Cloud 24/7 Äang trá»±c
+                  Cloud 24/7 Đang trực
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-200 ring-1 ring-amber-400/30">
                   <Lock className="h-3 w-3" />
-                  CÃ i MÃ¡y Â· Giá»›i háº¡n 3 bot
+                  Cài Máy · Giới hạn 3 bot
                 </span>
               )}
             </div>
@@ -293,10 +297,10 @@ export function WorkspaceDemo({
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
                   <Users className="h-4 w-4 text-indigo-600" />
-                  Äá»™i ngÅ© Bot trong phÃ²ng
+                  Đội ngũ Bot trong phòng
                 </h3>
                 <span className="text-xs font-medium text-slate-500">
-                  {activeBotCount} sáºµn sÃ ng
+                  {activeBotCount} sẵn sàng
                 </span>
               </div>
 
@@ -325,12 +329,12 @@ export function WorkspaceDemo({
                             <p className="text-sm font-bold text-slate-900">{bot.name}</p>
                             {bot.isChief && (
                               <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">
-                                TrÆ°á»Ÿng phÃ²ng
+                                Trưởng phòng
                               </span>
                             )}
                             {locked && (
                               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                                Cáº§n Cloud
+                                Cần Cloud
                               </span>
                             )}
                           </div>
@@ -348,7 +352,7 @@ export function WorkspaceDemo({
               {department.externalDemo && (
                 <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-3.5">
                   <p className="text-xs font-bold text-sky-900">
-                    Sáº£n pháº©m thá»±c táº¿ Ä‘ang cháº¡y live
+                    Sản phẩm thực tế đang chạy live
                   </p>
                   <p className="mt-1 text-xs text-sky-800">{department.externalDemo.note}</p>
                   <a
@@ -366,18 +370,18 @@ export function WorkspaceDemo({
               {editionMode === "desktop" && (
                 <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/80 p-3.5">
                   <p className="text-xs font-semibold text-indigo-950">
-                    Äang xem giá»›i háº¡n Báº£n CÃ i MÃ¡y (3 bot)
+                    Đang xem giới hạn Bản Cài Máy (3 bot)
                   </p>
                   <p className="mt-1 text-xs text-indigo-800">
-                    NÃ¢ng cáº¥p ThuÃª Cloud 24/7 Ä‘á»ƒ má»Ÿ khÃ³a bot thá»© 4 trá»Ÿ Ä‘i vÃ  cháº¡y lá»‹ch tá»± Ä‘á»™ng ngay
-                    cáº£ khi táº¯t mÃ¡y tÃ­nh.
+                    Nâng cấp Thuê Cloud 24/7 để mở khóa bot thứ 4 trở đi và chạy lịch tự động ngay
+                    cả khi tắt máy tính.
                   </p>
                   <button
                     type="button"
                     onClick={() => setEditionMode("cloud")}
                     className="mt-2 text-xs font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
                   >
-                    Báº­t thá»­ cháº¿ Ä‘á»™ Cloud 24/7 ngay â†’
+                    Bật thử chế độ Cloud 24/7 ngay →
                   </button>
                 </div>
               )}
@@ -398,7 +402,7 @@ export function WorkspaceDemo({
                     }`}
                   >
                     <Bot className="h-4 w-4" />
-                    PhÃ²ng há»p Ä‘a bot giao viá»‡c
+                    Phòng họp đa bot giao việc
                   </button>
                   <button
                     type="button"
@@ -410,7 +414,7 @@ export function WorkspaceDemo({
                     }`}
                   >
                     <CalendarClock className="h-4 w-4" />
-                    Lá»‹ch cháº¡y tá»± Ä‘á»™ng ({department.routines.length})
+                    Lịch chạy tự động ({department.routines.length})
                   </button>
                 </div>
 
@@ -423,12 +427,12 @@ export function WorkspaceDemo({
                     {isSimulating ? (
                       <>
                         <RotateCcw className="h-3.5 w-3.5 animate-spin text-indigo-600" />
-                        Äang cháº¡y mÃ´ phá»ng...
+                        Đang chạy mô phỏng...
                       </>
                     ) : (
                       <>
                         <Play className="h-3.5 w-3.5 text-indigo-600" />
-                        Cháº¡y láº¡i mÃ´ phá»ng
+                        Chạy lại mô phỏng
                       </>
                     )}
                   </button>
@@ -439,7 +443,7 @@ export function WorkspaceDemo({
                 <div className="mt-4 flex flex-1 flex-col">
                   {/* Preset Scenario Pills */}
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-500">Ká»‹ch báº£n máº«u:</span>
+                    <span className="text-xs font-semibold text-slate-500">Kịch bản mẫu:</span>
                     {department.scenarios.map((sc, idx) => (
                       <button
                         key={sc.id}
@@ -459,7 +463,7 @@ export function WorkspaceDemo({
                   {/* User Prompt Bubble */}
                   <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3.5">
                     <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
-                      YÃªu cáº§u tá»« chá»§ nhÃ¢n / quáº£n lÃ½
+                      Yêu cầu từ chủ nhân / quản lý
                     </div>
                     <p className="mt-1 text-sm font-medium text-slate-900">
                       {activeScenario.userPrompt}
@@ -508,14 +512,14 @@ export function WorkspaceDemo({
 
                           <p className="mt-2 text-sm leading-relaxed text-slate-700">
                             {isLockedNotice
-                              ? `TrÃªn Báº£n CÃ i MÃ¡y (giá»›i háº¡n 3 bot), Ä‘áº§u viá»‡c cá»§a @${step.botName} cáº§n chuyá»ƒn tay hoáº·c nÃ¢ng cáº¥p Báº£n Cloud 24/7 Ä‘á»ƒ tá»± Ä‘á»™ng cháº¡y song song.`
+                              ? `Trên Bản Cài Máy (giới hạn 3 bot), đầu việc của @${step.botName} cần chuyển tay hoặc nâng cấp Bản Cloud 24/7 để tự động chạy song song.`
                               : step.message}
                           </p>
 
                           {step.deliverable && !isLockedNotice && (
                             <div className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                               <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                              Äáº§u ra: {step.deliverable}
+                              Đầu ra: {step.deliverable}
                             </div>
                           )}
                         </div>
@@ -530,7 +534,7 @@ export function WorkspaceDemo({
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                         <div>
                           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                            Káº¿t quáº£ tá»•ng há»£p bÃ n giao
+                            Kết quả tổng hợp bàn giao
                           </p>
                           <p className="mt-0.5 text-sm text-emerald-950">
                             {activeScenario.finalOutcome}
@@ -546,14 +550,14 @@ export function WorkspaceDemo({
                     className="mt-5 flex flex-col gap-2 border-t border-slate-200 pt-4 sm:flex-row"
                   >
                     <label htmlFor="workspace-demo-input" className="sr-only">
-                      Nháº­p yÃªu cáº§u thá»­ nghiá»‡m cho phÃ²ng ban AI
+                      Nhập yêu cầu thử nghiệm cho phòng ban AI
                     </label>
                     <input
                       id="workspace-demo-input"
                       type="text"
                       value={customPrompt}
                       onChange={(e) => setCustomPrompt(e.target.value)}
-                      placeholder={`Thá»­ giao 1 viá»‡c cho ${department.shortName} (vÃ­ dá»¥: Láº­p káº¿ hoáº¡ch tuáº§n nÃ y)...`}
+                      placeholder={`Thử giao 1 việc cho ${department.shortName} (ví dụ: Lập kế hoạch tuần này)...`}
                       className="flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     />
                     <button
@@ -561,7 +565,7 @@ export function WorkspaceDemo({
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
                     >
                       <Send className="h-4 w-4" />
-                      Giao viá»‡c thá»­
+                      Giao việc thử
                     </button>
                   </form>
                 </div>
@@ -569,8 +573,8 @@ export function WorkspaceDemo({
                 /* Automated Routines Tab */
                 <div className="mt-4 space-y-3">
                   <p className="text-sm text-slate-600">
-                    Äá»™i bot khÃ´ng chá» báº¡n nháº¯c má»—i ngÃ y â€” cÃ¡c lá»‹ch dÆ°á»›i Ä‘Ã¢y tá»± cháº¡y Ä‘Ãºng giá» theo mÃºi
-                    giá» Viá»‡t Nam (GMT+7).
+                    Đội bot không chờ bạn nhắc mỗi ngày — các lịch dưới đây tự chạy đúng giờ theo múi
+                    giờ Việt Nam (GMT+7).
                   </p>
                   {department.routines.map((routine) => {
                     const pausedOnDesktop = editionMode === "desktop" && routine.requiresCloud247;
@@ -591,12 +595,12 @@ export function WorkspaceDemo({
                           {pausedOnDesktop ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
                               <Lock className="h-3 w-3" />
-                              Chá»‰ cháº¡y 24/7 trÃªn Cloud
+                              Chỉ chạy 24/7 trên Cloud
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
                               <CheckCircle2 className="h-3 w-3" />
-                              {routine.requiresCloud247 ? "Tá»± Ä‘á»™ng 24/7 (Cloud)" : "Cháº¡y khi má»Ÿ mÃ¡y"}
+                              {routine.requiresCloud247 ? "Tự động 24/7 (Cloud)" : "Chạy khi mở máy"}
                             </span>
                           )}
                         </div>
@@ -605,7 +609,7 @@ export function WorkspaceDemo({
                             <CalendarClock className="h-3.5 w-3.5 text-indigo-600" />
                             {routine.schedule}
                           </span>
-                          <span>Phá»¥ trÃ¡ch: {routine.ownerBot}</span>
+                          <span>Phụ trách: {routine.ownerBot}</span>
                         </div>
                       </div>
                     );
@@ -614,11 +618,11 @@ export function WorkspaceDemo({
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900 p-4 text-white">
                     <div>
                       <p className="text-sm font-bold">
-                        Muá»‘n kÃ­ch hoáº¡t Ä‘á»™i {department.shortName} cháº¡y tháº­t 24/7?
+                        Muốn kích hoạt đội {department.shortName} chạy thật 24/7?
                       </p>
                       <p className="mt-0.5 text-xs text-slate-300">
-                        Nháº¯n Admin qua Zalo {BRAND_CONFIG.contact.zaloPhone} Ä‘á»ƒ Ä‘Æ°á»£c cÃ i sáºµn Ä‘Ãºng
-                        quy trÃ¬nh doanh nghiá»‡p cá»§a báº¡n.
+                        Nhắn Admin qua Zalo {BRAND_CONFIG.contact.zaloPhone} để được cài sẵn đúng
+                        quy trình doanh nghiệp của bạn.
                       </p>
                     </div>
                     <a
@@ -627,7 +631,7 @@ export function WorkspaceDemo({
                       rel="noopener noreferrer"
                       className="rounded-xl bg-indigo-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-400"
                     >
-                      KÃ­ch hoáº¡t ngay â†’
+                      Kích hoạt ngay →
                     </a>
                   </div>
                 </div>
