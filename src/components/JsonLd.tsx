@@ -1,6 +1,6 @@
 import { BRAND_CONFIG } from "@/config/brand";
 import { FAQ_ITEMS } from "@/config/faq";
-import { CLOUD_TIERS } from "@/config/plans";
+import { CLOUD_TIERS, DESKTOP_EDITION } from "@/config/plans";
 
 interface JsonLdProps {
   includeFaq?: boolean;
@@ -19,21 +19,39 @@ export function JsonLd({ includeFaq = true }: JsonLdProps) {
     offers: [
       {
         "@type": "Offer",
-        name: "Bản Cài Máy (Windows / macOS)",
-        price: "0",
+        name: DESKTOP_EDITION.name,
+        price: String(DESKTOP_EDITION.freePriceVnd),
         priceCurrency: "VND",
         availability: "https://schema.org/InStock",
         description:
-          "Trải nghiệm miễn phí trên máy cá nhân, giới hạn tối đa 3 bot hoạt động đồng thời, dùng API key riêng.",
+          "Miễn phí 0đ trên máy cá nhân: tối đa 2 Bot, 1 phòng họp cơ bản, chạy khi bật máy, tự gắn API key BYOK.",
       },
-      ...CLOUD_TIERS.map((tier) => ({
+      {
         "@type": "Offer",
-        name: tier.name,
-        price: String(tier.monthlyPriceVnd),
+        name: DESKTOP_EDITION.proLicenseName,
+        price: String(DESKTOP_EDITION.proLicensePriceVnd),
         priceCurrency: "VND",
         availability: "https://schema.org/InStock",
-        description: tier.tagline,
-      })),
+        description: "Bản quyền phần mềm cài máy tính cá nhân (1.890.000đ/máy).",
+      },
+      ...CLOUD_TIERS.flatMap((tier) => [
+        {
+          "@type": "Offer",
+          name: `${tier.name} (BYOK)`,
+          price: String(tier.byokMonthlyVnd),
+          priceCurrency: "VND",
+          availability: "https://schema.org/InStock",
+          description: `${tier.botCapacityLabel} — tự gắn API key riêng (giảm 20% khi đóng năm).`,
+        },
+        {
+          "@type": "Offer",
+          name: `${tier.name} (${tier.creditsLabel})`,
+          price: String(tier.creditsMonthlyVnd),
+          priceCurrency: "VND",
+          availability: "https://schema.org/InStock",
+          description: `${tier.botCapacityLabel} — trọn gói ${tier.creditsLabel} (giảm 20% khi đóng năm).`,
+        },
+      ]),
     ],
     publisher: {
       "@type": "Organization",

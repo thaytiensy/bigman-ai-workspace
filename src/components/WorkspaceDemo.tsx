@@ -113,7 +113,7 @@ export function WorkspaceDemo({
 
     const firstWorker = availableWorkers[0] ?? chief;
     const secondWorker = availableWorkers[1] ?? firstWorker;
-    const lockedBot = editionMode === "desktop" ? workers.find((w) => w.cloudOnly) : undefined;
+    const lockedBots = editionMode === "desktop" ? workers.filter((w) => w.cloudOnly) : [];
 
     const generatedSteps: DelegationStep[] = [
       {
@@ -121,9 +121,11 @@ export function WorkspaceDemo({
         botName: chief.name,
         role: chief.role,
         actionTag: "Phân tích & Giao việc",
-        message: `Đã tiếp nhận yêu cầu: "${cleaned}". Phân công @${firstWorker.name} xử lý dữ liệu chính và @${secondWorker.name} chuẩn hóa đầu ra.${
-          lockedBot
-            ? ` (Lưu ý: @${lockedBot.name} đang khóa trên Bản Cài Máy — nâng cấp Cloud 24/7 để mở khóa tự động hóa toàn diện.)`
+        message: `Đã tiếp nhận yêu cầu: "${cleaned}". Phân công @${firstWorker.name} xử lý dữ liệu chính${
+          secondWorker.id !== firstWorker.id ? ` và @${secondWorker.name} chuẩn hóa đầu ra` : ""
+        }.${
+          lockedBots.length > 0
+            ? ` (Lưu ý: ${lockedBots.map((b) => `@${b.name}`).join(", ")} đang khóa trên Bản Cài Máy Free 2 Bot — nâng cấp Starter/Pro Cloud 24/7 để mở khóa đầy đủ.)`
             : ""
         }`,
         durationLabel: "00:02",
@@ -154,8 +156,8 @@ export function WorkspaceDemo({
       steps: generatedSteps,
       finalOutcome: `Phòng ${department.shortName} đã hoàn tất mô phỏng giao việc chéo giữa ${
         editionMode === "desktop"
-          ? "3 bot (Bản Cài Máy)"
-          : `${department.bots.length} bot (Bản Cloud 24/7)`
+          ? "2 bot (Bản Cài Máy Free 0đ)"
+          : `${department.bots.length} bot (Bản Thuê Cloud 24/7)`
       }.`,
     });
     setActiveTab("war-room");
@@ -181,12 +183,12 @@ export function WorkspaceDemo({
               Cổng Trải Nghiệm Tương Tác Trực Tiếp
             </span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Xem đội ngũ AI đa bot tự phối hợp giao việc theo từng ngành
+              Xem đội ngũ nhân viên AI tự phối hợp giao việc theo từng ngành
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
               Chuyển qua lại 4 phòng ban dựng sẵn, chạy thử kịch bản phòng họp đa bot và bật/tắt
-              chế độ <strong>Bản Cài Máy</strong> vs <strong>Bản Thuê Cloud 24/7</strong> để thấy
-              rõ sự khác biệt trước khi chọn gói.
+              chế độ <strong>Bản Cài Máy Free (2 bot)</strong> vs{" "}
+              <strong>Bản Thuê Cloud 24/7</strong> để thấy rõ sự khác biệt trước khi chọn gói.
             </p>
           </div>
 
@@ -205,7 +207,7 @@ export function WorkspaceDemo({
               }`}
             >
               <Laptop className="h-4 w-4" />
-              Bản Cài Máy (3 bot)
+              Cài Máy Free (2 bot)
             </button>
             <button
               type="button"
@@ -285,7 +287,7 @@ export function WorkspaceDemo({
               ) : (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-200 ring-1 ring-amber-400/30">
                   <Lock className="h-3 w-3" />
-                  Cài Máy · Giới hạn 3 bot
+                  Desktop Free · Giới hạn 2 bot
                 </span>
               )}
             </div>
@@ -370,11 +372,11 @@ export function WorkspaceDemo({
               {editionMode === "desktop" && (
                 <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/80 p-3.5">
                   <p className="text-xs font-semibold text-indigo-950">
-                    Đang xem giới hạn Bản Cài Máy (3 bot)
+                    Đang xem giới hạn Desktop Free (0đ · tối đa 2 Bot)
                   </p>
                   <p className="mt-1 text-xs text-indigo-800">
-                    Nâng cấp Thuê Cloud 24/7 để mở khóa bot thứ 4 trở đi và chạy lịch tự động ngay
-                    cả khi tắt máy tính.
+                    Nâng cấp Thuê Cloud 24/7 (từ 199.000đ/tháng) để mở khóa 5–10+ bot và chạy lịch
+                    tự động ngay cả khi tắt máy tính.
                   </p>
                   <button
                     type="button"
@@ -512,7 +514,7 @@ export function WorkspaceDemo({
 
                           <p className="mt-2 text-sm leading-relaxed text-slate-700">
                             {isLockedNotice
-                              ? `Trên Bản Cài Máy (giới hạn 3 bot), đầu việc của @${step.botName} cần chuyển tay hoặc nâng cấp Bản Cloud 24/7 để tự động chạy song song.`
+                              ? `Trên Desktop Free (0đ, giới hạn 2 Bot), đầu việc của @${step.botName} cần xử lý thủ công hoặc nâng cấp gói Thuê Cloud 24/7 (từ 199.000đ/tháng) để tự động chạy song song.`
                               : step.message}
                           </p>
 

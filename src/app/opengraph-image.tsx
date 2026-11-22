@@ -43,20 +43,20 @@ export default function OpenGraphImage() {
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", fontSize: "28px", fontWeight: 800 }}>
-              {BRAND_CONFIG.name}
+              {"To Chuc Nhan Vien AI"}
             </div>
             <div style={{ display: "flex", fontSize: "18px", color: "#a5b4fc" }}>
-              {"Nen tang AI Da Bot · Ban Cai May & Thue Cloud 24/7"}
+              {"Nen tang AI Da Bot · Ban Cai May 0d & Thue Cloud 24/7"}
             </div>
           </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "18px", maxWidth: "980px" }}>
           <div style={{ display: "flex", fontSize: "52px", fontWeight: 800, lineHeight: 1.15 }}>
-            {"Doi Ngu Nhan Su AI Da Bot — Hybrid Desktop & Cloud 24/7"}
+            {"To Chuc Nhan Vien AI — Hybrid Desktop & Cloud 24/7"}
           </div>
           <div style={{ display: "flex", fontSize: "24px", color: "#cbd5e1", lineHeight: 1.4 }}>
-            {"TikTok Shop · Marketing SEO · Tro ly Giao vien · Van phong SME"}
+            {"TikTok Shop · Marketing SEO · Tro ly Giao vien · Van phong SME · Tu 199k/thang"}
           </div>
         </div>
 

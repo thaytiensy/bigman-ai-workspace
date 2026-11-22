@@ -27,9 +27,9 @@ const VALUE_PILLARS = [
   },
   {
     icon: Cloud,
-    title: "Mô hình Kép: Cài Máy nhẹ — Nâng cấp Cloud 24/7",
+    title: "Mô hình Kép: Cài Máy 0đ — Nâng cấp Cloud 24/7",
     description:
-      "Bắt đầu miễn phí/cơ bản với Bản Cài Máy (giới hạn 3 bot), rồi nâng cấp lên Bản Thuê Cloud bất cứ lúc nào khi cần chạy lịch tự động 24/7 trên mọi thiết bị.",
+      "Bắt đầu miễn phí 0đ với Bản Cài Máy (tối đa 2 Bot, 1 phòng họp cơ bản), rồi nâng cấp lên Bản Thuê Cloud từ 199.000đ/tháng bất cứ lúc nào khi cần chạy tự động 24/7.",
   },
   {
     icon: Cpu,
@@ -60,9 +60,9 @@ export default function HomePage() {
             </span>
 
             <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-5xl sm:leading-[1.15]">
-              Nền tảng Đội Ngũ Nhân Sự AI Đa Bot —{" "}
+              {BRAND_CONFIG.name} —{" "}
               <span className="bg-gradient-to-r from-indigo-600 to-sky-600 bg-clip-text text-transparent">
-                Dùng Bản Cài Máy hoặc Thuê Cloud 24/7
+                Đội Ngũ Nhân Sự AI Đa Bot Cài Máy 0đ &amp; Thuê Cloud 24/7
               </span>
             </h1>
 
@@ -84,7 +84,7 @@ export default function HomePage() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-900 shadow-2xs transition-colors hover:bg-slate-50 sm:text-base"
               >
                 <Laptop className="h-4 w-4 text-slate-600" />
-                So sánh Cài Máy vs Thuê Cloud
+                Xem bảng giá Cài Máy vs Cloud
               </a>
             </div>
 
@@ -99,17 +99,17 @@ export default function HomePage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Bản Cài Máy
+                  Bản Cài Máy Free
                 </p>
-                <p className="mt-1 text-lg font-extrabold text-slate-900">Tối đa 3 bot</p>
+                <p className="mt-1 text-lg font-extrabold text-slate-900">0đ · Tối đa 2 Bot</p>
                 <p className="text-xs text-slate-500">Windows/macOS · BYOK</p>
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Bản Thuê Cloud
+                  Thuê Cloud 24/7
                 </p>
-                <p className="mt-1 text-lg font-extrabold text-indigo-700">Chạy 24/7</p>
-                <p className="text-xs text-slate-500">Không cần máy mạnh</p>
+                <p className="mt-1 text-lg font-extrabold text-indigo-700">Từ 199k/tháng</p>
+                <p className="text-xs text-slate-500">5–10+ Bot · Giảm 20%/năm</p>
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -171,11 +171,11 @@ export default function HomePage() {
                 Hướng dẫn chọn mô hình
               </p>
               <h2 className="mt-2 text-xl font-bold text-slate-900">
-                Nên chọn Bản Cài Máy hay Thuê Web Cloud 24/7?
+                Nên chọn Bản Cài Máy (0đ) hay Thuê Web Cloud 24/7?
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                Phân tích chi tiết chi phí, cấu hình máy, giới hạn 3 bot và thời điểm phù hợp để
-                nâng cấp lên hệ thống đội bot chạy ngầm 24/7.
+                Phân tích chi tiết chi phí, cấu hình máy, giới hạn 2 Bot của Desktop Free và thời
+                điểm phù hợp để nâng cấp lên Starter / Pro Team / Business Cloud 24/7.
               </p>
               <Link
                 href="/so-sanh-cai-may-va-cloud"
@@ -223,10 +223,10 @@ export default function HomePage() {
                   Hỗ trợ cài đặt trực tiếp tại Việt Nam
                 </span>
                 <h2 className="mt-4 text-2xl font-extrabold tracking-tight sm:text-3xl">
-                  Sẵn sàng sở hữu đội ngũ nhân sự AI làm việc 24/7 cho riêng bạn?
+                  Sẵn sàng xây dựng {BRAND_CONFIG.name} làm việc 24/7 cho riêng bạn?
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
-                  Liên hệ trực tiếp Admin để nhận Bản Cài Máy trải nghiệm hoặc kích hoạt gói Thuê
+                  Liên hệ trực tiếp Admin để nhận Bản Cài Máy Miễn Phí (0đ) hoặc kích hoạt gói Thuê
                   Cloud 24/7 có cài sẵn đúng phòng ban ngành của bạn.
                 </p>
               </div>

@@ -6,6 +6,7 @@ import {
   Check,
   Cloud,
   Copy,
+  KeyRound,
   Laptop,
   Mail,
   MessageCircle,
@@ -19,19 +20,23 @@ import {
   DESKTOP_EDITION,
   HYBRID_COMPARISON_ROWS,
   formatVnd,
+  getYearlyMonthlyPrice,
 } from "@/config/plans";
 
 export function HybridComparison() {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
-  const [selectedEdition, setSelectedEdition] = useState<string>("Bản Thuê Web Cloud 24/7 (Cloud Pro)");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [aiSourceMode, setAiSourceMode] = useState<"byok" | "credits">("byok");
+  const [selectedEdition, setSelectedEdition] = useState<string>(
+    "Pro Team Cloud (24/7, 10 Bot — BYOK 499.000đ/tháng)"
+  );
   const [selectedIndustry, setSelectedIndustry] = useState<string>(DEPARTMENTS[0].name);
   const [customerNote, setCustomerNote] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
   const requestSummary = [
     `[Đăng ký ${BRAND_CONFIG.name}]`,
-    `- Mô hình quan tâm: ${selectedEdition}`,
-    `- Chu kỳ thanh toán (nếu thuê Cloud): ${billingCycle === "yearly" ? "Theo năm (tiết kiệm 20%)" : "Theo tháng"}`,
+    `- Phiên bản / Gói quan tâm: ${selectedEdition}`,
+    `- Chu kỳ thanh toán (gói Cloud): ${billingCycle === "yearly" ? "Theo năm (giảm 20%)" : "Theo tháng"}`,
     `- Ngành / Phòng ban ưu tiên: ${selectedIndustry}`,
     customerNote.trim() ? `- Ghi chú nhu cầu: ${customerNote.trim()}` : null,
   ]
@@ -62,14 +67,14 @@ export function HybridComparison() {
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200/80">
             <Zap className="h-3.5 w-3.5" />
-            Mô hình Kép (Hybrid): Bắt đầu nhẹ — Nâng cấp mượt 24/7
+            Mô hình Kép (Hybrid): Bắt đầu 0đ — Nâng cấp mượt 24/7
           </span>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            Chọn Bản Cài Máy để trải nghiệm hoặc Thuê Web Cloud chạy tự động 24/7
+            Chọn Bản Cài Máy (0đ) hoặc Thuê Web Cloud chạy tự động 24/7
           </h2>
           <p className="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base">
-            Minh bạch toàn bộ giới hạn của Bản Cài Máy và lợi thế vượt trội của Bản Thuê Cloud để
-            bạn chọn đúng phương án tối ưu chi phí nhất cho mình.
+            Minh bạch toàn bộ giới hạn của Bản Cài Máy và bảng giá Thuê Web Cloud theo từng quy mô
+            đội bot của <strong>{BRAND_CONFIG.name}</strong>. Giảm ngay 20% khi thanh toán theo năm.
           </p>
         </div>
 
@@ -78,16 +83,26 @@ export function HybridComparison() {
           {/* Desktop Card */}
           <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-7">
             <div>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   <Laptop className="h-3.5 w-3.5" />
                   {DESKTOP_EDITION.badge}
                 </span>
+                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                  Miễn phí 0đ
+                </span>
               </div>
               <h3 className="mt-4 text-xl font-bold text-slate-900">{DESKTOP_EDITION.name}</h3>
-              <p className="mt-1 text-sm font-semibold text-indigo-700">
-                {DESKTOP_EDITION.priceLabel}
-              </p>
+              <div className="mt-2 flex flex-wrap items-baseline gap-2">
+                <span className="text-2xl font-extrabold text-slate-950">0đ</span>
+                <span className="text-xs font-medium text-slate-500">
+                  · hoặc{" "}
+                  <strong className="text-indigo-700">
+                    {DESKTOP_EDITION.proLicenseName} {formatVnd(DESKTOP_EDITION.proLicensePriceVnd)}
+                    /máy
+                  </strong>
+                </span>
+              </div>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 {DESKTOP_EDITION.subtitle}
               </p>
@@ -109,7 +124,7 @@ export function HybridComparison() {
               <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
                 <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-900">
                   <AlertCircle className="h-4 w-4 text-amber-600" />
-                  Giới hạn của Bản Cài Máy
+                  Giới hạn của Bản Cài Máy Miễn Phí
                 </p>
                 <ul className="mt-2 space-y-1.5">
                   {DESKTOP_EDITION.intentionalLimits.map((lim) => (
@@ -121,14 +136,25 @@ export function HybridComparison() {
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-2.5 pt-2">
+            <div className="mt-6 flex flex-col gap-2.5 pt-2 sm:flex-row">
               <a
                 href="#dang-ky"
-                onClick={() => setSelectedEdition("Bản Cài Máy (Windows / macOS)")}
+                onClick={() =>
+                  setSelectedEdition("Bản Cài Máy Miễn Phí (Desktop Free — 0đ, tối đa 2 Bot)")
+                }
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-50"
               >
                 <Laptop className="h-4 w-4" />
                 {DESKTOP_EDITION.ctaLabel}
+              </a>
+              <a
+                href="#dang-ky"
+                onClick={() =>
+                  setSelectedEdition("Desktop Pro License (1.890.000đ/máy)")
+                }
+                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+              >
+                Mua Pro License
               </a>
             </div>
           </div>
@@ -142,7 +168,7 @@ export function HybridComparison() {
                   Khuyên dùng · Chạy tự động 24/7
                 </span>
                 <span className="text-xs font-semibold text-emerald-700">
-                  Từ {formatVnd(CLOUD_TIERS[0].yearlyMonthlyPriceVnd)}/tháng
+                  Từ {formatVnd(CLOUD_TIERS[0].byokMonthlyVnd)}/tháng · Giảm 20% gói năm
                 </span>
               </div>
 
@@ -150,20 +176,20 @@ export function HybridComparison() {
                 Bản Thuê Web SaaS Cloud 24/7
               </h3>
               <p className="mt-1 text-sm font-semibold text-indigo-700">
-                Gói tháng hoặc năm · Kích hoạt nhanh qua VietQR / Zalo Admin
+                Chọn linh hoạt BYOK (tự gắn API key) hoặc trọn gói kèm sẵn 3M – 30M AI Credits
               </p>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                Giải phóng hoàn toàn máy tính cá nhân. Đội ngũ bot làm việc liên tục trên máy chủ
-                Cloud kể cả khi bạn đang ngủ, đi công tác hay chỉ cầm điện thoại.
+                Giải phóng hoàn toàn máy tính cá nhân. Đội ngũ nhân viên AI làm việc liên tục trên
+                máy chủ Cloud kể cả khi bạn đang ngủ, đi công tác hay chỉ cầm điện thoại.
               </p>
 
               <ul className="mt-5 space-y-2.5">
                 {[
                   "Chạy tự động 24/7 không phụ thuộc cấu hình máy tính yếu hay mạnh",
-                  "Mở khóa 6 đến 16+ bot và nhiều phòng ban hoạt động song song",
+                  "Mở khóa 5 Bot (Starter), 10 Bot (Pro Team) hoặc Không giới hạn Bot (Business)",
                   "Đồng bộ tức thì trên máy tính, máy tính bảng và điện thoại",
                   "Cài sẵn Kho 4 Đội Bot theo ngành — vào dùng ngay không cần thiết lập",
-                  "Tùy chọn linh hoạt: dùng API key riêng hoặc gói kèm hạn mức AI trọn gói",
+                  "Thanh toán nhanh qua VietQR · Giảm ngay 20% khi thanh toán theo năm",
                   "Chuyển mượt toàn bộ cấu hình từ Bản Cài Máy lên Cloud bất cứ lúc nào",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-slate-800">
@@ -197,46 +223,95 @@ export function HybridComparison() {
 
         {/* Cloud Tiers Grid */}
         <div className="mt-14">
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h3 className="text-xl font-bold text-slate-900">
-                Các gói Thuê Web Cloud 24/7 (Giá mở bán sớm tham khảo)
+                Bảng giá Thuê Web Cloud 24/7 — {BRAND_CONFIG.name}
               </h3>
               <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-                Thanh toán linh hoạt theo tháng hoặc năm. Hỗ trợ xuất hướng dẫn &amp; cài đặt trực
-                tiếp.
+                Mỗi gói đều có 2 lựa chọn nguồn AI: <strong>BYOK (tự gắn API key)</strong> hoặc{" "}
+                <strong>kèm sẵn AI Credits</strong>. Giảm 20% khi thanh toán theo năm.
               </p>
             </div>
-            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
-              <button
-                type="button"
-                onClick={() => setBillingCycle("monthly")}
-                className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                  billingCycle === "monthly"
-                    ? "bg-slate-900 text-white"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div
+                className="inline-flex rounded-xl border border-slate-200 bg-white p-1"
+                role="group"
+                aria-label="Chọn nguồn AI BYOK hoặc kèm AI Credits"
               >
-                Trả theo tháng
-              </button>
-              <button
-                type="button"
-                onClick={() => setBillingCycle("yearly")}
-                className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                  billingCycle === "yearly"
-                    ? "bg-indigo-600 text-white"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+                <button
+                  type="button"
+                  onClick={() => setAiSourceMode("byok")}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    aiSourceMode === "byok"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  Dùng API Key (BYOK)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiSourceMode("credits")}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    aiSourceMode === "credits"
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Kèm AI Credits
+                </button>
+              </div>
+
+              <div
+                className="inline-flex rounded-xl border border-slate-200 bg-white p-1"
+                role="group"
+                aria-label="Chọn chu kỳ thanh toán tháng hoặc năm"
               >
-                Trả theo năm (-20%)
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    billingCycle === "monthly"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Theo tháng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle("yearly")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    billingCycle === "yearly"
+                      ? "bg-emerald-600 text-white"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Theo năm (-20%)
+                </button>
+              </div>
             </div>
           </div>
 
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             {CLOUD_TIERS.map((tier) => {
+              const baseMonthly =
+                aiSourceMode === "byok" ? tier.byokMonthlyVnd : tier.creditsMonthlyVnd;
+              const altMonthly =
+                aiSourceMode === "byok" ? tier.creditsMonthlyVnd : tier.byokMonthlyVnd;
+
               const displayPrice =
-                billingCycle === "yearly" ? tier.yearlyMonthlyPriceVnd : tier.monthlyPriceVnd;
+                billingCycle === "yearly" ? getYearlyMonthlyPrice(baseMonthly) : baseMonthly;
+              const altDisplayPrice =
+                billingCycle === "yearly" ? getYearlyMonthlyPrice(altMonthly) : altMonthly;
+
+              const yearlySavings = (baseMonthly - getYearlyMonthlyPrice(baseMonthly)) * 12;
+              const modeLabel = aiSourceMode === "byok" ? "BYOK" : tier.creditsLabel;
+
               return (
                 <div
                   key={tier.id}
@@ -247,14 +322,17 @@ export function HybridComparison() {
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <h4 className="text-lg font-bold text-slate-900">{tier.name}</h4>
                       {tier.popular && (
                         <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-bold text-indigo-700">
-                          Phổ biến
+                          Phổ biến nhất
                         </span>
                       )}
                     </div>
+                    <p className="mt-1 text-xs font-semibold text-indigo-700">
+                      {tier.botCapacityLabel}
+                    </p>
                     <p className="mt-2 text-xs leading-relaxed text-slate-600">{tier.tagline}</p>
 
                     <div className="mt-5 flex items-baseline gap-1.5">
@@ -263,11 +341,19 @@ export function HybridComparison() {
                       </span>
                       <span className="text-xs font-medium text-slate-500">/ tháng</span>
                     </div>
+
+                    <p className="mt-1 text-xs font-semibold text-slate-700">
+                      Đang xem: {aiSourceMode === "byok" ? "Bản BYOK (tự gắn API key)" : `Bản ${tier.creditsLabel}`}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {aiSourceMode === "byok"
+                        ? `Hoặc ${formatVnd(altDisplayPrice)}/tháng (${tier.creditsLabel})`
+                        : `Hoặc ${formatVnd(altDisplayPrice)}/tháng (BYOK tự gắn API key)`}
+                    </p>
+
                     {billingCycle === "yearly" && (
-                      <p className="mt-1 text-xs font-medium text-emerald-700">
-                        Tiết kiệm{" "}
-                        {formatVnd((tier.monthlyPriceVnd - tier.yearlyMonthlyPriceVnd) * 12)}/năm so
-                        với đóng tháng
+                      <p className="mt-1.5 inline-block rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                        Tiết kiệm {formatVnd(yearlySavings)}/năm (-20%)
                       </p>
                     )}
 
@@ -283,7 +369,11 @@ export function HybridComparison() {
 
                   <a
                     href="#dang-ky"
-                    onClick={() => setSelectedEdition(`Bản Thuê Web Cloud 24/7 (${tier.name})`)}
+                    onClick={() =>
+                      setSelectedEdition(
+                        `${tier.name} (${tier.botCapacityLabel} — ${modeLabel} ${formatVnd(baseMonthly)}/tháng)`
+                      )
+                    }
                     className={`mt-6 inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
                       tier.popular
                         ? "bg-indigo-600 text-white hover:bg-indigo-700"
@@ -310,7 +400,9 @@ export function HybridComparison() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                   <th className="px-5 py-3.5 font-semibold sm:px-6">Tiêu chí</th>
-                  <th className="px-5 py-3.5 font-semibold sm:px-6">Bản Cài Máy (Desktop)</th>
+                  <th className="px-5 py-3.5 font-semibold sm:px-6">
+                    Bản Cài Máy (Desktop Free / Pro)
+                  </th>
                   <th className="bg-indigo-50/70 px-5 py-3.5 font-bold text-indigo-800 sm:px-6">
                     Bản Thuê Web Cloud 24/7
                   </th>
@@ -351,11 +443,11 @@ export function HybridComparison() {
                 Đăng ký nhanh trong 30 giây
               </span>
               <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
-                Nhận Bản Cài Máy hoặc kích hoạt đội bot Cloud 24/7 ngay hôm nay
+                Nhận Bản Cài Máy (0đ) hoặc kích hoạt đội bot Cloud 24/7 ngay hôm nay
               </h3>
               <p className="mt-2.5 text-sm leading-relaxed text-slate-600">
-                Chọn sẵn mô hình &amp; phòng ban bạn cần, sau đó gửi trực tiếp cho Admin qua Zalo
-                hoặc Email chính thức để nhận link cài đặt và lịch cấu hình 1-1.
+                Chọn sẵn gói &amp; phòng ban bạn cần, sau đó gửi trực tiếp cho Admin qua Zalo hoặc
+                Email chính thức để nhận link cài đặt và lịch cấu hình 1-1.
               </p>
 
               <div className="mt-5 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
@@ -390,7 +482,7 @@ export function HybridComparison() {
                     htmlFor="select-edition"
                     className="block text-xs font-bold uppercase tracking-wider text-slate-600"
                   >
-                    1. Chọn phiên bản muốn dùng
+                    1. Chọn phiên bản / gói muốn dùng
                   </label>
                   <select
                     id="select-edition"
@@ -398,14 +490,30 @@ export function HybridComparison() {
                     onChange={(e) => setSelectedEdition(e.target.value)}
                     className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   >
-                    <option value="Bản Cài Máy (Windows / macOS)">
-                      Bản Cài Máy (Windows / macOS — Giới hạn 3 bot)
+                    <option value="Bản Cài Máy Miễn Phí (Desktop Free — 0đ, tối đa 2 Bot)">
+                      Bản Cài Máy Miễn Phí — 0đ (Tối đa 2 Bot, BYOK)
                     </option>
-                    {CLOUD_TIERS.map((t) => (
-                      <option key={t.id} value={`Bản Thuê Web Cloud 24/7 (${t.name})`}>
-                        Thuê Cloud 24/7 — {t.name}
-                      </option>
-                    ))}
+                    <option value="Desktop Pro License (1.890.000đ/máy)">
+                      Desktop Pro License — 1.890.000đ/máy
+                    </option>
+                    <option value="Starter Cloud (24/7, 5 Bot — BYOK 199.000đ/tháng)">
+                      Starter Cloud (5 Bot) — 199.000đ/tháng (BYOK)
+                    </option>
+                    <option value="Starter Cloud (24/7, 5 Bot — gồm 3M AI Credits 349.000đ/tháng)">
+                      Starter Cloud (5 Bot) — 349.000đ/tháng (3M Credits)
+                    </option>
+                    <option value="Pro Team Cloud (24/7, 10 Bot — BYOK 499.000đ/tháng)">
+                      Pro Team Cloud (10 Bot) — 499.000đ/tháng (BYOK)
+                    </option>
+                    <option value="Pro Team Cloud (24/7, 10 Bot — gồm 10M AI Credits 799.000đ/tháng)">
+                      Pro Team Cloud (10 Bot) — 799.000đ/tháng (10M Credits)
+                    </option>
+                    <option value="Business Cloud (Không giới hạn Bot, 10 tài khoản — BYOK 1.290.000đ/tháng)">
+                      Business Cloud (Không giới hạn Bot) — 1.290.000đ/tháng (BYOK)
+                    </option>
+                    <option value="Business Cloud (Không giới hạn Bot, 10 tài khoản — gồm 30M AI Credits 1.990.000đ/tháng)">
+                      Business Cloud (Không giới hạn Bot) — 1.990.000đ/tháng (30M Credits)
+                    </option>
                   </select>
                 </div>
 

@@ -2,7 +2,7 @@
   "name": "bigman-ai-workspace",
   "version": "1.0.0",
   "private": true,
-  "description": "Bigman AI Workspace — Nền tảng Đội Ngũ Nhân Sự AI Đa Bot (Bản Cài Máy & Thuê Cloud 24/7)",
+  "description": "Tổ Chức Nhân Viên AI — Nền tảng Đội Ngũ Nhân Sự AI Đa Bot (Bản Cài Máy & Thuê Cloud 24/7)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

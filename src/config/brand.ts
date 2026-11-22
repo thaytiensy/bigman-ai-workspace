@@ -5,16 +5,16 @@
  */
 
 export const BRAND_CONFIG = {
-  /** Tên thương hiệu hiển thị (dễ đổi bất cứ lúc nào) */
-  name: "Bigman AI Workspace",
-  shortName: "Bigman AI",
-  logoMark: "BM",
+  /** Tên thương hiệu chính thức */
+  name: "Tổ Chức Nhân Viên AI",
+  shortName: "Tổ Chức Nhân Viên AI",
+  logoMark: "AI",
   badge: "Nền tảng AI Đa Bot Hybrid · Bản Cài Máy + Cloud 24/7",
 
   /** Định vị thương mại cốt lõi */
-  headline: "Nền tảng Đội Ngũ Nhân Sự AI Đa Bot cho Cá nhân, Chủ shop & Doanh nghiệp Việt",
+  headline: "Tổ Chức Nhân Viên AI — Nền tảng Đội Ngũ Nhân Sự AI Đa Bot cho Cá nhân, Chủ shop & Doanh nghiệp Việt",
   subheadline:
-    "Dùng Bản Cài Máy miễn phí/cơ bản để trải nghiệm ngay, hoặc nâng cấp Thuê Web Cloud chạy tự động 24/7 không phụ thuộc cấu hình máy. Tích hợp sẵn 4 Phòng ban AI theo ngành — bấm 1 chạm là làm việc.",
+    "Bắt đầu miễn phí 0đ với Bản Cài Máy (tối đa 2 Bot, dùng API key riêng) hoặc nâng cấp Thuê Web Cloud chạy tự động 24/7 không phụ thuộc cấu hình máy. Tích hợp sẵn 4 Phòng ban AI theo ngành — bấm 1 chạm là làm việc.",
 
   /** Tên miền chính thức (tự cập nhật khi gắn tên miền riêng qua biến môi trường) */
   siteUrl:
@@ -46,11 +46,12 @@ export const BRAND_CONFIG = {
   /** Cấu hình SEO mặc định chuẩn Top Google */
   seo: {
     defaultTitle:
-      "Bigman AI Workspace — Nền tảng Đội Ngũ Nhân Sự AI Đa Bot (Bản Cài Máy & Thuê Cloud 24/7)",
-    titleTemplate: "%s | Bigman AI Workspace",
+      "Tổ Chức Nhân Viên AI — Nền tảng Đội Ngũ Nhân Sự AI Đa Bot (Bản Cài Máy & Thuê Cloud 24/7)",
+    titleTemplate: "%s | Tổ Chức Nhân Viên AI",
     description:
-      "Nền tảng đội ngũ nhân sự AI đa bot giao việc chéo & chạy lịch tự động 24/7 tại Việt Nam. Dùng Bản Cài Máy Windows/macOS miễn phí trải nghiệm hoặc nâng cấp Thuê Cloud 24/7 cho TikTok Shop, Marketing SEO, Giáo viên & SME.",
+      "Tổ Chức Nhân Viên AI — Nền tảng đội ngũ nhân sự AI đa bot giao việc chéo & chạy lịch tự động 24/7 tại Việt Nam. Dùng Bản Cài Máy miễn phí 0đ (2 Bot) hoặc nâng cấp Thuê Cloud 24/7 từ 199.000đ/tháng cho TikTok Shop, Marketing SEO, Giáo viên & SME.",
     keywords: [
+      "Tổ Chức Nhân Viên AI",
       "nền tảng AI đa bot",
       "đội ngũ nhân sự AI",
       "phần mềm AI cài máy",
@@ -59,7 +60,6 @@ export const BRAND_CONFIG = {
       "AI marketing SEO đa kênh",
       "trợ lý AI giáo viên chủ nhiệm",
       "tự động hóa văn phòng SME",
-      "Bigman AI Workspace",
       "multi-agent workspace Việt Nam",
     ],
     locale: "vi_VN",

@@ -7,16 +7,16 @@ import { FaqSection } from "@/components/FaqSection";
 import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = {
-  title: "So sánh Bản Cài Máy (Windows/macOS) vs Bản Thuê Web Cloud 24/7",
+  title: "So sánh Bản Cài Máy (0đ) vs Bản Thuê Web Cloud 24/7",
   description:
-    "So sánh chi tiết Bản Cài Máy giới hạn 3 bot và Bản Thuê Web SaaS Cloud chạy tự động 24/7 trên mọi thiết bị của Bigman AI Workspace. Chọn đúng gói tối ưu chi phí.",
+    "So sánh chi tiết Bản Cài Máy Miễn Phí (0đ, tối đa 2 Bot) / Desktop Pro License (1.890.000đ) và Bản Thuê Web Cloud 24/7 từ 199.000đ/tháng của Tổ Chức Nhân Viên AI.",
   alternates: {
     canonical: "/so-sanh-cai-may-va-cloud",
   },
   openGraph: {
     title: `So sánh Bản Cài Máy vs Bản Thuê Cloud 24/7 | ${BRAND_CONFIG.name}`,
     description:
-      "Nên dùng Bản Cài Máy miễn phí trải nghiệm hay nâng cấp Thuê Cloud chạy tự động 24/7? Xem bảng đối chiếu đầy đủ và đăng ký ngay.",
+      "Nên dùng Bản Cài Máy Miễn Phí 0đ (2 Bot) hay nâng cấp Starter / Pro Team / Business Cloud chạy tự động 24/7? Xem bảng đối chiếu đầy đủ và đăng ký ngay.",
     url: `${BRAND_CONFIG.siteUrl}/so-sanh-cai-may-va-cloud`,
   },
 };
@@ -41,9 +41,9 @@ export default function CompareHybridPage() {
               So sánh chi tiết Bản Cài Máy vs Bản Thuê Web Cloud 24/7
             </h1>
             <p className="mt-3 text-base leading-relaxed text-slate-600">
-              {BRAND_CONFIG.name} xây dựng trên mô hình Kép (Hybrid) để ai cũng có thể bắt đầu dễ
-              dàng từ máy tính cá nhân, và nâng cấp mượt lên Cloud 24/7 ngay khi cần tự động hóa
-              liên tục mà không phụ thuộc máy cấu hình mạnh.
+              <strong>{BRAND_CONFIG.name}</strong> xây dựng trên mô hình Kép (Hybrid) để ai cũng có
+              thể bắt đầu miễn phí 0đ từ máy tính cá nhân, và nâng cấp mượt lên Cloud 24/7 ngay khi
+              cần tự động hóa liên tục mà không phụ thuộc cấu hình máy.
             </p>
           </div>
 
@@ -51,24 +51,24 @@ export default function CompareHybridPage() {
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <Laptop className="h-5 w-5 text-slate-700" />
-                Khi nào nên bắt đầu bằng Bản Cài Máy?
+                Khi nào nên bắt đầu bằng Bản Cài Máy (0đ / Pro License)?
               </div>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                Bạn là cá nhân muốn trải nghiệm quy trình đa bot với chi phí khởi điểm thấp, đã có
-                sẵn API key AI riêng và chỉ cần chạy tối đa 3 bot trong giờ làm việc khi mở máy
-                tính.
+                Bạn là cá nhân muốn trải nghiệm quy trình đa bot miễn phí 0đ với tối đa 2 Bot và 1
+                phòng họp cơ bản, đã có sẵn API key AI riêng (BYOK) và chỉ cần chạy khi đang mở máy
+                tính — hoặc mua bản quyền Desktop Pro License 1.890.000đ/máy.
               </p>
             </div>
 
             <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5">
               <div className="flex items-center gap-2 text-sm font-bold text-indigo-950">
                 <Cloud className="h-5 w-5 text-indigo-600" />
-                Khi nào nên nâng cấp Thuê Web Cloud 24/7?
+                Khi nào nên nâng cấp Thuê Web Cloud 24/7 (từ 199k/tháng)?
               </div>
               <p className="mt-2 text-sm leading-relaxed text-indigo-900">
-                Bạn cần đội ngũ bot tự quét đơn hàng, chạy báo cáo sáng, trực SEO và CSKH 24/7 kể
-                cả khi tắt máy, máy tính cá nhân cấu hình yếu, hoặc muốn quản lý ngay trên điện
-                thoại.
+                Bạn cần đội ngũ 5–10+ nhân viên AI tự quét đơn hàng, chạy báo cáo sáng, trực SEO và
+                CSKH 24/7 kể cả khi tắt máy, máy tính cá nhân cấu hình yếu, hoặc muốn quản lý ngay
+                trên điện thoại (chọn BYOK hoặc gói kèm sẵn AI Credits, giảm 20% theo năm).
               </p>
             </div>
           </div>

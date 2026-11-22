@@ -8,14 +8,14 @@ import { JsonLd } from "@/components/JsonLd";
 export const metadata: Metadata = {
   title: "4 Kho Mẫu Đội Bot AI Theo Ngành — TikTok Shop, Marketing SEO, Giáo viên & SME",
   description:
-    "Khám phá và chạy thử tương tác 4 Kho mẫu Đội Bot AI dựng sẵn theo ngành tại Việt Nam: Vận hành TikTok Shop, Marketing SEO Đa Kênh, Trợ lý Giáo viên (lop-nhe.vercel.app) và Văn phòng SME.",
+    "Khám phá và chạy thử tương tác 4 Kho mẫu Đội Bot AI dựng sẵn theo ngành tại Tổ Chức Nhân Viên AI: Vận hành TikTok Shop, Marketing SEO Đa Kênh, Trợ lý Giáo viên (lop-nhe.vercel.app) và Văn phòng SME.",
   alternates: {
     canonical: "/kho-doi-bot",
   },
   openGraph: {
     title: `4 Kho Mẫu Đội Bot AI Theo Ngành | ${BRAND_CONFIG.name}`,
     description:
-      "Bấm 1 chạm để kích hoạt nguyên phòng ban AI làm việc cho TikTok Shop, Marketing SEO, Giáo viên và SME.",
+      "Bấm 1 chạm để kích hoạt nguyên phòng ban AI làm việc cho TikTok Shop, Marketing SEO, Giáo viên và SME tại Tổ Chức Nhân Viên AI.",
     url: `${BRAND_CONFIG.siteUrl}/kho-doi-bot`,
   },
 };
@@ -40,9 +40,9 @@ export default function BotTemplatesPage() {
               4 Kho Mẫu Đội Bot AI Dựng Sẵn Theo Ngành Tại Việt Nam
             </h1>
             <p className="mt-3 text-base leading-relaxed text-slate-600">
-              Trải nghiệm trực tiếp cách từng phòng ban AI tự phân việc, kiểm tra chéo và chạy lịch
-              tự động hằng ngày. Hoạt động trên cả Bản Cài Máy (giới hạn 3 bot) và Bản Thuê Cloud
-              24/7 (mở khóa toàn bộ).
+              Trải nghiệm trực tiếp cách từng phòng ban trong <strong>{BRAND_CONFIG.name}</strong>{" "}
+              tự phân việc, kiểm tra chéo và chạy lịch tự động hằng ngày. Dùng miễn phí 0đ trên Bản
+              Cài Máy (tối đa 2 Bot) hoặc mở khóa 5–10+ Bot trên Bản Thuê Cloud 24/7.
             </p>
           </div>
         </div>

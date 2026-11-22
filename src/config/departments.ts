@@ -9,7 +9,7 @@ export interface BotMember {
   avatarCode: string;
   colorClass: string;
   isChief?: boolean;
-  /** Bot thứ 4 trở đi bị khóa trên Bản Cài Máy để thể hiện rõ lợi ích nâng cấp Cloud */
+  /** Bot thứ 3 trở đi bị khóa trên Desktop Free (tối đa 2 Bot) để minh họa rõ lợi ích nâng cấp Cloud */
   cloudOnly?: boolean;
   specialty: string;
 }
@@ -100,6 +100,7 @@ export const DEPARTMENTS: DepartmentTemplate[] = [
         role: "Tư vấn & Chăm sóc Khách hàng",
         avatarCode: "CS",
         colorClass: "bg-emerald-600 text-white",
+        cloudOnly: true,
         specialty: "Trả lời tin nhắn size/vận chuyển, xin đánh giá 5 sao và xử lý khiếu nại sớm.",
       },
       {
@@ -259,6 +260,7 @@ export const DEPARTMENTS: DepartmentTemplate[] = [
         role: "Biên tập & Chuốt Văn Phong Tự Nhiên",
         avatarCode: "VW",
         colorClass: "bg-cyan-600 text-white",
+        cloudOnly: true,
         specialty: "Chuyển dàn ý SEO thành bài viết, kịch bản video dọc 9:16 tự nhiên như người thật.",
       },
       {
@@ -343,7 +345,7 @@ export const DEPARTMENTS: DepartmentTemplate[] = [
         id: "mk-r3",
         title: "Chuốt văn phong bài nháp trước khi đăng blog",
         schedule: "Chạy theo yêu cầu khi mở máy",
-        ownerBot: "Voice Writer",
+        ownerBot: "SEO Architect",
         summary: "Giữ giọng văn tự nhiên, kiểm tra chính tả tiếng Việt và CTA rõ ràng.",
         requiresCloud247: false,
       },
@@ -394,6 +396,7 @@ export const DEPARTMENTS: DepartmentTemplate[] = [
         role: "Soạn Thông báo & Nhận xét Cá nhân hóa",
         avatarCode: "PH",
         colorClass: "bg-emerald-600 text-white",
+        cloudOnly: true,
         specialty: "Viết lời nhận xét khéo léo, tích cực theo tình hình từng em để gửi nhóm lớp.",
       },
       {
@@ -468,7 +471,7 @@ export const DEPARTMENTS: DepartmentTemplate[] = [
         id: "ed-r3",
         title: "Soạn lời nhận xét học bạ theo từng học sinh",
         schedule: "Chạy theo yêu cầu khi mở máy",
-        ownerBot: "Kết nối Phụ huynh",
+        ownerBot: "Trợ lý GVCN",
         summary: "Cá nhân hóa lời nhận xét tự nhiên, tránh trùng lặp khuôn mẫu.",
         requiresCloud247: false,
       },
@@ -501,20 +504,21 @@ export const DEPARTMENTS: DepartmentTemplate[] = [
         specialty: "Tổng hợp ưu tiên mỗi sáng, theo dõi tiến độ các phòng ban và nhắc việc quá hạn.",
       },
       {
-        id: "sme-sales",
-        name: "B2B Proposal",
-        role: "Báo giá & Soạn Thảo Hợp đồng",
-        avatarCode: "BP",
-        colorClass: "bg-indigo-600 text-white",
-        specialty: "Lập bảng báo giá theo yêu cầu khách, soạn email chào hàng và tóm tắt điều khoản.",
-      },
-      {
         id: "sme-ops",
         name: "Admin & Mail",
         role: "Thư ký Email & Biên bản Họp",
         avatarCode: "AM",
         colorClass: "bg-slate-700 text-white",
         specialty: "Lọc email cần trả lời gấp, tóm tắt biên bản họp thành danh sách đầu việc rõ người chịu trách nhiệm.",
+      },
+      {
+        id: "sme-sales",
+        name: "B2B Proposal",
+        role: "Báo giá & Soạn Thảo Hợp đồng",
+        avatarCode: "BP",
+        colorClass: "bg-indigo-600 text-white",
+        cloudOnly: true,
+        specialty: "Lập bảng báo giá theo yêu cầu khách, soạn email chào hàng và tóm tắt điều khoản.",
       },
       {
         id: "sme-fin",
