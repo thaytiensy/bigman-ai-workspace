@@ -88,11 +88,39 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
       return billingMode === 'byok' ? plan.priceYearlyByok : plan.priceYearlyAllInOne;
     }
   };
+  const mapPlanToBackendTier = (plan: PricingPlan): string => {
+    if (plan.id === 'desktop_pro') return 'desktop_pro';
+    if (plan.id === 'starter') return billingMode === 'byok' ? 'starter_byok' : 'starter_credits';
+    if (plan.id === 'pro') return billingMode === 'byok' ? 'pro_team_byok' : 'pro_team_credits';
+    if (plan.id === 'business') return billingMode === 'byok' ? 'business_byok' : 'business_credits';
+    return 'pro_team_byok';
+  };
 
-  const handleSelectPlanForPayment = (plan: PricingPlan) => {
+  const handleSelectPlanForPayment = async (plan: PricingPlan) => {
     setSelectedPlan(plan);
-    setOrderCode(`NVAI${Math.floor(100000 + Math.random() * 900000)}`);
+    const fallbackCode = `NVAI${Math.floor(100000 + Math.random() * 900000)}`;
+    setOrderCode(fallbackCode);
     setStep('payment');
+
+    try {
+      const res = await fetch('/api/v1/billing/vietqr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceId: '00000000-0000-0000-0000-000000000001',
+          planId: mapPlanToBackendTier(plan),
+          billingCycle,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.order?.orderCode) {
+          setOrderCode(data.order.orderCode);
+        }
+      }
+    } catch {
+      // Giữ fallback orderCode khi ngoại tuyến
+    }
   };
 
   const handleCopy = (field: string, text: string) => {

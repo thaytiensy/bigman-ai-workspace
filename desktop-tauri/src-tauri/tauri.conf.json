@@ -1,17 +1,19 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/v2/crates/tauri-cli/schema.json",
-  "productName": "Tổ Chức Nhân Viên AI",
+  "productName": "To Chuc Nhan Vien AI",
   "version": "1.0.0",
   "identifier": "vn.tochucnhanvienai.desktop",
   "build": {
     "beforeDevCommand": "",
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
+        "label": "main",
         "title": "Tổ Chức Nhân Viên AI - Nền Tảng Nhân Viên AI Đa Bot",
         "width": 1280,
         "height": 840,
@@ -24,15 +26,11 @@
     ],
     "security": {
       "csp": null
-    },
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "tooltip": "Tổ Chức Nhân Viên AI - Hệ Thống Trợ Lý AI Chuyên Nghiệp"
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi", "dmg"],
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -40,11 +38,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "publisher": "Tổ Chức Nhân Viên AI",
-    "copyright": "Bản quyền © 2026 Tổ Chức Nhân Viên AI. Hotline: Zalo 0353205414 - Email: thaytiensy@gmail.com",
+    "publisher": "To Chuc Nhan Vien AI",
+    "copyright": "Copyright (c) 2026 To Chuc Nhan Vien AI. Hotline: Zalo 0353205414 - Email: thaytiensy@gmail.com",
     "category": "Productivity",
-    "shortDescription": "Nền tảng Nhân viên AI Đa Bot mô hình Kép",
-    "longDescription": "Tổ Chức Nhân Viên AI - Nền tảng AI Đa Bot thương mại mô hình KÉP (Bản Cài Máy Desktop + Web SaaS Cloud 24/7). Quản lý và vận hành đội ngũ nhân viên AI tự động cho cá nhân và doanh nghiệp. Hỗ trợ BYOK, phòng họp đa bot, sao lưu đám mây 1 chạm.",
+    "shortDescription": "Nen tang Nhan vien AI Da Bot mo hinh Kep",
+    "longDescription": "To Chuc Nhan Vien AI - Nen tang AI Da Bot thuong mai mo hinh KEP (Ban Cai May Desktop + Web SaaS Cloud 24/7). Quan ly va van hanh doi ngu nhan vien AI tu dong cho ca nhan va doanh nghiep. Ho tro BYOK, phong hop da bot, sao luu dam may 1 cham.",
     "windows": {
       "nsis": {
         "installMode": "currentUser"
@@ -56,14 +54,6 @@
     "macOS": {
       "frameworks": [],
       "minimumSystemVersion": "10.15"
-    }
-  },
-  "plugins": {
-    "updater": {
-      "endpoints": [
-        "https://github.com/thaytiensy/bigman-ai-workspace/releases/latest/download/latest.json"
-      ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXkKUldSYUNiYTNQekdFZE13aE5VdnlqN1ZlcTFoc0xRME80aFFwVFNFUG95a0gxd2V5bE81T1g2V2QK"
     }
   }
 }

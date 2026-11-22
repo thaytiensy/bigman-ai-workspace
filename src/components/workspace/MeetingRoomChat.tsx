@@ -8,20 +8,26 @@ import {
   Check,
   ArrowRightLeft,
   Trash2,
+  KeyRound,
 } from 'lucide-react';
 import { Bot, ChatMessage } from '@/types/workspace';
 import { QUICK_PROMPT_CATEGORIES } from '@/data/mockWorkspaceData';
+import type { ByokClientSettings } from './ByokSettingsModal';
 
 interface MeetingRoomChatProps {
   bots: Bot[];
   preselectedBot?: Bot | null;
   onClearPreselectedBot?: () => void;
+  byokSettings?: ByokClientSettings;
+  onOpenByokModal?: () => void;
 }
 
 export const MeetingRoomChat: React.FC<MeetingRoomChatProps> = ({
   bots,
   preselectedBot,
   onClearPreselectedBot,
+  byokSettings,
+  onOpenByokModal,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -134,13 +140,17 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
     inputRef.current?.focus();
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const trimmed = inputContent.trim();
     if (!trimmed || isStreaming) return;
 
     // Detect mentioned bots
-    const mentionedBots = bots.filter((b) => trimmed.includes(`@${b.name}`));
+    const mentionedBots = bots.filter((b) =>
+      trimmed.toLowerCase().includes(`@${b.name.toLowerCase()}`) ||
+      trimmed.toLowerCase().includes(`@${b.codeName.toLowerCase()}`)
+    );
     const targetBot = mentionedBots.length > 0 ? mentionedBots[0] : bots[0];
+    const nowTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -148,60 +158,133 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
       senderName: 'Bạn',
       senderAvatar: '👤',
       content: trimmed,
-      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: nowTime,
       mentions: mentionedBots.map((b) => b.name),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const streamingMsgId = `bot-${Date.now() + 1}`;
+    const initialBotMsg: ChatMessage = {
+      id: streamingMsgId,
+      senderType: 'bot',
+      senderId: targetBot.id,
+      senderName: targetBot.name,
+      senderAvatar: targetBot.avatar,
+      senderRole: targetBot.roleTitle,
+      content: '',
+      timestamp: nowTime,
+      isStreaming: true,
+    };
+
+    const historyForApi = [...messages, userMsg]
+      .filter((m) => m.senderType === 'user' || m.senderType === 'bot')
+      .slice(-10)
+      .map((m) => ({
+        role: m.senderType === 'user' ? 'user' : 'assistant',
+        content: m.content,
+      }));
+
+    setMessages((prev) => [...prev, userMsg, initialBotMsg]);
     setInputContent('');
     setShowMentionMenu(false);
     setIsStreaming(true);
 
-    // Simulate Streaming response from target bot
-    setTimeout(() => {
-      const fullResponse = generateBotResponse(targetBot, trimmed);
-      let streamedLength = 0;
-      const streamingMsgId = `bot-${Date.now()}`;
+    try {
+      const hasByok = Boolean(byokSettings?.apiKey && byokSettings.apiKey.trim().length >= 10);
+      const res = await fetch('/api/v1/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceId: '00000000-0000-0000-0000-000000000001',
+          botId: targetBot.id,
+          messages: historyForApi,
+          iterationCount: 1,
+          botProfile: {
+            name: targetBot.name,
+            roleTitle: targetBot.roleTitle,
+            department: targetBot.department,
+            systemPrompt: targetBot.description,
+          },
+          byok: hasByok
+            ? {
+                provider: byokSettings?.provider || 'auto',
+                apiKey: byokSettings?.apiKey.trim(),
+                model: byokSettings?.model?.trim() || undefined,
+              }
+            : undefined,
+        }),
+      });
 
-      // Insert placeholder streaming message
-      const initialBotMsg: ChatMessage = {
-        id: streamingMsgId,
-        senderType: 'bot',
-        senderId: targetBot.id,
-        senderName: targetBot.name,
-        senderAvatar: targetBot.avatar,
-        senderRole: targetBot.roleTitle,
-        content: '',
-        timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-        isStreaming: true,
-      };
+      if (!res.ok || !res.body) {
+        const errPayload = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(errPayload.error || `Lỗi kết nối AI (HTTP ${res.status})`);
+      }
 
-      setMessages((prev) => [...prev, initialBotMsg]);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let accumulated = '';
+      let streamError: string | null = null;
 
-      // Stream text chunk by chunk
-      const interval = setInterval(() => {
-        streamedLength += Math.floor(Math.random() * 8) + 6;
-        if (streamedLength >= fullResponse.length) {
-          clearInterval(interval);
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === streamingMsgId
-                ? { ...m, content: fullResponse, isStreaming: false }
-                : m
-            )
-          );
-          setIsStreaming(false);
-        } else {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === streamingMsgId
-                ? { ...m, content: fullResponse.slice(0, streamedLength) }
-                : m
-            )
-          );
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          const clean = line.trim();
+          if (!clean.startsWith('data:')) continue;
+          const jsonStr = clean.slice(5).trim();
+          if (!jsonStr) continue;
+
+          try {
+            const evt = JSON.parse(jsonStr);
+            if (evt.type === 'token' && typeof evt.text === 'string') {
+              accumulated += evt.text;
+              const snapshot = accumulated;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === streamingMsgId ? { ...m, content: snapshot } : m))
+              );
+            } else if (evt.type === 'error' && typeof evt.error === 'string') {
+              streamError = evt.error;
+            }
+          } catch {
+            // Bỏ qua chunk không hoàn chỉnh
+          }
         }
-      }, 40);
-    }, 450);
+      }
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === streamingMsgId
+            ? {
+                ...m,
+                content: streamError
+                  ? `${accumulated}${accumulated ? '\n\n' : ''}⚠️ Không thể kết nối AI thực: ${streamError}\nVui lòng kiểm tra lại API Key trong mục "Cài đặt API Key (BYOK)".`
+                  : accumulated || generateBotResponse(targetBot, trimmed),
+                isStreaming: false,
+              }
+            : m
+        )
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Lỗi kết nối máy chủ streaming';
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === streamingMsgId
+            ? {
+                ...m,
+                content: `⚠️ ${msg}\n\n${generateBotResponse(targetBot, trimmed)}`,
+                isStreaming: false,
+              }
+            : m
+        )
+      );
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -274,8 +357,27 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
           </div>
         </div>
 
-        {/* QUICK BOT PARTICIPANTS PREVIEW */}
+        {/* QUICK BOT PARTICIPANTS PREVIEW + BYOK TRIGGER */}
         <div className="flex items-center gap-2">
+          {onOpenByokModal && (
+            <button
+              type="button"
+              onClick={onOpenByokModal}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition ${
+                byokSettings?.apiKey && byokSettings.apiKey.trim().length >= 10
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35 hover:bg-emerald-500/25'
+                  : 'bg-cyan-500/15 text-cyan-200 border-cyan-500/35 hover:bg-cyan-500/25'
+              }`}
+              title="Cắm API Key cá nhân (OpenAI / Gemini / Claude / OpenRouter) để chạy AI thực"
+            >
+              <KeyRound size={12} />
+              <span className="hidden sm:inline">
+                {byokSettings?.apiKey && byokSettings.apiKey.trim().length >= 10
+                  ? 'AI Thực (BYOK)'
+                  : 'Cài API Key (BYOK)'}
+              </span>
+            </button>
+          )}
           <div className="hidden lg:flex items-center -space-x-2 mr-2">
             {bots.slice(0, 5).map((b) => (
               <div

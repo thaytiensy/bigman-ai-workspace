@@ -186,7 +186,7 @@
         <span class="status-pill status-inactive">Tạm ngưng</span>
       </div>
       <div class="bot-prompt">Chuyên gia SEO Website Top Google, TikTok Shop, Shopee và mạng xã hội.</div>
-      <button class="btn" style="width: 100%; font-size: 12px;" onclick="tryActivateBot('Listing Pro')">Bật Hoạt Động</button>
+      <button class="btn" style="width: 100%; font-size: 12px;" onclick="tryActivateBot('bot-listing-003', 'Listing Pro')">Bật Hoạt Động</button>
     </div>
 
     <div class="card">
@@ -198,7 +198,7 @@
         <span class="status-pill status-inactive">Tạm ngưng</span>
       </div>
       <div class="bot-prompt">Chuốt văn phong tự nhiên, cảm xúc, chuẩn mực ngữ cảnh kinh doanh Việt Nam.</div>
-      <button class="btn" style="width: 100%; font-size: 12px;" onclick="tryActivateBot('Echo')">Bật Hoạt Động</button>
+      <button class="btn" style="width: 100%; font-size: 12px;" onclick="tryActivateBot('bot-echo-004', 'Echo')">Bật Hoạt Động</button>
     </div>
   </div>
 
@@ -216,13 +216,28 @@
       setTimeout(() => { el.style.display = 'none'; }, 6000);
     }
 
-    async function tryActivateBot(botName) {
+    async function loadNativeQuota() {
+      if (!window.__TAURI__) return;
+      try {
+        const q = await window.__TAURI__.core.invoke('get_quota_status');
+        document.getElementById('tierTitle').textContent = q.tier_name;
+        document.getElementById('botsQuota').textContent =
+          'Đang kích hoạt: ' + q.active_bots_count + ' / ' + (q.max_active_bots > 999 ? '∞' : q.max_active_bots) + ' Bot';
+        document.getElementById('roomsQuota').textContent =
+          'Phòng họp: ' + q.rooms_count + ' / ' + (q.max_rooms > 999 ? '∞' : q.max_rooms);
+        document.getElementById('machineIdBadge').textContent = 'Mã thiết bị: ' + q.machine_id;
+      } catch (_) {}
+    }
+    window.addEventListener('DOMContentLoaded', loadNativeQuota);
+
+    async function tryActivateBot(botId, botName) {
       if (window.__TAURI__) {
         try {
-          await window.__TAURI__.core.invoke('set_bot_active', { botId: botName, active: true });
+          await window.__TAURI__.core.invoke('set_bot_active', { botId: botId, active: true });
           showAlert('Đã kích hoạt ' + botName, false);
+          loadNativeQuota();
         } catch (err) {
-          showAlert(err, true);
+          showAlert(String(err), true);
         }
       } else {
         showAlert('Khóa cứng tầng Rust: Bản Desktop Free đã kích hoạt 2/2 Bot (Dev & Orbit). Vui lòng nâng cấp Desktop Pro (1.890.000đ) hoặc lên Cloud để mở khóa không giới hạn!', true);

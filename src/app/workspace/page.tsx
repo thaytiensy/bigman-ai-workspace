@@ -1,12 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
 import { BotRosterGrid } from '@/components/workspace/BotRosterGrid';
 import { MeetingRoomChat } from '@/components/workspace/MeetingRoomChat';
 import { RoutinesPanel } from '@/components/workspace/RoutinesPanel';
 import { UpgradeVietQrModal } from '@/components/workspace/UpgradeVietQrModal';
+import {
+  ByokSettingsModal,
+  DEFAULT_BYOK_SETTINGS,
+  loadByokSettings,
+  type ByokClientSettings,
+} from '@/components/workspace/ByokSettingsModal';
 import { INITIAL_BOTS, INITIAL_ROUTINES } from '@/data/mockWorkspaceData';
 import { Bot, RoutineItem, WorkspaceMode, WorkspaceTab } from '@/types/workspace';
 import { BRANDING } from '@/config/branding';
@@ -30,11 +36,18 @@ export default function WorkspacePage() {
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('desktop_free');
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('office3d');
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isByokModalOpen, setIsByokModalOpen] = useState(false);
+  const [byokSettings, setByokSettings] = useState<ByokClientSettings>(DEFAULT_BYOK_SETTINGS);
   const [bots, setBots] = useState<Bot[]>(INITIAL_BOTS);
   const [routines, setRoutines] = useState<RoutineItem[]>(INITIAL_ROUTINES);
   const [preselectedBot, setPreselectedBot] = useState<Bot | null>(null);
 
+  useEffect(() => {
+    setByokSettings(loadByokSettings());
+  }, []);
+
   const activeBotsCount = bots.filter((b) => b.isActive).length;
+  const byokConfigured = Boolean(byokSettings.apiKey.trim().length >= 10);
 
   // Toggle Bot Active status with Desktop Free limit enforcement
   const handleToggleBotActive = (botId: string) => {
@@ -96,6 +109,8 @@ export default function WorkspacePage() {
       workspaceMode={workspaceMode}
       onToggleMode={setWorkspaceMode}
       onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+      byokConfigured={byokConfigured}
+      onOpenByokModal={() => setIsByokModalOpen(true)}
       activeBotsCount={activeBotsCount}
       totalBotsCount={bots.length}
     >
@@ -126,6 +141,8 @@ export default function WorkspacePage() {
           bots={bots}
           preselectedBot={preselectedBot}
           onClearPreselectedBot={() => setPreselectedBot(null)}
+          byokSettings={byokSettings}
+          onOpenByokModal={() => setIsByokModalOpen(true)}
         />
       )}
 
@@ -138,11 +155,19 @@ export default function WorkspacePage() {
         />
       )}
 
-      {/* 1-TOUCH UPGRADE MODAL */}
+      {/* VietQR Upgrade & Payment Modal */}
       <UpgradeVietQrModal
         isOpen={isUpgradeModalOpen}
         onClose={() => setIsUpgradeModalOpen(false)}
         onSuccessUpgrade={handleSuccessUpgrade}
+      />
+
+      {/* BYOK AI API Key Modal */}
+      <ByokSettingsModal
+        isOpen={isByokModalOpen}
+        settings={byokSettings}
+        onClose={() => setIsByokModalOpen(false)}
+        onSave={setByokSettings}
       />
     </WorkspaceShell>
   );

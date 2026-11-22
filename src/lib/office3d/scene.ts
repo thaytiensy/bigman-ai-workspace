@@ -421,7 +421,12 @@ export function createHologramOfficeScene(
   const activeBeams: ActiveBeam[] = [];
   let selectedBotIdState: string | null = null;
 
+  function sanitizeHexColor(hex?: string): string {
+    return hex && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#00f5ff';
+  }
+
   function createBotLabelElement(bot: Office3DBot, isSelected: boolean, isDimmed: boolean) {
+    const safeAccent = sanitizeHexColor(bot.accentHex);
     const wrap = document.createElement('div');
     wrap.style.pointerEvents = 'auto';
     wrap.style.cursor = 'pointer';
@@ -439,8 +444,8 @@ export function createHologramOfficeScene(
     speechEl.style.padding = '5px 10px';
     speechEl.style.borderRadius = '10px';
     speechEl.style.background = 'rgba(2, 22, 40, 0.92)';
-    speechEl.style.border = `1px solid ${bot.accentHex || '#00f5ff'}`;
-    speechEl.style.boxShadow = `0 0 14px ${bot.accentHex || '#00f5ff'}55`;
+    speechEl.style.border = `1px solid ${safeAccent}`;
+    speechEl.style.boxShadow = `0 0 14px ${safeAccent}55`;
     speechEl.style.color = '#e0f2fe';
     speechEl.style.fontSize = '11px';
     speechEl.style.fontWeight = '600';
@@ -464,7 +469,7 @@ export function createHologramOfficeScene(
         ? 'rgba(148, 163, 184, 0.45)'
         : isSelected
         ? '#00f5ff'
-        : `${bot.accentHex || '#00f5ff'}99`
+        : `${safeAccent}99`
     }`;
     pill.style.boxShadow = isSelected
       ? '0 0 18px rgba(0, 245, 255, 0.65)'
@@ -482,9 +487,9 @@ export function createHologramOfficeScene(
     dot.style.background = bot.isLocked
       ? '#f59e0b'
       : bot.isActive
-      ? bot.accentHex || '#00f5ff'
+      ? safeAccent
       : '#64748b';
-    dot.style.boxShadow = bot.isActive && !bot.isLocked ? `0 0 8px ${bot.accentHex || '#00f5ff'}` : 'none';
+    dot.style.boxShadow = bot.isActive && !bot.isLocked ? `0 0 8px ${safeAccent}` : 'none';
     pill.appendChild(dot);
 
     const text = document.createElement('span');
@@ -508,11 +513,11 @@ export function createHologramOfficeScene(
     botNodes.forEach((node) => {
       botsGroup.remove(node.rig.root);
       node.rig.root.remove(node.labelObj);
+      node.labelObj.element.remove();
       node.rig.disposeTextures();
     });
     botNodes.clear();
   }
-
   function syncBots(
     bots: Office3DBot[],
     selectedBotId: string | null,
@@ -794,8 +799,26 @@ export function createHologramOfficeScene(
       b.spark.geometry.dispose();
       (b.spark.material as THREE.Material).dispose();
     });
+    const disposedGeos = new Set<THREE.BufferGeometry>();
+    const disposedMats = new Set<THREE.Material>();
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh || obj instanceof THREE.Points || obj instanceof THREE.Line) {
+        if (obj.geometry && !disposedGeos.has(obj.geometry)) {
+          disposedGeos.add(obj.geometry);
+          obj.geometry.dispose();
+        }
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const m of mats) {
+          if (m && !disposedMats.has(m)) {
+            disposedMats.add(m);
+            m.dispose();
+          }
+        }
+      }
+    });
     staticDisposables.forEach((d) => d.dispose());
     pGeo.dispose();
+    labelOverlay.replaceChildren();
     renderer.dispose();
   }
 

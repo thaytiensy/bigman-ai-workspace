@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Menu,
   X,
+  KeyRound,
 } from 'lucide-react';
 import { BRANDING } from '@/config/branding';
 import { WorkspaceMode, WorkspaceTab } from '@/types/workspace';
@@ -27,6 +28,8 @@ interface WorkspaceShellProps {
   workspaceMode: WorkspaceMode;
   onToggleMode: (mode: WorkspaceMode) => void;
   onOpenUpgradeModal: () => void;
+  byokConfigured?: boolean;
+  onOpenByokModal?: () => void;
   activeBotsCount: number;
   totalBotsCount: number;
   children: React.ReactNode;
@@ -38,6 +41,8 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   workspaceMode,
   onToggleMode,
   onOpenUpgradeModal,
+  byokConfigured = false,
+  onOpenByokModal,
   activeBotsCount,
   totalBotsCount,
   children,
@@ -272,6 +277,29 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                   <span>Đã dùng 74%</span>
                 </div>
               </div>
+
+              {/* BYOK AI API KEY BUTTON */}
+              {onOpenByokModal && (
+                <button
+                  type="button"
+                  onClick={onOpenByokModal}
+                  className={`w-full mt-3 flex items-center justify-between gap-2 py-2 px-3 rounded-lg text-xs font-semibold border transition ${
+                    byokConfigured
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35 hover:bg-emerald-500/20'
+                      : 'bg-cyan-500/10 text-cyan-200 border-cyan-500/30 hover:bg-cyan-500/20'
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <KeyRound size={13} />
+                    <span>{byokConfigured ? 'API Key AI: Đã kết nối' : 'Cài đặt API Key (BYOK)'}</span>
+                  </span>
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      byokConfigured ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'
+                    }`}
+                  />
+                </button>
+              )}
 
               {/* QUICK UPGRADE BUTTON */}
               <button

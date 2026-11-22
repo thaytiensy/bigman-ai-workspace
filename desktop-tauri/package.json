@@ -4,14 +4,13 @@
   "description": "Tổ Chức Nhân Viên AI - Nền Tảng Nhân Viên AI Đa Bot (Desktop Native Wrapper)",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "node build-dist.js",
     "build": "node build-dist.js",
     "tauri": "tauri"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
-    "@tauri-apps/plugin-process": "^2.0.0",
-    "@tauri-apps/plugin-updater": "^2.0.0"
+    "@tauri-apps/plugin-process": "^2.0.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0"

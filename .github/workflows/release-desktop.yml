@@ -19,12 +19,12 @@ jobs:
           - platform: 'windows-latest'
             target: 'x86_64-pc-windows-msvc'
             target_name: 'Windows NSIS & MSI (.exe / .msi)'
-            args: '--target x86_64-pc-windows-msvc'
+            args: '--target x86_64-pc-windows-msvc --bundles nsis,msi'
 
           - platform: 'macos-latest'
             target: 'universal-apple-darwin'
             target_name: 'macOS Universal (.dmg - Apple Silicon & Intel)'
-            args: '--target universal-apple-darwin'
+            args: '--target universal-apple-darwin --bundles dmg'
 
     runs-on: ${{ matrix.platform }}
 
@@ -36,8 +36,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: 'desktop-tauri/package.json'
 
       - name: Cài đặt Rust Stable & Targets
         uses: dtolnay/rust-toolchain@stable
@@ -52,42 +50,39 @@ jobs:
       - name: Cài đặt thư viện Frontend & Build Giao diện
         working-directory: desktop-tauri
         run: |
-          npm install
+          npm install --no-audit --no-fund
           npm run build
 
       - name: Đóng gói Tauri v2 & Xuất bản GitHub Releases
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: desktop-tauri
           tagName: ${{ github.ref_name }}
           releaseName: 'Tổ Chức Nhân Viên AI Desktop v__VERSION__'
           releaseBody: |
             ## 🚀 Tổ Chức Nhân Viên AI - Bản Cài Máy Desktop Wrapper v__VERSION__
-            
+
             Phiên bản chính thức phát hành tự động qua GitHub Actions CI/CD đám mây.
-            
+
             ### 📦 Các bản cài đặt:
             - **Windows 10/11 (64-bit):** Bộ cài `.exe` (NSIS Installer) hoặc `.msi` siêu nhẹ (~15MB–25MB, RAM ~40MB).
             - **macOS (Universal):** Bộ cài `.dmg` hỗ trợ cả chip Apple Silicon (M1/M2/M3/M4) và chip Intel x86.
-            
+
             ### 🛡️ Đặc tả Kỹ thuật:
             - **Bản Cài Máy Miễn Phí (0đ):** Tối đa 2 Bot hoạt động đồng thời, 1 phòng họp, 100% BYOK lưu SQLite cục bộ.
             - **Bản Desktop Pro (1.890.000đ/máy):** Kích hoạt bản quyền qua mã phần cứng, mở khóa không giới hạn Bot và Phòng họp cục bộ.
-            - **Nâng cấp 1 chạm lên Cloud 24/7:** Xuất gói dữ liệu mã hóa AES-256-GCM đồng bộ lên nền tảng Web SaaS Cloud.
-            
+            - **Nâng cấp 1 chạm lên Cloud 24/7:** Xuất gói dữ liệu mã hóa AES-256-GCM đồng bộ lên nền tảng Web SaaS Cloud (`https://bigman-ai-workspace.vercel.app`).
+
             ---
             **Liên hệ Hỗ trợ & Kích hoạt Bản quyền:**
             - **Zalo Admin:** [0353205414](https://zalo.me/0353205414)
             - **Hộp thư:** thaytiensy@gmail.com
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
-          includeUpdaterJson: true
-          updaterJsonPrefer: 'asset'
+          includeUpdaterJson: false
 
       - name: Lưu trữ Artifacts (Dự phòng)
         uses: actions/upload-artifact@v4

@@ -11,6 +11,7 @@
  * - Cơ chế Idempotency chống kích hoạt nâng cấp trùng đơn khi Webhook gửi lại nhiều lần.
  */
 
+import crypto from "node:crypto";
 import { BRANDING } from "@/config/branding";
 import { DEFAULT_PLANS, getSupabaseAdmin, memoryStore } from "./db";
 import type { PlanTier, PaymentOrder } from "@/types/database";
@@ -241,7 +242,14 @@ export function verifySePayWebhookKey(authHeader: string | null): boolean {
   if (!authHeader) return false;
   // Header chuẩn SePay: 'Apikey <secret>' hoặc '<secret>'
   const token = authHeader.replace(/^Apikey\s+/i, "").trim();
-  return token.length > 0 && token === secretKey;
+  if (!token) return false;
+
+  const expectedBuf = Buffer.from(secretKey, "utf8");
+  const actualBuf = Buffer.from(token, "utf8");
+  if (expectedBuf.length !== actualBuf.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(expectedBuf, actualBuf);
 }
 
 /**
@@ -256,6 +264,15 @@ export async function processSePayWebhookPayment(
   orderCode?: string;
   upgradedTier?: PlanTier;
 }> {
+  // Bỏ qua giao dịch tiền ra (chỉ kích hoạt đơn với tiền vào)
+  if (payload.transferType && payload.transferType.toLowerCase() !== "in") {
+    return {
+      success: true,
+      isIdempotent: true,
+      message: "Bỏ qua giao dịch tiền ra (transferType != in).",
+    };
+  }
+
   // Tìm mã đơn hàng NVAIxxxxxx trong nội dung chuyển khoản
   const rawContent = (payload.content || payload.description || "").toUpperCase();
   const match = rawContent.match(/NVAI\d{6}/);
@@ -314,8 +331,8 @@ export async function processSePayWebhookPayment(
     const now = new Date().toISOString();
     const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // 4. Cập nhật đơn hàng thành 'paid'
-    await supabase
+    // 4. Cập nhật đơn hàng thành 'paid' với khóa nguyên tử chống race condition
+    const { data: updatedRows, error: updateErr } = await supabase
       .from("payment_orders")
       .update({
         status: "paid",
@@ -324,8 +341,23 @@ export async function processSePayWebhookPayment(
         paid_at: now,
         updated_at: now,
       })
-      .eq("id", order.id);
+      .eq("id", order.id)
+      .eq("status", "pending")
+      .select("id");
 
+    if (updateErr) {
+      throw new Error(`Lỗi cập nhật đơn thanh toán: ${updateErr.message}`);
+    }
+
+    if (!updatedRows || updatedRows.length === 0) {
+      return {
+        success: true,
+        message: `Đơn hàng ${orderCode} đã được xử lý đồng thời trước đó (Idempotent).`,
+        isIdempotent: true,
+        orderCode,
+        upgradedTier: order.plan_id,
+      };
+    }
     // 5. Nâng cấp tier của Workspace
     await supabase
       .from("workspaces")

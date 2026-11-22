@@ -22,11 +22,11 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(storage)
         .setup(|app| {
             // Thiết lập System Tray menu tiếng Việt chuẩn thương hiệu Tổ Chức Nhân Viên AI
-            let show_item = MenuItem::with_id(app, "show", "Mở Tổ Chức Nhân Viên AI", true, None::<&str>)?;
+            let show_item =
+                MenuItem::with_id(app, "show", "Mở Tổ Chức Nhân Viên AI", true, None::<&str>)?;
             let status_item = MenuItem::with_id(
                 app,
                 "status",
@@ -43,9 +43,10 @@ pub fn run() {
             )?;
             let quit_item = MenuItem::with_id(app, "quit", "Thoát ứng dụng", true, None::<&str>)?;
 
-            let menu = Menu::with_items(app, &[&show_item, &status_item, &cloud_item, &quit_item])?;
+            let menu =
+                Menu::with_items(app, &[&show_item, &status_item, &cloud_item, &quit_item])?;
 
-            let _tray = TrayIconBuilder::new()
+            let mut tray_builder = TrayIconBuilder::new()
                 .menu(&menu)
                 .tooltip("Tổ Chức Nhân Viên AI - Hệ Thống Nhân Viên AI Đa Bot")
                 .on_menu_event(|app, event| match event.id.as_ref() {
@@ -59,8 +60,13 @@ pub fn run() {
                         app.exit(0);
                     }
                     _ => {}
-                })
-                .build(app)?;
+                });
+
+            if let Some(icon) = app.default_window_icon() {
+                tray_builder = tray_builder.icon(icon.clone());
+            }
+
+            let _tray = tray_builder.build(app)?;
 
             Ok(())
         })

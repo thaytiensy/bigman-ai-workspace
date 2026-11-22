@@ -318,6 +318,23 @@ export function buildHologramAvatar(bot: Office3DBot): HologramAvatarRig {
     auraRing,
     hitTarget,
     disposeTextures: () => {
+      const disposedGeos = new Set<THREE.BufferGeometry>();
+      const disposedMats = new Set<THREE.Material>();
+      root.traverse((obj) => {
+        if (obj instanceof THREE.Mesh) {
+          if (obj.geometry && !disposedGeos.has(obj.geometry)) {
+            disposedGeos.add(obj.geometry);
+            obj.geometry.dispose();
+          }
+          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+          for (const m of mats) {
+            if (m && !disposedMats.has(m)) {
+              disposedMats.add(m);
+              m.dispose();
+            }
+          }
+        }
+      });
       screenTex.dispose();
     },
   };
