@@ -1,6 +1,6 @@
 {
   "name": "bigman-ai-workspace",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Tổ Chức Nhân Viên AI — Nền tảng Đội Ngũ Nhân Sự AI Đa Bot (Bản Cài Máy & Thuê Cloud 24/7)",
   "scripts": {
@@ -8,13 +8,18 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:seo": "node tests/live-seo-smoke.mjs --self-test",
+    "test:all": "vitest run && node tests/live-seo-smoke.mjs --self-test"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "lucide-react": "^0.511.0",
     "next": "^15.5.29",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.7",
@@ -24,6 +29,7 @@
     "eslint": "^9.27.0",
     "eslint-config-next": "^15.5.29",
     "tailwindcss": "^4.1.7",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
   }
 }

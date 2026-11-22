@@ -8,6 +8,7 @@ import {
   Cpu,
   ExternalLink,
   Laptop,
+  LayoutGrid,
   Mail,
   MessageCircle,
   ShieldCheck,
@@ -77,13 +78,14 @@ export default function HomePage() {
 
             {/* Primary CTAs */}
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-              <a
-                href="#workspace-demo"
+              <Link
+                href="/workspace"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 transition-all hover:bg-indigo-700 sm:text-base"
               >
-                Trải nghiệm Workspace trực tiếp
+                <LayoutGrid className="h-4 w-4" />
+                Dùng thử Workspace
                 <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
               <a
                 href="#bang-gia"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-900 shadow-2xs transition-colors hover:bg-slate-50 sm:text-base"

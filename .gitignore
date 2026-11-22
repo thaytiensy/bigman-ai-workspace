@@ -1,5 +1,6 @@
 # Dependencies
 /node_modules
+desktop-tauri/node_modules/
 /.pnp
 .pnp.*
 
@@ -8,12 +9,14 @@
 /out/
 /build
 
+# Rust / Tauri build artifacts
+desktop-tauri/src-tauri/target/
+desktop-tauri/src-tauri/gen/
+
 # Environment & secrets (never commit keys/tokens)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # Vercel deployment metadata
 .vercel
@@ -26,4 +29,3 @@ pnpm-debug.log*
 Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
-.env*

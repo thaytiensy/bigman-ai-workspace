@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Cloud, Laptop, MessageCircle } from "lucide-react";
+import { ArrowLeft, Cloud, Laptop, LayoutGrid, MessageCircle } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
 import { HybridComparison } from "@/components/HybridComparison";
 import { FaqSection } from "@/components/FaqSection";
@@ -18,6 +19,14 @@ export const metadata: Metadata = {
     description:
       "Nên dùng Bản Cài Máy Miễn Phí 0đ (2 Bot) hay nâng cấp Starter / Pro Team / Business Cloud chạy tự động 24/7? Xem bảng đối chiếu đầy đủ và đăng ký ngay.",
     url: `${BRAND_CONFIG.siteUrl}/so-sanh-cai-may-va-cloud`,
+    images: [
+      {
+        url: "/images/infographic-cai-may-vs-cloud.jpg",
+        width: 1200,
+        height: 1600,
+        alt: `Infographic so sánh Bản Cài Máy vs Bản Thuê Cloud 24/7 — ${BRAND_CONFIG.name}`,
+      },
+    ],
   },
 };
 
@@ -71,6 +80,59 @@ export default function CompareHybridPage() {
                 trên điện thoại (chọn BYOK hoặc gói kèm sẵn AI Credits, giảm 20% theo năm).
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* INFOGRAPHIC 3:4 SO SÁNH BẢN CÀI MÁY VS CLOUD 24/7 (ZERO CLS) */}
+      <section className="border-b border-slate-200 bg-slate-50/70 py-12 sm:py-16">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6">
+          <div className="text-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700">
+              Infographic Tổng Quan 1 Trang
+            </span>
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
+              Đối chiếu trực quan Bản Cài Máy (0đ) vs Bản Thuê Cloud 24/7
+            </h2>
+            <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-600">
+              Lưu hoặc chia sẻ nhanh cho đội ngũ của bạn để chọn đúng mô hình vận hành AI đa bot
+              tiết kiệm nhất.
+            </p>
+          </div>
+
+          <figure className="mx-auto mt-8 max-w-2xl">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 p-2 shadow-2xl shadow-slate-900/15">
+              <Image
+                src="/images/infographic-cai-may-vs-cloud.jpg"
+                alt="Infographic Tổ Chức Nhân Viên AI — So sánh Mô hình Kép Bản Cài Máy 0đ và Bản Thuê Cloud 24/7 từ 199.000đ/tháng"
+                width={1200}
+                height={1600}
+                priority
+                className="block aspect-[3/4] h-auto w-full rounded-2xl object-contain"
+              />
+            </div>
+            <figcaption className="mt-3 text-center text-xs text-slate-500">
+              Infographic chính thức của {BRAND_CONFIG.name} · Zalo hỗ trợ{" "}
+              {BRAND_CONFIG.contact.zaloPhone} · Email {BRAND_CONFIG.contact.email}
+            </figcaption>
+          </figure>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/workspace"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Dùng thử Workspace ngay
+            </Link>
+            <a
+              href="/images/infographic-cai-may-vs-cloud.jpg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-100"
+            >
+              Xem ảnh Infographic độ phân giải gốc
+            </a>
           </div>
         </div>
       </section>

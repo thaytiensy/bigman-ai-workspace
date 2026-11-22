@@ -1,0 +1,30 @@
+[package]
+name = "tochucnhanvienai-desktop"
+version = "1.0.0"
+description = "Tổ Chức Nhân Viên AI - Nền Tảng Nhân Viên AI Đa Bot (Desktop Native Wrapper)"
+authors = ["Tổ Chức Nhân Viên AI <thaytiensy@gmail.com>"]
+edition = "2021"
+
+[lib]
+name = "tochucnhanvienai_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0", features = ["tray-icon"] }
+tauri-plugin-updater = "2.0.0"
+tauri-plugin-process = "2.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rusqlite = { version = "0.31", features = ["bundled"] }
+aes-gcm = "0.10"
+sha2 = "0.10"
+base64 = "0.22"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.8", features = ["v4", "serde"] }
+dirs = "5.0"
+tokio = { version = "1.38", features = ["full"] }
+thiserror = "1.0"
+rand = "0.8"

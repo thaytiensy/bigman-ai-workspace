@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, MessageCircle, Sparkles } from "lucide-react";
+import { Menu, X, MessageCircle, Sparkles, LayoutGrid } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
 
 const NAV_LINKS = [
-  { href: "/#workspace-demo", label: "Workspace" },
+  { href: "/workspace", label: "Dùng thử Workspace" },
   { href: "/kho-doi-bot", label: "Kho Đội Bot" },
   { href: "/so-sanh-cai-may-va-cloud", label: "Cài Máy vs Cloud" },
   { href: "/blog", label: "Kiến thức SEO" },
@@ -51,11 +51,11 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2.5 lg:flex">
           <Link
-            href="/#dang-ky"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+            href="/workspace"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:border-indigo-300 hover:bg-indigo-100"
           >
-            <Sparkles className="h-4 w-4 text-indigo-600" />
-            Nhận Bản Cài Máy
+            <LayoutGrid className="h-4 w-4 text-indigo-600" />
+            Dùng thử Workspace
           </Link>
           <a
             href={BRAND_CONFIG.contact.zaloUrl}
@@ -94,6 +94,14 @@ export function Navbar() {
             ))}
           </nav>
           <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4">
+            <Link
+              href="/workspace"
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700"
+            >
+              <LayoutGrid className="h-4 w-4 text-indigo-600" />
+              Dùng thử Workspace
+            </Link>
             <Link
               href="/#dang-ky"
               onClick={() => setMobileOpen(false)}

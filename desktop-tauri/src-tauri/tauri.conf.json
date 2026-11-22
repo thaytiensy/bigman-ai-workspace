@@ -1,0 +1,69 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/v2/crates/tauri-cli/schema.json",
+  "productName": "Tổ Chức Nhân Viên AI",
+  "version": "1.0.0",
+  "identifier": "vn.tochucnhanvienai.desktop",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Tổ Chức Nhân Viên AI - Nền Tảng Nhân Viên AI Đa Bot",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 960,
+        "minHeight": 640,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "trayIcon": {
+      "iconPath": "icons/icon.png",
+      "tooltip": "Tổ Chức Nhân Viên AI - Hệ Thống Trợ Lý AI Chuyên Nghiệp"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi", "dmg"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "Tổ Chức Nhân Viên AI",
+    "copyright": "Bản quyền © 2026 Tổ Chức Nhân Viên AI. Hotline: Zalo 0353205414 - Email: thaytiensy@gmail.com",
+    "category": "Productivity",
+    "shortDescription": "Nền tảng Nhân viên AI Đa Bot mô hình Kép",
+    "longDescription": "Tổ Chức Nhân Viên AI - Nền tảng AI Đa Bot thương mại mô hình KÉP (Bản Cài Máy Desktop + Web SaaS Cloud 24/7). Quản lý và vận hành đội ngũ nhân viên AI tự động cho cá nhân và doanh nghiệp. Hỗ trợ BYOK, phòng họp đa bot, sao lưu đám mây 1 chạm.",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      },
+      "wix": {
+        "language": "en-US"
+      }
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.15"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/thaytiensy/bigman-ai-workspace/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXkKUldSYUNiYTNQekdFZE13aE5VdnlqN1ZlcTFoc0xRME80aFFwVFNFUG95a0gxd2V5bE81T1g2V2QK"
+    }
+  }
+}

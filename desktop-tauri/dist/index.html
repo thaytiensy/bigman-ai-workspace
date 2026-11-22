@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tổ Chức Nhân Viên AI - Nền Tảng Nhân Viên AI Đa Bot</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 24px;
+    }
+    .brand-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      font-size: 12px;
+      background: var(--primary);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .contact-info {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+    .contact-info a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .quota-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #3b82f6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .quota-info h3 { font-size: 16px; margin-bottom: 6px; color: #ffffff; }
+    .quota-badges { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+    .stat-badge {
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid var(--primary);
+      color: #93c5fd;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-secondary { background: #334155; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-upgrade { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 700; }
+    .btn-upgrade:hover { opacity: 0.95; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: #475569; }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .bot-name { font-size: 16px; font-weight: 600; color: #ffffff; }
+    .bot-dept { font-size: 12px; color: var(--text-muted); }
+    .status-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+    .status-active { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .status-inactive { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .bot-prompt { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; min-height: 48px; }
+    .footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--card-border); }
+    .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; display: none; }
+    .alert-error { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #fca5a5; }
+    .alert-success { background: rgba(34, 197, 94, 0.15); border: 1px solid var(--success); color: #86efac; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand-title">
+      <span>Tổ Chức Nhân Viên AI</span>
+      <span class="brand-badge">Bản Cài Máy (Desktop)</span>
+    </div>
+    <div class="contact-info">
+      <div>Hotline / Zalo: <a href="https://zalo.me/0353205414" target="_blank">0353205414</a></div>
+      <div>Hộp thư hỗ trợ: <a href="mailto:thaytiensy@gmail.com">thaytiensy@gmail.com</a></div>
+    </div>
+  </div>
+
+  <div id="alertBox" class="alert"></div>
+
+  <div class="quota-card">
+    <div class="quota-info">
+      <h3 id="tierTitle">Bản Cài Máy Miễn Phí (Desktop Free - 0đ)</h3>
+      <p style="font-size: 13px; color: var(--text-muted);">Khóa cứng tầng Native Rust: Chạy BYOK cục bộ, tối đa 2 Bot hoạt động, 1 phòng họp.</p>
+      <div class="quota-badges">
+        <span class="stat-badge" id="botsQuota">Đang kích hoạt: 2 / 2 Bot</span>
+        <span class="stat-badge" id="roomsQuota">Phòng họp: 1 / 1</span>
+        <span class="stat-badge" id="machineIdBadge">Mã thiết bị: ...</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-secondary" onclick="exportCloudPayload()">Xuất Gói Cloud (AES-256)</button>
+      <button class="btn btn-upgrade" onclick="openLicensePrompt()">Kích Hoạt Desktop Pro</button>
+    </div>
+  </div>
+
+  <h2 style="font-size: 18px; margin-bottom: 16px; color: #f1f5f9;">Đội Ngũ Nhân Viên AI Cục Bộ</h2>
+  <div class="grid" id="botsGrid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="bot-name">Dev</div>
+          <div class="bot-dept">Ship Software Safely</div>
+        </div>
+        <span class="status-pill status-active">Đang hoạt động</span>
+      </div>
+      <div class="bot-prompt">Kỹ sư Lập trình: Đọc mã nguồn, sửa lỗi, chạy kiểm thử và giải thích thay đổi.</div>
+      <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" disabled>Bot Mặc Định</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="bot-name">Orbit</div>
+          <div class="bot-dept">General</div>
+        </div>
+        <span class="status-pill status-active">Đang hoạt động</span>
+      </div>
+      <div class="bot-prompt">Giám sát & Điều phối: Quản lý phân công công việc và kết nối giữa các bot.</div>
+      <button class="btn btn-secondary" style="width: 100%; font-size: 12px;" disabled>Bot Mặc Định</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="bot-name">Listing Pro</div>
+          <div class="bot-dept">Marketing & Sàn TMĐT</div>
+        </div>
+        <span class="status-pill status-inactive">Tạm ngưng</span>
+      </div>
+      <div class="bot-prompt">Chuyên gia SEO Website Top Google, TikTok Shop, Shopee và mạng xã hội.</div>
+      <button class="btn" style="width: 100%; font-size: 12px;" onclick="tryActivateBot('Listing Pro')">Bật Hoạt Động</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="bot-name">Echo</div>
+          <div class="bot-dept">General</div>
+        </div>
+        <span class="status-pill status-inactive">Tạm ngưng</span>
+      </div>
+      <div class="bot-prompt">Chuốt văn phong tự nhiên, cảm xúc, chuẩn mực ngữ cảnh kinh doanh Việt Nam.</div>
+      <button class="btn" style="width: 100%; font-size: 12px;" onclick="tryActivateBot('Echo')">Bật Hoạt Động</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Bản quyền &copy; 2026 <strong>Tổ Chức Nhân Viên AI</strong>. Mọi quyền được bảo lưu.<br>
+    Liên hệ tư vấn bản quyền Desktop Pro (1.890.000đ/máy) hoặc thuê Cloud 24/7 qua Zalo: <strong>0353205414</strong> | Email: <strong>thaytiensy@gmail.com</strong>
+  </div>
+
+  <script>
+    function showAlert(msg, isError) {
+      const el = document.getElementById('alertBox');
+      el.textContent = msg;
+      el.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 6000);
+    }
+
+    async function tryActivateBot(botName) {
+      if (window.__TAURI__) {
+        try {
+          await window.__TAURI__.core.invoke('set_bot_active', { botId: botName, active: true });
+          showAlert('Đã kích hoạt ' + botName, false);
+        } catch (err) {
+          showAlert(err, true);
+        }
+      } else {
+        showAlert('Khóa cứng tầng Rust: Bản Desktop Free đã kích hoạt 2/2 Bot (Dev & Orbit). Vui lòng nâng cấp Desktop Pro (1.890.000đ) hoặc lên Cloud để mở khóa không giới hạn!', true);
+      }
+    }
+
+    async function openLicensePrompt() {
+      const key = prompt('Nhập mã bản quyền Desktop Pro (Định dạng TNVA-PRO-XXXX-XXXX-XXXX):\n(Liên hệ Zalo 0353205414 để mua license)');
+      if (key && window.__TAURI__) {
+        try {
+          const res = await window.__TAURI__.core.invoke('activate_license_key', { key: key.trim() });
+          showAlert('Kích hoạt thành công Desktop Pro! Đã mở khóa không giới hạn Bot và Phòng họp.', false);
+          document.getElementById('tierTitle').textContent = res.tier_name;
+        } catch (err) {
+          showAlert('Lỗi kích hoạt: ' + err, true);
+        }
+      } else if (key) {
+        showAlert('Mã bản quyền: ' + key + ' (Chạy trong môi trường Tauri Native để kích hoạt SQLite).', false);
+      }
+    }
+
+    async function exportCloudPayload() {
+      if (window.__TAURI__) {
+        try {
+          const pkg = await window.__TAURI__.core.invoke('export_cloud_sync_package', { passphrase: null });
+          showAlert('Đã xuất gói dữ liệu đám mây (AES-256-GCM, Checksum: ' + pkg.checksum_sha256.substring(0, 16) + '...). Sẵn sàng nâng cấp 1 chạm lên Cloud!', false);
+        } catch (err) {
+          showAlert('Lỗi xuất dữ liệu: ' + err, true);
+        }
+      } else {
+        showAlert('Đã sinh payload mã hóa AES-256-GCM mô phỏng: 100% hồ sơ bot + bộ nhớ cục bộ sẵn sàng đẩy lên /api/v1/migration/desktop-import.', false);
+      }
+    }
+  </script>
+</body>
+</html>

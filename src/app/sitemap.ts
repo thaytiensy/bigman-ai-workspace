@@ -14,6 +14,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: `${BRAND_CONFIG.siteUrl}/workspace`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
+    {
       url: `${BRAND_CONFIG.siteUrl}/so-sanh-cai-may-va-cloud`,
       lastModified: now,
       changeFrequency: "weekly",
