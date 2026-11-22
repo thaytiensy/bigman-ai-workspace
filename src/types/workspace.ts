@@ -6,20 +6,26 @@ export type WorkspaceMode = 'desktop_free' | 'cloud_247';
 
 export type WorkspaceTab = 'office3d' | 'roster' | 'room' | 'routines';
 
-export type BotDepartment =
-  | 'Tất cả'
+/**
+ * Hỗ trợ 4 phòng ban chuẩn mặc định + mở rộng không giới hạn tên phòng ban tùy biến.
+ */
+export type DefaultBotDepartment =
   | 'Shop TMĐT & TikTok'
   | 'Marketing & SEO'
   | 'Lập Trình & QA'
   | 'Vận Hành & CSKH';
+
+export type BotDepartment = 'Tất cả' | DefaultBotDepartment | (string & {});
 
 export interface Bot {
   id: string;
   name: string;
   codeName: string;
   roleTitle: string;
+  roleBadge?: string;
   department: Exclude<BotDepartment, 'Tất cả'>;
   avatar: string;
+  avatarStyle?: 'female' | 'male' | 'android';
   badgeColor: string;
   status: 'ready' | 'working' | 'offline';
   description: string;

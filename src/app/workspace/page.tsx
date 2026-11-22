@@ -69,9 +69,19 @@ export default function WorkspacePage() {
     );
   };
 
-  // Recruit new AI bot directly from 3D Office
+  // Recruit new AI bot directly from 3D Office (unlimited expansion)
   const handleAddBot = (newBot: Bot) => {
     setBots((prev) => [...prev, newBot]);
+  };
+
+  // Update full bot metadata (name, roleBadge, avatarStyle, model, department)
+  const handleUpdateBot = (botId: string, patch: Partial<Bot>) => {
+    setBots((prev) => prev.map((b) => (b.id === botId ? { ...b, ...patch } : b)));
+  };
+
+  // Remove custom/unneeded bot cleanly
+  const handleRemoveBot = (botId: string) => {
+    setBots((prev) => prev.filter((b) => b.id !== botId));
   };
 
   // Update bot department dynamically from 3D Office
@@ -97,9 +107,7 @@ export default function WorkspacePage() {
   // When upgrading to Cloud is successful
   const handleSuccessUpgrade = () => {
     setWorkspaceMode('cloud_247');
-    setBots((prev) =>
-      prev.map((b, idx) => (idx < 8 ? { ...b, isActive: true } : b))
-    );
+    setBots((prev) => prev.map((b) => ({ ...b, isActive: true })));
   };
 
   return (
@@ -118,8 +126,11 @@ export default function WorkspacePage() {
         <HologramOffice3D
           bots={bots}
           workspaceMode={workspaceMode}
+          byokConfigured={byokConfigured}
           onToggleBotActive={handleToggleBotActive}
           onAddBot={handleAddBot}
+          onUpdateBot={handleUpdateBot}
+          onRemoveBot={handleRemoveBot}
           onUpdateBotDepartment={handleUpdateBotDepartment}
           onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
           onSelectBotForChat={handleSelectBotForChat}
@@ -145,7 +156,6 @@ export default function WorkspacePage() {
           onOpenByokModal={() => setIsByokModalOpen(true)}
         />
       )}
-
       {activeTab === 'routines' && (
         <RoutinesPanel
           routines={routines}
@@ -155,14 +165,11 @@ export default function WorkspacePage() {
         />
       )}
 
-      {/* VietQR Upgrade & Payment Modal */}
       <UpgradeVietQrModal
         isOpen={isUpgradeModalOpen}
         onClose={() => setIsUpgradeModalOpen(false)}
         onSuccessUpgrade={handleSuccessUpgrade}
       />
-
-      {/* BYOK AI API Key Modal */}
       <ByokSettingsModal
         isOpen={isByokModalOpen}
         settings={byokSettings}

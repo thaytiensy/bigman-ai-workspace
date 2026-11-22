@@ -30,13 +30,8 @@ export const BotRosterGrid: React.FC<BotRosterGridProps> = ({
   const [selectedDept, setSelectedDept] = useState<BotDepartment>('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const departments: BotDepartment[] = [
-    'Tất cả',
-    'Shop TMĐT & TikTok',
-    'Marketing & SEO',
-    'Lập Trình & QA',
-    'Vận Hành & CSKH',
-  ];
+  const dynamicDepts = Array.from(new Set(bots.map((b) => b.department)));
+  const departments: BotDepartment[] = ['Tất cả', ...dynamicDepts];
 
   const activeBots = bots.filter((b) => b.isActive);
   const activeCount = activeBots.length;
