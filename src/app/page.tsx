@@ -83,7 +83,7 @@ export default function HomePage() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 transition-all hover:bg-indigo-700 sm:text-base"
               >
                 <LayoutGrid className="h-4 w-4" />
-                Dùng thử Workspace
+                Vào Văn Phòng 3D Hologram
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a

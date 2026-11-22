@@ -215,7 +215,7 @@ async function runSmokeTests(baseUrl) {
   try {
     const robots = await fetchPage(`${baseUrl}/robots.txt`);
     const validRobots =
-      robots.text.includes('User-agent:') && robots.text.toLowerCase().includes('sitemap:');
+      robots.text.toLowerCase().includes('user-agent:') && robots.text.toLowerCase().includes('sitemap:');
     report(`Tệp robots.txt chuẩn SEO (chứa User-agent & Sitemap)`, validRobots);
   } catch (err) {
     report('Kiểm tra robots.txt', false, err.message);

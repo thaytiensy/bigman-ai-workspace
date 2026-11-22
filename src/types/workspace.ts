@@ -4,7 +4,7 @@
 
 export type WorkspaceMode = 'desktop_free' | 'cloud_247';
 
-export type WorkspaceTab = 'roster' | 'room' | 'routines';
+export type WorkspaceTab = 'office3d' | 'roster' | 'room' | 'routines';
 
 export type BotDepartment =
   | 'Tất cả'

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import {
+  Box,
   Users,
   MessageSquareCode,
   CalendarClock,
@@ -44,6 +45,14 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const navigationItems = [
+    {
+      id: 'office3d' as WorkspaceTab,
+      label: 'Văn Phòng 3D Hologram',
+      icon: Box,
+      badge: '3D Live',
+      badgeColor: 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40',
+      desc: 'Bàn họp tròn & chia phòng ban 3D',
+    },
     {
       id: 'roster' as WorkspaceTab,
       label: 'Đội Ngũ Nhân Viên AI',

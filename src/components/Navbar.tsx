@@ -6,7 +6,7 @@ import { Menu, X, MessageCircle, Sparkles, LayoutGrid } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
 
 const NAV_LINKS = [
-  { href: "/workspace", label: "Dùng thử Workspace" },
+  { href: "/workspace", label: "Văn Phòng 3D" },
   { href: "/kho-doi-bot", label: "Kho Đội Bot" },
   { href: "/so-sanh-cai-may-va-cloud", label: "Cài Máy vs Cloud" },
   { href: "/blog", label: "Kiến thức SEO" },
@@ -55,7 +55,7 @@ export function Navbar() {
             className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:border-indigo-300 hover:bg-indigo-100"
           >
             <LayoutGrid className="h-4 w-4 text-indigo-600" />
-            Dùng thử Workspace
+            Vào Văn Phòng 3D
           </Link>
           <a
             href={BRAND_CONFIG.contact.zaloUrl}
@@ -100,7 +100,7 @@ export function Navbar() {
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700"
             >
               <LayoutGrid className="h-4 w-4 text-indigo-600" />
-              Dùng thử Workspace
+              Vào Văn Phòng 3D
             </Link>
             <Link
               href="/#dang-ky"
