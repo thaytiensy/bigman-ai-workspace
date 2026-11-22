@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   CheckCircle2,
   Cloud,
   Cpu,
@@ -13,6 +15,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
+import { getAllBlogPosts, HERO_IMAGE } from "@/lib/blog";
 import { JsonLd } from "@/components/JsonLd";
 import { HomeClient } from "@/components/HomeClient";
 import { HybridComparison } from "@/components/HybridComparison";
@@ -46,6 +49,8 @@ const VALUE_PILLARS = [
 ];
 
 export default function HomePage() {
+  const blogPosts = getAllBlogPosts();
+
   return (
     <>
       <JsonLd includeFaq />
@@ -87,9 +92,27 @@ export default function HomePage() {
                 Xem bảng giá Cài Máy vs Cloud
               </a>
             </div>
+          </div>
 
-            {/* Quick Proof Strip */}
-            <div className="mt-9 grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 text-left shadow-sm sm:grid-cols-4 sm:gap-4 sm:p-5">
+          {/* Official Brand Hero Showcase (Zero CLS) */}
+          <div className="mx-auto mt-10 max-w-5xl">
+            <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-slate-950 p-1.5 shadow-2xl shadow-slate-900/15 sm:p-2">
+              <div className="overflow-hidden rounded-2xl bg-slate-950">
+                <Image
+                  src={HERO_IMAGE.src}
+                  alt={HERO_IMAGE.alt}
+                  width={HERO_IMAGE.width}
+                  height={HERO_IMAGE.height}
+                  priority
+                  className="block aspect-[1376/768] h-auto w-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Proof Strip */}
+          <div className="mx-auto mt-8 max-w-5xl">
+            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 text-left shadow-sm sm:grid-cols-4 sm:gap-4 sm:p-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Kho dựng sẵn
@@ -206,6 +229,56 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+
+          {/* Pillar SEO Knowledge Hub */}
+          {blogPosts.length > 0 && (
+            <div className="mt-8 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-6 sm:p-8">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Kiến thức SEO &amp; Cẩm nang thực chiến
+                  </span>
+                  <h2 className="mt-1.5 text-xl font-extrabold text-slate-950 sm:text-2xl">
+                    Chuỗi bài chuyên sâu từ {BRAND_CONFIG.name}
+                  </h2>
+                </div>
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-700 hover:text-indigo-900"
+                >
+                  Xem toàn bộ mục Kiến thức SEO
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                {blogPosts.map((post, idx) => (
+                  <Link
+                    key={post.slug}
+                    href={`/blog/${post.slug}`}
+                    className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-2xs transition-all hover:border-indigo-300 hover:shadow-sm"
+                  >
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">
+                        Pillar #{idx + 1} · {post.category}
+                      </span>
+                      <h3 className="mt-2 text-base font-bold leading-snug text-slate-950 group-hover:text-indigo-700">
+                        {post.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600">
+                        {post.metaDescription}
+                      </p>
+                    </div>
+                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-indigo-600">
+                      Đọc bài viết ({post.readingTimeMinutes} phút)
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

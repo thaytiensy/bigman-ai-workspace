@@ -51,6 +51,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/blog" className="font-semibold text-sky-300 transition-colors hover:text-white">
+                  Kiến thức SEO (/blog)
+                </Link>
+              </li>
+              <li>
                 <Link href="/#bang-gia" className="transition-colors hover:text-white">
                   Bảng giá &amp; Nâng cấp 24/7
                 </Link>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import { BRAND_CONFIG } from "@/config/brand";
+import { HERO_IMAGE } from "@/lib/blog";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { FloatingContact } from "@/components/FloatingContact";
@@ -40,11 +41,20 @@ export const metadata: Metadata = {
     siteName: BRAND_CONFIG.name,
     title: BRAND_CONFIG.seo.defaultTitle,
     description: BRAND_CONFIG.seo.description,
+    images: [
+      {
+        url: HERO_IMAGE.src,
+        width: HERO_IMAGE.width,
+        height: HERO_IMAGE.height,
+        alt: HERO_IMAGE.alt,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: BRAND_CONFIG.seo.defaultTitle,
     description: BRAND_CONFIG.seo.description,
+    images: [HERO_IMAGE.src],
   },
   robots: {
     index: true,

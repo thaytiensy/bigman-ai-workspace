@@ -6,11 +6,11 @@ import { Menu, X, MessageCircle, Sparkles } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
 
 const NAV_LINKS = [
-  { href: "/#workspace-demo", label: "Trải nghiệm Workspace" },
-  { href: "/kho-doi-bot", label: "4 Kho Đội Bot" },
+  { href: "/#workspace-demo", label: "Workspace" },
+  { href: "/kho-doi-bot", label: "Kho Đội Bot" },
   { href: "/so-sanh-cai-may-va-cloud", label: "Cài Máy vs Cloud" },
+  { href: "/blog", label: "Kiến thức SEO" },
   { href: "/#bang-gia", label: "Bảng giá" },
-  { href: "/#faq", label: "FAQ" },
 ];
 
 export function Navbar() {
@@ -37,7 +37,7 @@ export function Navbar() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Điều hướng chính">
+        <nav className="hidden items-center gap-5 lg:flex" aria-label="Điều hướng chính">
           {NAV_LINKS.map((item) => (
             <Link
               key={item.href}
@@ -49,7 +49,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2.5 md:flex">
+        <div className="hidden items-center gap-2.5 lg:flex">
           <Link
             href="/#dang-ky"
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
@@ -71,7 +71,7 @@ export function Navbar() {
         <button
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 lg:hidden"
           aria-label={mobileOpen ? "Đóng menu" : "Mở menu điều hướng"}
           aria-expanded={mobileOpen}
         >
@@ -80,7 +80,7 @@ export function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white px-4 pb-5 pt-3 shadow-lg md:hidden">
+        <div className="border-t border-slate-200 bg-white px-4 pb-5 pt-3 shadow-lg lg:hidden">
           <nav className="flex flex-col gap-1" aria-label="Điều hướng di động">
             {NAV_LINKS.map((item) => (
               <Link
