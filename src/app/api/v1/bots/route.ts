@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertCanActivateBot, QuotaExceededError } from '@/lib/server/quota-guard';
 import { getSupabaseAdmin, memoryStore } from '@/lib/server/db';
+import { verifyOwnerPasskey } from '@/lib/ownerAccess';
 import type { Bot } from '@/types/database';
 
 export async function GET(req: NextRequest) {
@@ -68,8 +69,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // CHỐT CHẶN QUOTA GUARD PHÍA SERVER: Kiểm tra giới hạn số Bot hoạt động
-    await assertCanActivateBot(workspaceId);
+    const isOwnerRequest = verifyOwnerPasskey(req.headers.get('x-owner-key'));
+
+    // CHỐT CHẶN QUOTA GUARD PHÍA SERVER: Kiểm tra giới hạn số Bot hoạt động (bỏ qua nếu có mã Chủ ứng dụng hợp lệ)
+    if (!isOwnerRequest) {
+      await assertCanActivateBot(workspaceId);
+    }
 
     const supabase = getSupabaseAdmin();
 

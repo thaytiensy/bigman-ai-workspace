@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkspaceEntitlements } from '@/lib/server/quota-guard';
-import { getSupabaseAdmin, memoryStore } from '@/lib/server/db';
+import { DEFAULT_PLANS, getSupabaseAdmin, memoryStore } from '@/lib/server/db';
+import { verifyOwnerPasskey } from '@/lib/ownerAccess';
 import type { Workspace } from '@/types/database';
 
 export async function GET(req: NextRequest) {
@@ -16,6 +17,23 @@ export async function GET(req: NextRequest) {
     }
 
     const entitlements = await getWorkspaceEntitlements(workspaceId);
+    const isOwnerRequest = verifyOwnerPasskey(req.headers.get('x-owner-key'));
+
+    if (isOwnerRequest) {
+      return NextResponse.json({
+        success: true,
+        isOwnerUnlimited: true,
+        entitlements: {
+          ...entitlements,
+          tier: 'business_byok',
+          plan: DEFAULT_PLANS.business_byok,
+          canAddBot: true,
+          canCreateRoom: true,
+          canUseCloudCron: true,
+        },
+      });
+    }
+
     return NextResponse.json({ success: true, entitlements });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Lỗi hệ thống';
@@ -35,6 +53,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const isOwnerRequest = verifyOwnerPasskey(req.headers.get('x-owner-key'));
+    const tier: Workspace['tier'] = isOwnerRequest ? 'business_byok' : 'desktop_free';
+
     const supabase = getSupabaseAdmin();
     const resolvedOwnerId = ownerId || '00000000-0000-0000-0000-000000000001';
 
@@ -45,7 +66,7 @@ export async function POST(req: NextRequest) {
           name,
           slug,
           owner_id: resolvedOwnerId,
-          tier: 'desktop_free',
+          tier,
         })
         .select('*')
         .single();
@@ -64,7 +85,7 @@ export async function POST(req: NextRequest) {
       name,
       slug,
       owner_id: resolvedOwnerId,
-      tier: 'desktop_free',
+      tier,
       is_active: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

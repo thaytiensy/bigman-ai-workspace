@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Plus, X } from 'lucide-react';
+import { Crown, Plus, X } from 'lucide-react';
 import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
 import { BotRosterGrid } from '@/components/workspace/BotRosterGrid';
 import { MeetingRoomChat } from '@/components/workspace/MeetingRoomChat';
@@ -52,6 +52,11 @@ import type {
   WorkspaceUiTheme,
 } from '@/types/workspace';
 import { BRANDING } from '@/config/branding';
+import {
+  clearOwnerAccess,
+  resolveOwnerAccessFromUrl,
+  saveOwnerAccess,
+} from '@/lib/ownerAccess';
 
 const HologramOffice3D = dynamic(
   () => import('@/components/workspace/HologramOffice3D').then((m) => m.HologramOffice3D),
@@ -69,6 +74,8 @@ const HologramOffice3D = dynamic(
 );
 
 export default function WorkspacePage() {
+  const [isOwnerUnlimited, setIsOwnerUnlimited] = useState(false);
+  const [ownerToast, setOwnerToast] = useState<string | null>(null);
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('desktop_free');
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('office3d');
   const [uiTheme, setUiTheme] = useState<WorkspaceUiTheme>('light');
@@ -103,6 +110,21 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     setByokSettings(loadByokSettings());
+
+    // 1. Check creator / owner unlimited access (URL param or persistent localStorage)
+    const { isOwner, justActivated } = resolveOwnerAccessFromUrl();
+    const initialMode: WorkspaceMode = isOwner ? 'cloud_247' : 'desktop_free';
+    if (isOwner) {
+      setIsOwnerUnlimited(true);
+      setWorkspaceMode('cloud_247');
+      if (justActivated) {
+        setOwnerToast(
+          'Đã kích hoạt Quyền Chủ Ứng Dụng — Mở khóa toàn bộ không giới hạn và đã lưu vĩnh viễn trên trình duyệt này.'
+        );
+      }
+    }
+
+    // 2. Restore tab from query params
     try {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
@@ -120,24 +142,77 @@ export default function WorkspacePage() {
     } catch {
       // Ignore invalid search params
     }
+
+    // 3. Restore industry template bots/routines with the resolved mode
+    let restoredCustomIndustry = false;
     try {
       const raw = window.localStorage.getItem(ORG_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as { activeIndustryId?: string };
         if (parsed.activeIndustryId && parsed.activeIndustryId !== DEFAULT_INDUSTRY_ID) {
           const tpl = getIndustryTemplateById(parsed.activeIndustryId);
-          const built = buildWorkspaceFromIndustryTemplate(tpl, 'desktop_free');
+          const built = buildWorkspaceFromIndustryTemplate(tpl, initialMode);
           setBots(built.bots);
           setRoutines(built.routines);
+          restoredCustomIndustry = true;
         }
       }
     } catch {
       // Ignore invalid localStorage
     }
+
+    if (isOwner && !restoredCustomIndustry) {
+      setBots((prev) => prev.map((b) => ({ ...b, isActive: true })));
+    }
   }, []);
+
+  useEffect(() => {
+    if (!ownerToast) return;
+    const timer = window.setTimeout(() => setOwnerToast(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [ownerToast]);
 
   const activeBotsCount = bots.filter((b) => b.isActive).length;
   const byokConfigured = Boolean(byokSettings.apiKey.trim().length >= 10);
+
+  const handleToggleMode = (mode: WorkspaceMode) => {
+    setWorkspaceMode(mode);
+    if (mode === 'cloud_247') {
+      setBots((prev) => prev.map((b) => ({ ...b, isActive: true })));
+    } else {
+      setBots((prev) =>
+        prev.map((b, idx) => ({
+          ...b,
+          isActive: idx < BRANDING.system.desktopMaxFreeBots,
+        }))
+      );
+    }
+  };
+
+  const handleActivateOwner = (passkey: string): boolean => {
+    if (!saveOwnerAccess(passkey)) return false;
+    setIsOwnerUnlimited(true);
+    setWorkspaceMode('cloud_247');
+    setBots((prev) => prev.map((b) => ({ ...b, isActive: true })));
+    setIsUpgradeModalOpen(false);
+    setOwnerToast(
+      'Đã mở Quyền Chủ Ứng Dụng — Toàn bộ bot, phòng ban & lịch Cloud 24/7 đã được mở không giới hạn.'
+    );
+    return true;
+  };
+
+  const handleSignOutOwner = () => {
+    clearOwnerAccess();
+    setIsOwnerUnlimited(false);
+    setWorkspaceMode('desktop_free');
+    setBots((prev) =>
+      prev.map((b, idx) => ({
+        ...b,
+        isActive: idx < BRANDING.system.desktopMaxFreeBots,
+      }))
+    );
+    setOwnerToast('Đã thoát Quyền Chủ Ứng Dụng trên trình duyệt này (quay về giao diện khách).');
+  };
 
   const handleToggleBotActive = (botId: string) => {
     const targetBot = bots.find((b) => b.id === botId);
@@ -261,7 +336,9 @@ export default function WorkspacePage() {
       activeTab={activeTab}
       onTabChange={setActiveTab}
       workspaceMode={workspaceMode}
-      onToggleMode={setWorkspaceMode}
+      onToggleMode={handleToggleMode}
+      isOwnerUnlimited={isOwnerUnlimited}
+      onSignOutOwner={handleSignOutOwner}
       uiTheme={uiTheme}
       onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
       byokConfigured={byokConfigured}
@@ -279,6 +356,21 @@ export default function WorkspacePage() {
       onRequestDeleteDepartment={(deptId) => org.deleteDepartment(deptId)}
       onRequestAddBot={handleOpenAddBotModal}
     >
+      {ownerToast && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-md rounded-2xl bg-slate-900/95 border border-emerald-400/50 text-emerald-100 px-4 py-3 shadow-2xl backdrop-blur-md flex items-start gap-3 text-xs">
+          <Crown size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="leading-relaxed flex-1">{ownerToast}</div>
+          <button
+            type="button"
+            onClick={() => setOwnerToast(null)}
+            aria-label="Đóng thông báo"
+            className="text-slate-400 hover:text-white"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {activeTab === 'office3d' && (
         <HologramOffice3D
           bots={bots}
@@ -684,6 +776,7 @@ export default function WorkspacePage() {
         isOpen={isUpgradeModalOpen}
         onClose={() => setIsUpgradeModalOpen(false)}
         onSuccessUpgrade={handleSuccessUpgrade}
+        onActivateOwner={handleActivateOwner}
       />
 
       <ByokSettingsModal

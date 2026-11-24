@@ -16,6 +16,7 @@ import {
   Laptop,
   ArrowLeft,
   MessageCircle,
+  KeyRound,
 } from 'lucide-react';
 import { PRICING_PLANS } from '@/data/mockWorkspaceData';
 import { BRANDING } from '@/config/branding';
@@ -25,6 +26,7 @@ interface UpgradeVietQrModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccessUpgrade: () => void;
+  onActivateOwner?: (passkey: string) => boolean;
 }
 
 const VIETQR_BANK_BIN = (process.env.NEXT_PUBLIC_VIETQR_BANK_BIN || '').trim();
@@ -41,6 +43,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
   isOpen,
   onClose,
   onSuccessUpgrade,
+  onActivateOwner,
 }) => {
   const [billingCycle, setBillingCycle] = useState<PricingBillingCycle>('monthly');
   const [billingMode, setBillingMode] = useState<PricingBillingMode>('byok');
@@ -50,6 +53,9 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(900); // 15 minutes
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showOwnerUnlock, setShowOwnerUnlock] = useState(false);
+  const [ownerKeyInput, setOwnerKeyInput] = useState('');
+  const [ownerKeyError, setOwnerKeyError] = useState<string | null>(null);
 
   // Reset step when modal opens
   useEffect(() => {
@@ -57,6 +63,9 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
       setStep('select');
       setCountdown(900);
       setIsVerifying(false);
+      setShowOwnerUnlock(false);
+      setOwnerKeyInput('');
+      setOwnerKeyError(null);
       setOrderCode(`NVAI${Math.floor(100000 + Math.random() * 900000)}`);
     }
   }, [isOpen]);
@@ -139,6 +148,18 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
       setStep('success');
       onSuccessUpgrade();
     }, 1000);
+  };
+
+  const handleOwnerKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onActivateOwner) return;
+    const ok = onActivateOwner(ownerKeyInput);
+    if (!ok) {
+      setOwnerKeyError('Mã kích hoạt không hợp lệ. Vui lòng kiểm tra lại.');
+    } else {
+      setOwnerKeyError(null);
+      setOwnerKeyInput('');
+    }
   };
 
   if (!isOpen) return null;
@@ -687,32 +708,90 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
           )}
         </div>
 
-        {/* MODAL FOOTER SUPPORT HOTLINE */}
-        <div className="px-6 py-3.5 border-t border-slate-800 bg-slate-950/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-emerald-400" />
-            <span>Hỗ trợ kích hoạt &amp; bảo mật bởi {BRANDING.name}</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <a
-              href={BRANDING.contact.zaloUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-slate-300 hover:text-white transition"
+        {/* MODAL FOOTER SUPPORT HOTLINE + DISCREET OWNER ACTIVATION */}
+        <div className="px-6 py-3.5 border-t border-slate-800 bg-slate-950/80 space-y-2.5 text-xs text-slate-400">
+          {showOwnerUnlock && onActivateOwner && (
+            <form
+              onSubmit={handleOwnerKeySubmit}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2.5 rounded-xl bg-slate-900 border border-emerald-500/30"
             >
-              <PhoneCall size={12} className="text-emerald-400" />
-              <span>Zalo: <strong>{BRANDING.contact.zalo}</strong></span>
-              <ExternalLink size={11} className="text-slate-500" />
-            </a>
+              <div className="flex items-center gap-2 flex-1">
+                <KeyRound size={14} className="text-emerald-400 flex-shrink-0" />
+                <input
+                  type="password"
+                  value={ownerKeyInput}
+                  onChange={(e) => {
+                    setOwnerKeyInput(e.target.value);
+                    if (ownerKeyError) setOwnerKeyError(null);
+                  }}
+                  placeholder="Nhập mã Chủ ứng dụng / Bản quyền không giới hạn..."
+                  className="w-full bg-transparent text-xs text-white placeholder:text-slate-500 outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="submit"
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition"
+                >
+                  Mở khóa toàn quyền
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowOwnerUnlock(false);
+                    setOwnerKeyError(null);
+                  }}
+                  className="px-2 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs"
+                >
+                  Đóng
+                </button>
+              </div>
+              {ownerKeyError && (
+                <p className="w-full sm:w-auto text-[11px] text-rose-400 font-medium">
+                  {ownerKeyError}
+                </p>
+              )}
+            </form>
+          )}
 
-            <a
-              href={`mailto:${BRANDING.contact.email}`}
-              className="flex items-center gap-1 text-slate-300 hover:text-white transition"
-            >
-              <Mail size={12} className="text-blue-400" />
-              <span>Email: <strong>{BRANDING.contact.email}</strong></span>
-            </a>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-2">
+                <ShieldCheck size={14} className="text-emerald-400" />
+                <span>Hỗ trợ kích hoạt &amp; bảo mật bởi {BRANDING.name}</span>
+              </span>
+              {onActivateOwner && !showOwnerUnlock && (
+                <button
+                  type="button"
+                  onClick={() => setShowOwnerUnlock(true)}
+                  className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-emerald-300 transition underline-offset-2 hover:underline"
+                >
+                  <KeyRound size={11} />
+                  <span>Mã Chủ ứng dụng</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <a
+                href={BRANDING.contact.zaloUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-slate-300 hover:text-white transition"
+              >
+                <PhoneCall size={12} className="text-emerald-400" />
+                <span>Zalo: <strong>{BRANDING.contact.zalo}</strong></span>
+                <ExternalLink size={11} className="text-slate-500" />
+              </a>
+
+              <a
+                href={`mailto:${BRANDING.contact.email}`}
+                className="flex items-center gap-1 text-slate-300 hover:text-white transition"
+              >
+                <Mail size={12} className="text-blue-400" />
+                <span>Email: <strong>{BRANDING.contact.email}</strong></span>
+              </a>
+            </div>
           </div>
         </div>
       </div>

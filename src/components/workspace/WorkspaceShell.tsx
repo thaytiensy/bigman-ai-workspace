@@ -6,12 +6,14 @@ import {
   ChevronDown,
   ChevronRight,
   Cloud,
+  Crown,
   FolderOpen,
   Inbox,
   KeyRound,
   Laptop,
   Layers,
   Lock,
+  LogOut,
   Mail,
   Menu,
   Pencil,
@@ -36,6 +38,8 @@ interface WorkspaceShellProps {
   onTabChange: (tab: WorkspaceTab) => void;
   workspaceMode: WorkspaceMode;
   onToggleMode: (mode: WorkspaceMode) => void;
+  isOwnerUnlimited?: boolean;
+  onSignOutOwner?: () => void;
   uiTheme: WorkspaceUiTheme;
   onOpenUpgradeModal: () => void;
   byokConfigured?: boolean;
@@ -57,6 +61,8 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   onTabChange,
   workspaceMode,
   onToggleMode,
+  isOwnerUnlimited = false,
+  onSignOutOwner,
   uiTheme,
   onOpenUpgradeModal,
   byokConfigured = false,
@@ -116,6 +122,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   ];
 
   const activeCount = org.officeBots.filter((b) => b.isActive).length;
+  const isOwnerFullActive = isOwnerUnlimited && workspaceMode === 'cloud_247';
 
   return (
     <div
@@ -169,13 +176,28 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           >
             + Bot
           </button>
-          <button
-            type="button"
-            onClick={onOpenUpgradeModal}
-            className="text-xs px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-bold"
-          >
-            24/7
-          </button>
+          {isOwnerFullActive ? (
+            <span className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/50 text-emerald-700 dark:text-emerald-300 font-bold inline-flex items-center gap-1">
+              <Crown size={12} className="text-amber-500" />
+              Chủ App
+            </span>
+          ) : isOwnerUnlimited ? (
+            <button
+              type="button"
+              onClick={() => onToggleMode('cloud_247')}
+              className="text-xs px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 font-bold"
+            >
+              Toàn Quyền
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenUpgradeModal}
+              className="text-xs px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-bold"
+            >
+              24/7
+            </button>
+          )}
         </div>
       </header>
 
@@ -194,19 +216,31 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
               type="button"
               onClick={() => setModeMenuOpen((v) => !v)}
               className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
-                isLight
-                  ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs'
-                  : 'bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800'
+                isOwnerFullActive
+                  ? isLight
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900 hover:bg-emerald-100 shadow-xs'
+                    : 'bg-emerald-500/15 border-emerald-400/50 text-emerald-200 hover:bg-emerald-500/25'
+                  : isLight
+                    ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs'
+                    : 'bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800'
               }`}
             >
               <span className="flex items-center gap-1.5 truncate">
-                {workspaceMode === 'cloud_247' ? (
+                {isOwnerFullActive ? (
+                  <Crown size={14} className="text-amber-500 flex-shrink-0" />
+                ) : workspaceMode === 'cloud_247' ? (
                   <Cloud size={14} className="text-cyan-500 flex-shrink-0" />
                 ) : (
                   <Laptop size={14} className="text-amber-500 flex-shrink-0" />
                 )}
                 <span className="truncate">
-                  {workspaceMode === 'cloud_247' ? 'Bản Cloud 24/7' : 'Bản Cài Máy'}
+                  {isOwnerFullActive
+                    ? 'Chủ App · Toàn Quyền'
+                    : isOwnerUnlimited
+                      ? 'Xem thử: Bản Cài Máy'
+                      : workspaceMode === 'cloud_247'
+                        ? 'Bản Cloud 24/7'
+                        : 'Bản Cài Máy'}
                 </span>
               </span>
               <ChevronDown size={13} className="opacity-60 flex-shrink-0" />
@@ -220,6 +254,36 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                     : 'bg-slate-900 border-slate-700 text-slate-100'
                 }`}
               >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onToggleMode('cloud_247');
+                    setModeMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-start gap-2 transition ${
+                    workspaceMode === 'cloud_247'
+                      ? isLight
+                        ? 'bg-emerald-50 text-emerald-900 font-bold'
+                        : 'bg-emerald-500/15 text-emerald-300 font-bold'
+                      : isLight
+                        ? 'hover:bg-slate-100'
+                        : 'hover:bg-slate-800'
+                  }`}
+                >
+                  {isOwnerUnlimited ? (
+                    <Crown size={14} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                  ) : (
+                    <Cloud size={14} className="mt-0.5 flex-shrink-0 text-cyan-500" />
+                  )}
+                  <div>
+                    <div>
+                      {isOwnerUnlimited ? 'Chủ App · Toàn Quyền (Không giới hạn)' : 'Bản Cloud 24/7'}
+                    </div>
+                    <div className="text-[10px] opacity-70 font-normal">
+                      Mở toàn bộ bot, phòng ban & lịch chạy 24/7 không giới hạn
+                    </div>
+                  </div>
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -238,36 +302,31 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                 >
                   <Laptop size={14} className="mt-0.5 flex-shrink-0 text-amber-500" />
                   <div>
-                    <div>Bản Cài Máy (Miễn phí)</div>
+                    <div>
+                      {isOwnerUnlimited ? 'Xem thử góc nhìn khách (Bản Cài Máy)' : 'Bản Cài Máy (Miễn phí)'}
+                    </div>
                     <div className="text-[10px] opacity-70 font-normal">
                       Khóa trần {BRANDING.system.desktopMaxFreeBots} bot chạy song song
                     </div>
                   </div>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onToggleMode('cloud_247');
-                    setModeMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-start gap-2 transition ${
-                    workspaceMode === 'cloud_247'
-                      ? isLight
-                        ? 'bg-cyan-50 text-cyan-800 font-bold'
-                        : 'bg-cyan-500/15 text-cyan-300 font-bold'
-                      : isLight
-                        ? 'hover:bg-slate-100'
-                        : 'hover:bg-slate-800'
-                  }`}
-                >
-                  <Cloud size={14} className="mt-0.5 flex-shrink-0 text-cyan-500" />
-                  <div>
-                    <div>Bản Cloud 24/7</div>
-                    <div className="text-[10px] opacity-70 font-normal">
-                      Mở toàn bộ bot & phòng ban không giới hạn
-                    </div>
-                  </div>
-                </button>
+                {isOwnerUnlimited && onSignOutOwner && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModeMenuOpen(false);
+                      onSignOutOwner();
+                    }}
+                    className={`w-full text-left px-2.5 py-2 rounded-lg text-[11px] flex items-center gap-2 border-t mt-1 pt-2 transition ${
+                      isLight
+                        ? 'border-slate-200 text-rose-600 hover:bg-rose-50'
+                        : 'border-slate-800 text-rose-300 hover:bg-rose-500/10'
+                    }`}
+                  >
+                    <LogOut size={12} className="flex-shrink-0" />
+                    <span>Thoát quyền Chủ App trên máy này</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -700,7 +759,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           </div>
         </div>
 
-        {/* BOTTOM WORKSPACE FOOTER (Profile + BYOK + Upgrade + Official Contact) */}
+        {/* BOTTOM WORKSPACE FOOTER (Profile + BYOK + Upgrade/Owner + Official Contact) */}
         <div
           className={`p-3 border-t space-y-2 ${
             isLight
@@ -722,17 +781,42 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                 }`}
               >
                 <KeyRound size={12} />
-                <span>{byokConfigured ? 'BYOK OK' : 'Nâng cao'}</span>
+                <span>{byokConfigured ? 'BYOK OK' : 'API Key'}</span>
               </button>
             )}
-            <button
-              type="button"
-              onClick={onOpenUpgradeModal}
-              className="flex-1 py-1.5 px-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold text-[11px] flex items-center justify-center gap-1 hover:brightness-105 transition"
-            >
-              <Zap size={12} />
-              <span>Gói 24/7</span>
-            </button>
+            {isOwnerFullActive ? (
+              <button
+                type="button"
+                onClick={() => setModeMenuOpen((v) => !v)}
+                title="Đang mở Quyền Chủ Ứng Dụng không giới hạn"
+                className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-extrabold border flex items-center justify-center gap-1 transition ${
+                  isLight
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                    : 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/25'
+                }`}
+              >
+                <Crown size={12} className="text-amber-500" />
+                <span>Toàn Quyền ∞</span>
+              </button>
+            ) : isOwnerUnlimited ? (
+              <button
+                type="button"
+                onClick={() => onToggleMode('cloud_247')}
+                className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-[11px] flex items-center justify-center gap-1 transition"
+              >
+                <Crown size={12} />
+                <span>Về Toàn Quyền</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenUpgradeModal}
+                className="flex-1 py-1.5 px-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold text-[11px] flex items-center justify-center gap-1 hover:brightness-105 transition"
+              >
+                <Zap size={12} />
+                <span>Gói 24/7</span>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-2 pt-0.5">
@@ -742,7 +826,9 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold truncate">{BRANDING.name}</div>
-                <div className="text-[10px] opacity-55 font-mono">v2.7 · Cloud & Desktop</div>
+                <div className="text-[10px] opacity-55 font-mono">
+                  {isOwnerFullActive ? 'Chủ sở hữu · Không giới hạn' : 'v2.7 · Cloud & Desktop'}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">

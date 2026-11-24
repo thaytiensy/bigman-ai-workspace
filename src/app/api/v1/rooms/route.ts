@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertCanCreateRoom, QuotaExceededError } from '@/lib/server/quota-guard';
 import { getSupabaseAdmin, memoryStore } from '@/lib/server/db';
+import { verifyOwnerPasskey } from '@/lib/ownerAccess';
 import type { Room } from '@/types/database';
 
 export async function GET(req: NextRequest) {
@@ -58,8 +59,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // CHỐT CHẶN QUOTA GUARD PHÍA SERVER: Giới hạn số phòng họp theo gói
-    await assertCanCreateRoom(workspaceId);
+    const isOwnerRequest = verifyOwnerPasskey(req.headers.get('x-owner-key'));
+
+    // CHỐT CHẶN QUOTA GUARD PHÍA SERVER: Giới hạn số phòng họp theo gói (bỏ qua nếu có mã Chủ ứng dụng hợp lệ)
+    if (!isOwnerRequest) {
+      await assertCanCreateRoom(workspaceId);
+    }
 
     const supabase = getSupabaseAdmin();
 
