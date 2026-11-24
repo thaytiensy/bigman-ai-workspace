@@ -9,14 +9,17 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-sm font-bold text-white">
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-600 text-sm font-bold text-white"
+              >
                 {BRAND_CONFIG.logoMark}
               </span>
               <span className="text-lg font-bold tracking-tight text-white">
                 {BRAND_CONFIG.name}
               </span>
             </div>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-400">
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-300">
               Nền tảng Đội Ngũ Nhân Sự AI Đa Bot thương mại tại Việt Nam theo mô hình Kép: dùng Bản
               Cài Máy cơ bản để trải nghiệm nhanh hoặc nâng cấp Thuê Web Cloud chạy tự động 24/7
               không phụ thuộc cấu hình máy.
@@ -65,7 +68,7 @@ export function Footer() {
                   href={BRAND_CONFIG.liveDemos.gvcnApp.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sky-400 transition-colors hover:text-sky-300"
+                  className="inline-flex items-center gap-1 text-sky-300 transition-colors hover:text-sky-200"
                 >
                   Demo thực tế: {BRAND_CONFIG.liveDemos.gvcnApp.name}
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -101,14 +104,14 @@ export function Footer() {
                   <span>{BRAND_CONFIG.contact.email}</span>
                 </a>
               </li>
-              <li className="text-xs text-slate-400">
+              <li className="text-xs text-slate-300">
                 Hỗ trợ cài đặt &amp; kích hoạt gói Cloud: {BRAND_CONFIG.contact.workingHours}
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-slate-800 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-slate-800 pt-6 text-xs text-slate-300 sm:flex-row sm:items-center">
           <p>
             © {new Date().getFullYear()} {BRAND_CONFIG.name}. Mọi quyền được bảo lưu.
           </p>
