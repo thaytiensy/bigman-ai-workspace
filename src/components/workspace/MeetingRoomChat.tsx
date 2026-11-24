@@ -8,26 +8,20 @@ import {
   Check,
   ArrowRightLeft,
   Trash2,
-  KeyRound,
 } from 'lucide-react';
 import { Bot, ChatMessage } from '@/types/workspace';
 import { QUICK_PROMPT_CATEGORIES } from '@/data/mockWorkspaceData';
-import type { ByokClientSettings } from './ByokSettingsModal';
 
 interface MeetingRoomChatProps {
   bots: Bot[];
   preselectedBot?: Bot | null;
   onClearPreselectedBot?: () => void;
-  byokSettings?: ByokClientSettings;
-  onOpenByokModal?: () => void;
 }
 
 export const MeetingRoomChat: React.FC<MeetingRoomChatProps> = ({
   bots,
   preselectedBot,
   onClearPreselectedBot,
-  byokSettings,
-  onOpenByokModal,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -191,7 +185,6 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
     setIsStreaming(true);
 
     try {
-      const hasByok = Boolean(byokSettings?.apiKey && byokSettings.apiKey.trim().length >= 10);
       const res = await fetch('/api/v1/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -206,13 +199,6 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
             department: targetBot.department,
             systemPrompt: targetBot.description,
           },
-          byok: hasByok
-            ? {
-                provider: byokSettings?.provider || 'auto',
-                apiKey: byokSettings?.apiKey.trim(),
-                model: byokSettings?.model?.trim() || undefined,
-              }
-            : undefined,
         }),
       });
 
@@ -264,7 +250,7 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
             ? {
                 ...m,
                 content: streamError
-                  ? `${accumulated}${accumulated ? '\n\n' : ''}⚠️ Không thể kết nối AI thực: ${streamError}\nVui lòng kiểm tra lại API Key trong mục "Cài đặt API Key (BYOK)".`
+                  ? `${accumulated}${accumulated ? '\n\n' : ''}⚠️ Hệ thống AI tạm gián đoạn: ${streamError}\nVui lòng thử gửi lại sau giây lát.`
                   : accumulated || generateBotResponse(targetBot, trimmed),
                 isStreaming: false,
               }
@@ -368,27 +354,8 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
           </div>
         </div>
 
-        {/* QUICK BOT PARTICIPANTS PREVIEW + BYOK TRIGGER */}
+        {/* QUICK BOT PARTICIPANTS PREVIEW */}
         <div className="flex items-center gap-2">
-          {onOpenByokModal && (
-            <button
-              type="button"
-              onClick={onOpenByokModal}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition ${
-                byokSettings?.apiKey && byokSettings.apiKey.trim().length >= 10
-                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35 hover:bg-emerald-500/25'
-                  : 'bg-cyan-500/15 text-cyan-200 border-cyan-500/35 hover:bg-cyan-500/25'
-              }`}
-              title="Cắm API Key cá nhân (OpenAI / Gemini / Claude / OpenRouter) để chạy AI thực"
-            >
-              <KeyRound size={12} />
-              <span className="hidden sm:inline">
-                {byokSettings?.apiKey && byokSettings.apiKey.trim().length >= 10
-                  ? 'AI Thực (BYOK)'
-                  : 'Cài API Key (BYOK)'}
-              </span>
-            </button>
-          )}
           <div className="hidden lg:flex items-center -space-x-2 mr-2">
             {bots.slice(0, 5).map((b) => (
               <div

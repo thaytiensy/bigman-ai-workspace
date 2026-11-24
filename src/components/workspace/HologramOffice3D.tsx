@@ -43,7 +43,6 @@ import {
   MeetingMinutesModal,
 } from './OfficeModals';
 import { OfficeKpiModal } from './OfficeExtraViews';
-import type { ByokClientSettings } from './ByokSettingsModal';
 import type { Bot, WorkspaceMode, WorkspaceUiTheme } from '@/types/workspace';
 
 interface HologramOffice3DProps {
@@ -52,8 +51,6 @@ interface HologramOffice3DProps {
   workspaceMode: WorkspaceMode;
   uiTheme: WorkspaceUiTheme;
   onToggleUiTheme: () => void;
-  byokConfigured: boolean;
-  byokSettings: ByokClientSettings;
   activeIndustryName?: string;
   sampleCommands?: string[];
   onOpenIndustryModal?: () => void;
@@ -96,8 +93,6 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
   workspaceMode,
   uiTheme,
   onToggleUiTheme,
-  byokConfigured,
-  byokSettings,
   activeIndustryName = 'TMĐT & Shop',
   sampleCommands = [],
   onOpenIndustryModal,
@@ -453,9 +448,9 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
       botId: primary.id,
     });
 
-    // Try real BYOK streaming if configured, else fast executive simulation
+    // Stream directly from built-in AI endpoint (no user API key required)
     let finalReply = '';
-    if (byokConfigured && byokSettings.apiKey.trim().length >= 10) {
+    {
       try {
         const res = await fetch('/api/v1/chat/stream', {
           method: 'POST',
@@ -469,11 +464,6 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
               name: primary.name,
               roleTitle: primary.roleTitle,
               department: primary.departmentName,
-            },
-            byok: {
-              provider: byokSettings.provider || 'auto',
-              apiKey: byokSettings.apiKey.trim(),
-              model: byokSettings.model?.trim() || undefined,
             },
           }),
         });
@@ -1291,7 +1281,6 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
         isOpen={showKpiModal}
         onClose={() => setShowKpiModal(false)}
         org={org}
-        byokConfigured={byokConfigured}
         initialSection={kpiInitialSection}
       />
     </div>

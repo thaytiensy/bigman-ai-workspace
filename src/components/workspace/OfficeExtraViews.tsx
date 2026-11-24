@@ -254,7 +254,6 @@ interface OfficeKpiModalProps {
   isOpen: boolean;
   onClose: () => void;
   org: WorkspaceOrgState;
-  byokConfigured: boolean;
   initialSection?: 'kpi' | 'kanban' | 'doctor';
 }
 
@@ -262,7 +261,6 @@ export const OfficeKpiModal: React.FC<OfficeKpiModalProps> = ({
   isOpen,
   onClose,
   org,
-  byokConfigured,
   initialSection = 'kpi',
 }) => {
   const [section, setSection] = useState<'kpi' | 'kanban' | 'doctor'>(initialSection);
@@ -354,9 +352,9 @@ export const OfficeKpiModal: React.FC<OfficeKpiModalProps> = ({
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                <div className="text-[11px] text-slate-400">Trạng thái BYOK AI</div>
+                <div className="text-[11px] text-slate-400">Bộ máy AI &amp; Xưởng Việc Thật</div>
                 <div className="text-sm font-bold text-cyan-300 mt-1">
-                  {byokConfigured ? 'Đã kết nối khóa AI (BYOK)' : 'Dùng ngay Không cần API Key (Sẵn sàng)'}
+                  Sẵn sàng chạy ngay · Không cần API Key
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">

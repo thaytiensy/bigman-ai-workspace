@@ -11,12 +11,6 @@ import { UpgradeVietQrModal } from '@/components/workspace/UpgradeVietQrModal';
 import { IndustryTemplateModal } from '@/components/workspace/IndustryTemplateModal';
 import { RealDeliverablesStudio } from '@/components/workspace/RealDeliverablesStudio';
 import {
-  ByokSettingsModal,
-  DEFAULT_BYOK_SETTINGS,
-  loadByokSettings,
-  type ByokClientSettings,
-} from '@/components/workspace/ByokSettingsModal';
-import {
   EditBotModal,
   EditDepartmentModal,
 } from '@/components/workspace/OfficeModals';
@@ -82,9 +76,7 @@ export default function WorkspacePage() {
   const [rosterSubView, setRosterSubView] = useState<'grid' | 'kanban'>('grid');
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [isByokModalOpen, setIsByokModalOpen] = useState(false);
   const [isIndustryModalOpen, setIsIndustryModalOpen] = useState(false);
-  const [byokSettings, setByokSettings] = useState<ByokClientSettings>(DEFAULT_BYOK_SETTINGS);
 
   const [bots, setBots] = useState<Bot[]>(INITIAL_BOTS);
   const [routines, setRoutines] = useState<RoutineItem[]>(INITIAL_ROUTINES);
@@ -109,8 +101,6 @@ export default function WorkspacePage() {
   const [editingBot, setEditingBot] = useState<Office3DBot | null>(null);
 
   useEffect(() => {
-    setByokSettings(loadByokSettings());
-
     // 1. Check creator / owner unlimited access (URL param or persistent localStorage)
     const { isOwner, justActivated } = resolveOwnerAccessFromUrl();
     const initialMode: WorkspaceMode = isOwner ? 'cloud_247' : 'desktop_free';
@@ -173,7 +163,6 @@ export default function WorkspacePage() {
   }, [ownerToast]);
 
   const activeBotsCount = bots.filter((b) => b.isActive).length;
-  const byokConfigured = Boolean(byokSettings.apiKey.trim().length >= 10);
 
   const handleToggleMode = (mode: WorkspaceMode) => {
     setWorkspaceMode(mode);
@@ -255,7 +244,7 @@ export default function WorkspacePage() {
   const org = useWorkspaceOrg({
     bots,
     workspaceMode,
-    byokConfigured,
+    byokConfigured: true,
     onAddBot: handleAddBot,
     onUpdateBot: handleUpdateBot,
     onRemoveBot: handleRemoveBot,
@@ -341,8 +330,6 @@ export default function WorkspacePage() {
       onSignOutOwner={handleSignOutOwner}
       uiTheme={uiTheme}
       onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
-      byokConfigured={byokConfigured}
-      onOpenByokModal={() => setIsByokModalOpen(true)}
       activeIndustryName={activeIndustryTemplate.shortName}
       onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
       org={org}
@@ -378,8 +365,6 @@ export default function WorkspacePage() {
           workspaceMode={workspaceMode}
           uiTheme={uiTheme}
           onToggleUiTheme={() => setUiTheme((t) => (t === 'light' ? 'dark' : 'light'))}
-          byokConfigured={byokConfigured}
-          byokSettings={byokSettings}
           activeIndustryName={activeIndustryTemplate.shortName}
           sampleCommands={activeIndustryTemplate.sampleCommands}
           onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
@@ -499,8 +484,6 @@ export default function WorkspacePage() {
           bots={bots}
           preselectedBot={preselectedBot}
           onClearPreselectedBot={() => setPreselectedBot(null)}
-          byokSettings={byokSettings}
-          onOpenByokModal={() => setIsByokModalOpen(true)}
         />
       )}
 
@@ -779,12 +762,6 @@ export default function WorkspacePage() {
         onActivateOwner={handleActivateOwner}
       />
 
-      <ByokSettingsModal
-        isOpen={isByokModalOpen}
-        settings={byokSettings}
-        onClose={() => setIsByokModalOpen(false)}
-        onSave={setByokSettings}
-      />
     </WorkspaceShell>
   );
 }

@@ -182,8 +182,8 @@ export const INITIAL_KANBAN_TASKS: KanbanTask[] = [
   },
   {
     id: 'task-104',
-    title: 'Kiểm thử luồng BYOK & đóng gói bộ cài Desktop v1.0.0',
-    description: 'Đảm bảo 0 rò rỉ API Key trên trình duyệt và đóng gói sạch .exe / .msi / .dmg.',
+    title: 'Kiểm thử Xưởng Việc Thật & đóng gói bộ cài Desktop v1.0.0',
+    description: 'Đảm bảo xuất file Excel/Word chuẩn đẹp ngay trên web và đóng gói sạch .exe / .msi / .dmg.',
     departmentId: 'dept-tech',
     assigneeBotId: 'bot-lin',
     reviewerBotId: 'bot-orbit',
@@ -374,11 +374,9 @@ export function runOfficeDoctor(params: {
     },
     {
       id: 'ai-byok',
-      label: 'Kết Nối AI Thực (BYOK)',
-      status: params.byokConfigured ? 'pass' : 'warn',
-      detail: params.byokConfigured
-        ? 'Đã cấu hình API Key BYOK — sẵn sàng chạy AI thực.'
-        : 'Chưa nhập API Key BYOK (đang chạy chế độ Demo 0 chi phí; bấm nút Cài đặt API Key để bật AI thực).',
+      label: 'Bộ Máy AI & Xưởng Việc Thật',
+      status: 'pass',
+      detail: 'Hoạt động sẵn sàng ngay trên web — dùng trực tiếp không cần cài đặt API Key.',
     },
     {
       id: 'api-health',

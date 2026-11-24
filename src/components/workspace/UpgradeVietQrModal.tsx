@@ -46,7 +46,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
   onActivateOwner,
 }) => {
   const [billingCycle, setBillingCycle] = useState<PricingBillingCycle>('monthly');
-  const [billingMode, setBillingMode] = useState<PricingBillingMode>('byok');
+  const [billingMode, setBillingMode] = useState<PricingBillingMode>('all_in_one');
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan>(PRICING_PLANS[1]); // Default Pro Team
   const [step, setStep] = useState<'select' | 'payment' | 'success'>('select');
   const [orderCode, setOrderCode] = useState('');
@@ -172,7 +172,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
     ? `https://img.vietqr.io/image/${encodeURIComponent(VIETQR_BANK_BIN)}-${encodeURIComponent(VIETQR_ACCOUNT_NO)}-${encodeURIComponent(VIETQR_TEMPLATE)}.png?amount=${currentPrice}&addInfo=${encodeURIComponent(orderCode)}&accountName=${encodeURIComponent(VIETQR_ACCOUNT_NAME)}`
     : null;
 
-  const activationSummaryText = `Đăng ký ${BRANDING.name} | Gói: ${selectedPlan.name} (${selectedPlan.id === 'desktop_pro' ? 'Trọn đời 1 máy' : billingCycle === 'monthly' ? 'Hàng tháng' : 'Theo năm'}, ${billingMode === 'byok' ? 'BYOK' : 'Trọn gói Credit'}) | Giá: ${formattedPriceVnd} | Mã đơn: ${orderCode}`;
+  const activationSummaryText = `Đăng ký ${BRANDING.name} | Gói: ${selectedPlan.name} (${selectedPlan.id === 'desktop_pro' ? 'Trọn đời 1 máy' : billingCycle === 'monthly' ? 'Hàng tháng' : 'Theo năm'}, ${billingMode === 'byok' ? 'Hạ tầng tiết kiệm' : 'Trọn gói sẵn AI'}) | Giá: ${formattedPriceVnd} | Mã đơn: ${orderCode}`;
 
   const mailtoActivationHref = `mailto:${BRANDING.contact.email}?subject=${encodeURIComponent(`[${BRANDING.name}] Yêu cầu mã QR kích hoạt gói ${selectedPlan.name} - ${orderCode}`)}&body=${encodeURIComponent(`Xin chào Admin,\n\nTôi muốn nhận mã QR kích hoạt gói dịch vụ sau:\n${activationSummaryText}\n\nXin cảm ơn!`)}`;
 
@@ -254,7 +254,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
                   </div>
                 </div>
 
-                {/* AI ENGINE MODE TOGGLE (BYOK vs All-in-One Credits) */}
+                {/* AI ENGINE MODE TOGGLE (Standard vs All-in-One Credits) */}
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400 font-medium">Gói AI:</span>
                   <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
@@ -267,7 +267,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      Thuần Hạ Tầng (BYOK)
+                      Hạ Tầng Tiết Kiệm
                     </button>
                     <button
                       type="button"
@@ -279,7 +279,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
                       }`}
                     >
                       <Sparkles size={12} />
-                      <span>Trọn Gói Có Sẵn Credit</span>
+                      <span>Trọn Gói Sẵn AI (Không cần API)</span>
                     </button>
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
                             {billingMode === 'all_in_one' ? (
                               <span>Tặng sẵn {new Intl.NumberFormat('vi-VN').format(plan.monthlyCredits)} Credits/tháng</span>
                             ) : (
-                              <span>Khách tự gắn API Key (BYOK) chi phí siêu rẻ</span>
+                              <span>Gói hạ tầng tiết kiệm, vận hành linh hoạt</span>
                             )}
                           </div>
                         </div>
@@ -394,7 +394,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Dành cho người không thích trả thuê bao định kỳ: Mở khóa toàn bộ bot trên máy tính cá nhân, lưu trữ dữ liệu 100% cục bộ, tự gắn API key theo nhu cầu.
+                      Dành cho người không thích trả thuê bao định kỳ: Mở khóa toàn bộ bot trên máy tính cá nhân, lưu trữ dữ liệu 100% cục bộ và dùng trọn đời.
                     </p>
                   </div>
                 </div>
@@ -476,7 +476,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
                             ? 'Hàng tháng'
                             : 'Theo năm'}
                         </strong>{' '}
-                        • Hình thức: <strong>{billingMode === 'byok' ? 'BYOK' : 'Trọn gói Token'}</strong>
+                        • Hình thức: <strong>{billingMode === 'byok' ? 'Hạ tầng tiết kiệm' : 'Trọn gói sẵn AI'}</strong>
                       </div>
                     </div>
 
@@ -587,7 +587,7 @@ export const UpgradeVietQrModal: React.FC<UpgradeVietQrModalProps> = ({
                           : billingCycle === 'monthly'
                           ? 'Hàng tháng'
                           : 'Theo năm (-20%)'}{' '}
-                        · {billingMode === 'byok' ? 'BYOK' : 'Trọn gói Credit'}
+                        · {billingMode === 'byok' ? 'Hạ tầng tiết kiệm' : 'Trọn gói sẵn AI'}
                       </strong>
                     </div>
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800">

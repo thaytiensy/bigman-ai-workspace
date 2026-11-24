@@ -9,7 +9,6 @@ import {
   Crown,
   FolderOpen,
   Inbox,
-  KeyRound,
   Laptop,
   Layers,
   Lock,
@@ -42,8 +41,6 @@ interface WorkspaceShellProps {
   onSignOutOwner?: () => void;
   uiTheme: WorkspaceUiTheme;
   onOpenUpgradeModal: () => void;
-  byokConfigured?: boolean;
-  onOpenByokModal?: () => void;
   activeIndustryName?: string;
   onOpenIndustryModal?: () => void;
   org: WorkspaceOrgState;
@@ -65,8 +62,6 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   onSignOutOwner,
   uiTheme,
   onOpenUpgradeModal,
-  byokConfigured = false,
-  onOpenByokModal,
   activeIndustryName = 'TMĐT & Shop',
   onOpenIndustryModal,
   org,
@@ -759,7 +754,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           </div>
         </div>
 
-        {/* BOTTOM WORKSPACE FOOTER (Profile + BYOK + Upgrade/Owner + Official Contact) */}
+        {/* BOTTOM WORKSPACE FOOTER (Profile + Upgrade/Owner + Official Contact) */}
         <div
           className={`p-3 border-t space-y-2 ${
             isLight
@@ -768,22 +763,6 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           }`}
         >
           <div className="flex items-center gap-1.5">
-            {onOpenByokModal && (
-              <button
-                type="button"
-                onClick={onOpenByokModal}
-                className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold border flex items-center justify-center gap-1 transition ${
-                  byokConfigured
-                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/35'
-                    : isLight
-                      ? 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
-                      : 'bg-slate-900 text-cyan-200 border-cyan-500/30 hover:bg-slate-800'
-                }`}
-              >
-                <KeyRound size={12} />
-                <span>{byokConfigured ? 'BYOK OK' : 'API Key'}</span>
-              </button>
-            )}
             {isOwnerFullActive ? (
               <button
                 type="button"

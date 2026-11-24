@@ -13,7 +13,10 @@ import { BRANDING } from '@/config/branding';
 
 export const runtime = 'nodejs';
 
-function buildRoleAwareDemoReply(bot: BotPersonaContext | undefined, lastUserMessage: string): string {
+function buildRoleAwareBuiltInReply(
+  bot: BotPersonaContext | undefined,
+  lastUserMessage: string
+): string {
   const botName = bot?.name || 'Minh';
   const botRole = bot?.roleTitle || 'Quản lý & Điều phối tổng';
   const lower = lastUserMessage.toLowerCase();
@@ -22,39 +25,78 @@ function buildRoleAwareDemoReply(bot: BotPersonaContext | undefined, lastUserMes
     botName.toLowerCase() === 'lan' ||
     botName.toLowerCase().includes('sunny') ||
     lower.includes('tiktok') ||
-    lower.includes('shop')
+    lower.includes('shop') ||
+    lower.includes('lãi') ||
+    lower.includes('giá bán') ||
+    lower.includes('flash sale')
   ) {
-    return `Tôi là **${botName}** (${botRole}). Phân tích nhanh cho yêu cầu "${lastUserMessage}":
+    return `Tôi là **${botName}** (${botRole}). Phân tích thực chiến cho yêu cầu *"${lastUserMessage}"*:
 
-1. **Chuẩn hóa Listing & Shop Tab:** Tối ưu tiêu đề 60–120 ký tự theo công thức \`[Loại sản phẩm] + [Thương hiệu] + [USP nổi bật] + [Đối tượng] + [Quy cách]\`, tránh tuyệt đối từ cấm cam kết tuyệt đối.
-2. **Bảo vệ Biên Lợi Nhuận (Unit Economics):** Kiểm soát cộng dồn *Phí sàn + Voucher Shop + Hoa hồng KOC* để giữ biên lợi nhuận ròng tối thiểu 25%–35%.
-3. **Tăng chuyển đổi (CR):** Bổ sung đủ 7–9 ảnh giải tỏa nỗi sợ mua hàng + Voucher Khách Hàng Mới + kiểm soát tỷ lệ giao trễ (LDR) < 4%.
+1. **Kiểm soát Biên Lợi Nhuận (Chống lỗ ngầm):** Kiểm tra kỹ cộng dồn *Chiết khấu Flash Sale + Voucher Shop + Phí sàn & thanh toán + Hoa hồng KOC* trước khi bấm lưu khuyến mãi để giữ lãi ròng an toàn tối thiểu 20%–30%.
+2. **Chuẩn hóa Listing & Shop Tab:** Dùng tiêu đề 60–120 ký tự theo công thức \`[Loại sản phẩm] + [Thương hiệu] + [USP nổi bật] + [Đối tượng] + [Quy cách]\`, tránh hoàn toàn từ cấm cam kết tuyệt đối.
+3. **Tăng chuyển đổi (CR):** Đủ 7–9 ảnh giải tỏa nỗi sợ mua hàng + Voucher khách mới + kiểm soát tỷ lệ giao trễ (LDR) < 4%.
 
-> 💡 *Đang chạy ở **Chế độ Demo**. Bấm nút **"Cài đặt API Key (BYOK)"** ở góc trên để cắm OpenAI / Gemini / Claude / OpenRouter và trò chuyện trực tiếp với AI thực!*`;
+👉 Mở mục **Xưởng Việc Thật** ở cột bên trái để tôi tính bảng lãi/lỗ chi tiết và **xuất file Excel (.csv)** ngay lập tức.`;
   }
 
   if (
     botName.toLowerCase() === 'nam' ||
     botName.toLowerCase().includes('listing') ||
-    lower.includes('seo')
+    lower.includes('seo') ||
+    lower.includes('từ khóa') ||
+    lower.includes('từ cấm')
   ) {
-    return `Tôi là **${botName}** (${botRole}). Đề xuất tối ưu cho yêu cầu "${lastUserMessage}":
+    return `Tôi là **${botName}** (${botRole}). Phương án tối ưu cho yêu cầu *"${lastUserMessage}"*:
 
-- **Phân tầng từ khóa:** Tách rõ bộ từ khóa Nhận diện (Informational), Cân nhắc (Navigational) và Chốt đơn (Commercial Intent).
-- **35 ký tự đầu tiên:** Đưa từ khóa chính có lượng tìm kiếm cao nhất lên đầu tiêu đề để tối ưu hiển thị trên di động.
-- **Internal Link & Entity:** Kết nối chặt giữa bài trụ cột (Pillar) và trang sản phẩm/dịch vụ để đẩy thứ hạng bền vững.
+- **Phân tầng từ khóa:** Tách rõ nhóm Nhận diện (Informational), Cân nhắc (Navigational) và Chốt đơn (Commercial Intent).
+- **35 ký tự đầu tiên:** Đặt từ khóa chính có lượng tìm kiếm cao nhất lên đầu tiêu đề để tối ưu hiển thị trên di động.
+- **Bộ lọc an toàn chính sách:** Loại bỏ toàn bộ từ cam kết tuyệt đối (*100%, tốt nhất, trị dứt điểm, cam kết khỏi hẳn*) và tuyệt đối không kéo giao dịch ngoài sàn.
 
-> 💡 *Đang chạy ở **Chế độ Demo**. Bấm nút **"Cài đặt API Key (BYOK)"** ở góc trên để kích hoạt AI thực theo thời gian thực!*`;
+👉 Mở **Xưởng Việc Thật → Nam (Quét Từ Cấm & Chấm SEO)** để chấm điểm 0–100, viết lại bản sạch và **tải báo cáo Word (.doc)** ngay.`;
+  }
+
+  if (
+    botName.toLowerCase() === 'trang' ||
+    botName.toLowerCase() === 'hùng' ||
+    lower.includes('koc') ||
+    lower.includes('video') ||
+    lower.includes('kịch bản') ||
+    lower.includes('affiliate')
+  ) {
+    return `Tôi là **${botName}** (${botRole}). Đề xuất triển khai cho yêu cầu *"${lastUserMessage}"*:
+
+- **3 giây đầu (Hook):** Mở thẳng bằng nỗi đau thực tế hoặc con số cụ thể để giữ chân người xem lướt nguồn cấp.
+- **Thân bài 25–35 giây:** Chứng minh trực quan chất liệu/trải nghiệm thật, không dùng từ ngữ thổi phồng vi phạm chính sách.
+- **Mời KOC Affiliate:** Gửi lời mời Cộng tác mục tiêu với mức hoa hồng nhỉnh hơn Cộng tác mở 3%–5% kèm mẫu thử cho nhóm KOC đúng ngách.
+
+👉 Mở **Xưởng Việc Thật → Trang & Hùng** để xuất ngay 3 Hook, phân cảnh 45s và 2 mẫu tin mời KOC dạng **file Word (.doc)**.`;
+  }
+
+  if (
+    botName.toLowerCase() === 'phong' ||
+    botName.toLowerCase() === 'vy' ||
+    lower.includes('giáo án') ||
+    lower.includes('lớp') ||
+    lower.includes('phụ huynh') ||
+    lower.includes('gvcn') ||
+    lower.includes('tt27')
+  ) {
+    return `Tôi là **${botName}** (${botRole}). Kế hoạch hỗ trợ cho yêu cầu *"${lastUserMessage}"*:
+
+- **Quản lý lớp & phụ huynh:** Chuẩn hóa thông báo tuần ngắn gọn, tích cực, phân rõ lịch học – lưu ý rèn nề nếp – lời khen khích lệ học sinh.
+- **Đánh giá chuẩn Thông tư 27:** Phân nhóm nhận xét T/H/C sát thực tế, tránh lặp mẫu khô cứng.
+
+👉 Mở **Xưởng Việc Thật → Phong & Vy (Giáo dục / GVCN)** để tạo kế hoạch chủ nhiệm tuần, 3 mẫu Zalo phụ huynh và **tải file Word (.doc)** dùng ngay.`;
   }
 
   return `Tôi là **${botName}** (${botRole}) thuộc **${BRANDING.appName}**. Tôi đã tiếp nhận yêu cầu: *"${lastUserMessage}"*.
 
 **Kế hoạch triển khai đề xuất:**
-- **Bước 1:** Rà soát mục tiêu định lượng và dữ liệu đầu vào cốt lõi.
-- **Bước 2:** Phân rã đầu việc cụ thể và bàn giao chéo cho các phòng ban liên quan trong Văn Phòng 3D.
-- **Bước 3:** Theo dõi kết quả và tổng hợp báo cáo tự động vào cuối ngày.
+- **Bước 1:** Rà soát mục tiêu định lượng, nguồn lực và dữ liệu đầu vào cốt lõi.
+- **Bước 2:** Phân rã đầu việc cụ thể và bàn giao chéo cho các phòng ban liên quan ngay trong Văn Phòng 3D.
+- **Bước 3:** Theo dõi tiến độ, kiểm duyệt chất lượng (QA) và xuất file kết quả vào **Tệp của nhóm**.
 
-> 💡 *Đang chạy ở **Chế độ Demo**. Bấm nút **"Cài đặt API Key (BYOK)"** ở góc trên để cắm khóa OpenAI / Gemini / Claude / OpenRouter và chạy AI thực ngay lập tức!*`;
+👉 Bạn có thể mở **Xưởng Việc Thật** ở cột bên trái để tạo ngay file Excel/Word hoàn chỉnh theo đúng nhu cầu.`;
 }
 
 export async function POST(req: NextRequest) {
@@ -103,9 +145,9 @@ export async function POST(req: NextRequest) {
             type: 'start',
             threadId: threadId || `thread-${Date.now()}`,
             botId: botId || 'default-bot',
-            mode: resolvedProvider ? 'live_ai' : 'demo',
-            provider: resolvedProvider?.provider || 'demo',
-            model: resolvedProvider?.model || 'demo-local',
+            mode: resolvedProvider ? 'live_ai' : 'builtin',
+            provider: resolvedProvider?.provider || 'builtin',
+            model: resolvedProvider?.model || 'tochuc-ai-builtin',
           });
 
           if (resolvedProvider) {
@@ -121,7 +163,7 @@ export async function POST(req: NextRequest) {
             if (emittedChars === 0) {
               sendEvent({
                 type: 'token',
-                text: 'AI đã kết nối thành công nhưng chưa trả về nội dung. Vui lòng thử gửi lại câu hỏi ngắn gọn hơn.',
+                text: 'Hệ thống đã tiếp nhận yêu cầu nhưng chưa nhận được phản hồi đầy đủ. Vui lòng thử gửi lại câu hỏi ngắn gọn hơn.',
               });
             }
 
@@ -139,20 +181,20 @@ export async function POST(req: NextRequest) {
           } else {
             const lastUserMessage =
               messages[messages.length - 1]?.content?.trim() || 'Xin chào';
-            const responseText = buildRoleAwareDemoReply(botProfile, lastUserMessage);
+            const responseText = buildRoleAwareBuiltInReply(botProfile, lastUserMessage);
 
             const chunks = responseText.split(' ');
             for (const word of chunks) {
               sendEvent({ type: 'token', text: `${word} ` });
-              await new Promise((resolve) => setTimeout(resolve, 18));
+              await new Promise((resolve) => setTimeout(resolve, 14));
             }
 
             sendEvent({
               type: 'done',
               metadata: {
-                mode: 'demo',
-                provider: 'demo',
-                model: 'demo-local',
+                mode: 'builtin',
+                provider: 'builtin',
+                model: 'tochuc-ai-builtin',
                 tokensEstimated: chunks.length * 2,
                 supportZalo: BRANDING.contact.zalo,
               },
