@@ -1,37 +1,50 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  Box,
-  Users,
-  MessageSquareCode,
-  CalendarClock,
-  Sparkles,
-  Zap,
-  Laptop,
+  Building2,
+  ChevronDown,
+  ChevronRight,
   Cloud,
-  ExternalLink,
-  LifeBuoy,
-  PhoneCall,
-  Mail,
-  AlertTriangle,
-  Menu,
-  X,
+  FolderOpen,
+  Inbox,
   KeyRound,
+  Laptop,
+  Lock,
+  Mail,
+  Menu,
+  Pencil,
+  PhoneCall,
+  Plus,
+  Rocket,
+  Search,
+  Trash2,
+  Users,
+  X,
+  Zap,
 } from 'lucide-react';
 import { BRANDING } from '@/config/branding';
-import { WorkspaceMode, WorkspaceTab } from '@/types/workspace';
+import { DUTY_META } from '@/lib/office3d/officeStore';
+import type { OfficeDepartment } from '@/lib/office3d/types';
+import type { WorkspaceOrgState } from '@/lib/office3d/useWorkspaceOrg';
+import type { WorkspaceMode, WorkspaceTab, WorkspaceUiTheme } from '@/types/workspace';
 
 interface WorkspaceShellProps {
   activeTab: WorkspaceTab;
   onTabChange: (tab: WorkspaceTab) => void;
   workspaceMode: WorkspaceMode;
   onToggleMode: (mode: WorkspaceMode) => void;
+  uiTheme: WorkspaceUiTheme;
   onOpenUpgradeModal: () => void;
   byokConfigured?: boolean;
   onOpenByokModal?: () => void;
-  activeBotsCount: number;
-  totalBotsCount: number;
+  org: WorkspaceOrgState;
+  selectedBotId: string | null;
+  onSelectBotFromSidebar: (botId: string) => void;
+  onRequestAddDepartment: () => void;
+  onRequestEditDepartment: (dept: OfficeDepartment) => void;
+  onRequestDeleteDepartment: (deptId: string) => void;
+  onRequestAddBot: (defaultDeptId?: string) => void;
   children: React.ReactNode;
 }
 
@@ -40,327 +53,634 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   onTabChange,
   workspaceMode,
   onToggleMode,
+  uiTheme,
   onOpenUpgradeModal,
   byokConfigured = false,
   onOpenByokModal,
-  activeBotsCount,
-  totalBotsCount,
+  org,
+  selectedBotId,
+  onSelectBotFromSidebar,
+  onRequestAddDepartment,
+  onRequestEditDepartment,
+  onRequestDeleteDepartment,
+  onRequestAddBot,
   children,
 }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const isLight = uiTheme === 'light';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [toolsExpanded, setToolsExpanded] = useState(true);
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const [quickAddMenuOpen, setQuickAddMenuOpen] = useState(false);
+  const [collapsedDepts, setCollapsedDepts] = useState<Record<string, boolean>>({});
 
-  const navigationItems = [
-    {
-      id: 'office3d' as WorkspaceTab,
-      label: 'Văn Phòng 3D Hologram',
-      icon: Box,
-      badge: '3D Live',
-      badgeColor: 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40',
-      desc: 'Bàn họp tròn & chia phòng ban 3D',
-    },
-    {
-      id: 'roster' as WorkspaceTab,
-      label: 'Đội Ngũ Nhân Viên AI',
-      icon: Users,
-      badge: `${activeBotsCount}/${totalBotsCount}`,
-      desc: 'Quản lý trạng thái & phân bổ bot',
-    },
-    {
-      id: 'room' as WorkspaceTab,
-      label: 'Phòng Họp Chiến Lược',
-      icon: MessageSquareCode,
-      badge: 'Đa Bot',
-      badgeColor: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
-      desc: 'Thảo luận & giao việc chéo',
-    },
-    {
-      id: 'routines' as WorkspaceTab,
-      label: 'Lịch Tự Động Hóa 24/7',
-      icon: CalendarClock,
-      badge: workspaceMode === 'cloud_247' ? 'Cloud On' : 'Cài máy',
-      badgeColor:
-        workspaceMode === 'cloud_247'
-          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-          : 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
-      desc: 'Lịch chạy sáng, trưa & đêm',
-    },
+  const toggleDeptCollapse = (deptId: string) => {
+    setCollapsedDepts((prev) => ({ ...prev, [deptId]: !prev[deptId] }));
+  };
+
+  const filteredDepartments = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return org.departments.map((dept) => {
+      const deptBots = org.officeBots.filter((b) => b.departmentId === dept.id);
+      if (!q) return { dept, bots: deptBots };
+      const deptMatches = dept.name.toLowerCase().includes(q);
+      const matchingBots = deptMatches
+        ? deptBots
+        : deptBots.filter(
+            (b) =>
+              b.name.toLowerCase().includes(q) ||
+              b.roleBadge.toLowerCase().includes(q) ||
+              b.roleTitle.toLowerCase().includes(q)
+          );
+      return { dept, bots: matchingBots };
+    });
+  }, [org.departments, org.officeBots, searchQuery]);
+
+  const toolItems: Array<{
+    id: WorkspaceTab;
+    label: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+  }> = [
+    { id: 'routines', label: 'Tự động hóa', icon: Zap },
+    { id: 'roster', label: 'Sơ đồ team', icon: Users },
+    { id: 'office3d', label: 'Văn phòng 3D', icon: Building2 },
+    { id: 'apps', label: 'Ứng dụng đã xuất bản', icon: Rocket },
+    { id: 'files', label: 'Tệp của nhóm', icon: FolderOpen },
   ];
 
-  return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-950 text-slate-100 flex flex-col md:flex-row antialiased selection:bg-indigo-500 selection:text-white">
-      {/* MOBILE TOP BAR */}
-      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800 sticky top-16 z-30 backdrop-blur-md">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/30 text-sm">
-            AI
-          </div>
-          <div>
-            <h1 className="font-bold text-sm text-white tracking-tight">{BRANDING.name}</h1>
-            <p className="text-[10px] text-slate-400">Hệ điều hành AI đa bot</p>
-          </div>
-        </div>
+  const activeCount = org.officeBots.filter((b) => b.isActive).length;
 
+  return (
+    <div
+      className={`min-h-[calc(100vh-4rem)] flex flex-col md:flex-row antialiased selection:bg-cyan-500 selection:text-slate-950 transition-colors ${
+        isLight ? 'bg-[#f4f6f9] text-slate-900' : 'bg-[#020914] text-slate-100'
+      }`}
+    >
+      {/* MOBILE TOP BAR */}
+      <header
+        className={`md:hidden flex items-center justify-between px-4 py-2.5 border-b sticky top-16 z-30 backdrop-blur-md ${
+          isLight
+            ? 'bg-white/95 border-slate-200 text-slate-900'
+            : 'bg-slate-900/95 border-slate-800 text-slate-100'
+        }`}
+      >
         <div className="flex items-center gap-2">
           <button
-            onClick={onOpenUpgradeModal}
-            className="text-xs px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-semibold shadow-sm hover:brightness-110 active:scale-95 transition"
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`p-1.5 rounded-lg ${
+              isLight ? 'bg-slate-100 text-slate-700' : 'bg-slate-800 text-slate-200'
+            }`}
+            aria-label="Mở thanh điều hướng"
           >
-            Nâng cấp
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+          <span className="font-extrabold text-sm tracking-tight">{BRANDING.name}</span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onRequestAddBot()}
+            className="text-xs px-2.5 py-1 rounded-lg bg-cyan-500 text-slate-950 font-bold"
+          >
+            + Bot
           </button>
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
-            aria-label="Toggle Navigation Menu"
+            type="button"
+            onClick={onOpenUpgradeModal}
+            className="text-xs px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-bold"
           >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            24/7
           </button>
         </div>
       </header>
 
-      {/* SIDEBAR NAVIGATION (Desktop & Mobile Drawer) */}
+      {/* LEFT SIDEBAR — SLEEK APP LAYOUT */}
       <aside
-        className={`fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] z-30 w-72 md:w-80 flex-shrink-0 flex flex-col justify-between bg-slate-900 border-r border-slate-800 transition-transform duration-300 ease-in-out ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        }`}
+        className={`fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] z-30 w-72 flex-shrink-0 flex flex-col border-r transition-transform duration-200 ${
+          isLight
+            ? 'bg-[#f7f7f8] border-slate-200/90 text-slate-800'
+            : 'bg-[#040d1a] border-slate-800/90 text-slate-100'
+        } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
-        {/* BRAND & WORKSPACE HEADER */}
-        <div className="p-5 border-b border-slate-800/80">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center font-black text-white text-base shadow-xl shadow-indigo-600/30">
-              AI
-            </div>
-            <div className="overflow-hidden">
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-slate-100 tracking-tight text-base truncate">
-                  {BRANDING.name}
+        {/* TOP MODE SELECTOR + QUICK ADD */}
+        <div className="px-3 pt-3 pb-2 flex items-center justify-between gap-2 relative">
+          <div className="relative flex-1">
+            <button
+              type="button"
+              onClick={() => setModeMenuOpen((v) => !v)}
+              className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                isLight
+                  ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs'
+                  : 'bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 truncate">
+                {workspaceMode === 'cloud_247' ? (
+                  <Cloud size={14} className="text-cyan-500 flex-shrink-0" />
+                ) : (
+                  <Laptop size={14} className="text-amber-500 flex-shrink-0" />
+                )}
+                <span className="truncate">
+                  {workspaceMode === 'cloud_247' ? 'Bản Cloud 24/7' : 'Bản Cài Máy'}
                 </span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono border border-indigo-500/30">
-                  PRO
-                </span>
+              </span>
+              <ChevronDown size={13} className="opacity-60 flex-shrink-0" />
+            </button>
+
+            {modeMenuOpen && (
+              <div
+                className={`absolute left-0 right-0 top-full mt-1.5 p-1.5 rounded-xl border shadow-xl z-40 space-y-1 ${
+                  isLight
+                    ? 'bg-white border-slate-200 text-slate-800'
+                    : 'bg-slate-900 border-slate-700 text-slate-100'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onToggleMode('desktop_free');
+                    setModeMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-start gap-2 transition ${
+                    workspaceMode === 'desktop_free'
+                      ? isLight
+                        ? 'bg-amber-50 text-amber-800 font-bold'
+                        : 'bg-amber-500/15 text-amber-300 font-bold'
+                      : isLight
+                        ? 'hover:bg-slate-100'
+                        : 'hover:bg-slate-800'
+                  }`}
+                >
+                  <Laptop size={14} className="mt-0.5 flex-shrink-0 text-amber-500" />
+                  <div>
+                    <div>Bản Cài Máy (Miễn phí)</div>
+                    <div className="text-[10px] opacity-70 font-normal">
+                      Khóa trần {BRANDING.system.desktopMaxFreeBots} bot chạy song song
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onToggleMode('cloud_247');
+                    setModeMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-start gap-2 transition ${
+                    workspaceMode === 'cloud_247'
+                      ? isLight
+                        ? 'bg-cyan-50 text-cyan-800 font-bold'
+                        : 'bg-cyan-500/15 text-cyan-300 font-bold'
+                      : isLight
+                        ? 'hover:bg-slate-100'
+                        : 'hover:bg-slate-800'
+                  }`}
+                >
+                  <Cloud size={14} className="mt-0.5 flex-shrink-0 text-cyan-500" />
+                  <div>
+                    <div>Bản Cloud 24/7</div>
+                    <div className="text-[10px] opacity-70 font-normal">
+                      Mở toàn bộ bot & phòng ban không giới hạn
+                    </div>
+                  </div>
+                </button>
               </div>
-              <p className="text-xs text-slate-400 truncate mt-0.5">
-                {BRANDING.tagline}
-              </p>
-            </div>
+            )}
           </div>
 
-          {/* MODE TOGGLE SWITCHER (Desktop Free vs Cloud 24/7) */}
-          <div className="mt-4 p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-1">
+          <div className="relative">
             <button
               type="button"
-              onClick={() => onToggleMode('desktop_free')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
-                workspaceMode === 'desktop_free'
-                  ? 'bg-slate-800 text-amber-300 shadow border border-amber-500/20'
-                  : 'text-slate-400 hover:text-slate-200'
+              onClick={() => setQuickAddMenuOpen((v) => !v)}
+              title="Thêm phòng ban hoặc tuyển bot mới"
+              className={`p-1.5 rounded-xl border transition ${
+                isLight
+                  ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                  : 'bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800'
               }`}
             >
-              <Laptop size={13} />
-              <span>Bản Cài Máy</span>
+              <Plus size={16} />
             </button>
 
-            <button
-              type="button"
-              onClick={() => onToggleMode('cloud_247')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all ${
-                workspaceMode === 'cloud_247'
-                  ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Cloud size={13} />
-              <span>Bản Cloud 24/7</span>
-            </button>
-          </div>
-
-          {/* MODE EXPLANATION PILL */}
-          <div className="mt-2.5 px-3 py-2 rounded-lg bg-slate-950/50 border border-slate-800/60 text-[11px] text-slate-300 flex items-start gap-2">
-            {workspaceMode === 'desktop_free' ? (
-              <>
-                <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold text-amber-300">Giới hạn 2 Bot:</span> Dữ liệu lưu tại máy. Tắt máy tính là bot dừng hoạt động.
-                </div>
-              </>
-            ) : (
-              <>
-                <Sparkles size={14} className="text-indigo-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold text-indigo-300">Cloud 24/7 Không Giới Hạn:</span> Tắt máy tính bot vẫn cào dữ liệu, chốt đơn & báo cáo.
-                </div>
-              </>
+            {quickAddMenuOpen && (
+              <div
+                className={`absolute right-0 top-full mt-1.5 w-48 p-1.5 rounded-xl border shadow-xl z-40 space-y-1 ${
+                  isLight
+                    ? 'bg-white border-slate-200 text-slate-800'
+                    : 'bg-slate-900 border-slate-700 text-slate-100'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuickAddMenuOpen(false);
+                    onRequestAddDepartment();
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                    isLight ? 'hover:bg-slate-100' : 'hover:bg-slate-800'
+                  }`}
+                >
+                  <Building2 size={14} className="text-cyan-500" /> + Thêm phòng ban mới
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuickAddMenuOpen(false);
+                    onRequestAddBot();
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                    isLight ? 'hover:bg-slate-100' : 'hover:bg-slate-800'
+                  }`}
+                >
+                  <Plus size={14} className="text-emerald-500" /> + Tuyển nhân viên AI
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* NAVIGATION LINKS */}
-        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
-          <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            Không Gian Làm Việc
-          </div>
-
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onTabChange(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full text-left flex items-center justify-between p-3 rounded-xl transition-all group ${
-                  isActive
-                    ? 'bg-indigo-600/15 text-white border border-indigo-500/30 shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white border border-transparent'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                        : 'bg-slate-800 text-slate-400 group-hover:text-slate-200'
-                    }`}
-                  >
-                    <Icon size={18} />
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm leading-tight">{item.label}</div>
-                    <div className="text-[11px] text-slate-400 leading-tight mt-0.5">
-                      {item.desc}
-                    </div>
-                  </div>
-                </div>
-
-                <span
-                  className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                    item.badgeColor || 'bg-slate-800 text-slate-300 border border-slate-700'
-                  }`}
-                >
-                  {item.badge}
-                </span>
-              </button>
-            );
-          })}
-
-          {/* INFRASTRUCTURE STATUS CARD */}
-          <div className="pt-4 px-2">
-            <div className="p-3.5 rounded-xl bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800/90 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <span className="text-xs font-semibold text-slate-200">
-                    {workspaceMode === 'cloud_247' ? 'Cloud Cluster Online' : 'Local Daemon Online'}
-                  </span>
-                </div>
-                <span className="text-[10px] text-emerald-400 font-mono font-medium">32ms</span>
-              </div>
-
-              {/* AI CREDITS METER */}
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-                  <span>Hạn mức AI Credits:</span>
-                  <span className="font-semibold text-indigo-300">7.45M / 10M</span>
-                </div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full transition-all"
-                    style={{ width: '74.5%' }}
-                  />
-                </div>
-                <div className="flex justify-between items-center mt-1 text-[10px] text-slate-500">
-                  <span>Mô hình: DeepSeek-V3 + Claude</span>
-                  <span>Đã dùng 74%</span>
-                </div>
-              </div>
-
-              {/* BYOK AI API KEY BUTTON */}
-              {onOpenByokModal && (
-                <button
-                  type="button"
-                  onClick={onOpenByokModal}
-                  className={`w-full mt-3 flex items-center justify-between gap-2 py-2 px-3 rounded-lg text-xs font-semibold border transition ${
-                    byokConfigured
-                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35 hover:bg-emerald-500/20'
-                      : 'bg-cyan-500/10 text-cyan-200 border-cyan-500/30 hover:bg-cyan-500/20'
-                  }`}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <KeyRound size={13} />
-                    <span>{byokConfigured ? 'API Key AI: Đã kết nối' : 'Cài đặt API Key (BYOK)'}</span>
-                  </span>
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      byokConfigured ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'
-                    }`}
-                  />
-                </button>
-              )}
-
-              {/* QUICK UPGRADE BUTTON */}
+        {/* SEARCH BAR */}
+        <div className="px-3 pb-2.5">
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs ${
+              isLight
+                ? 'bg-white border-slate-200 text-slate-700 focus-within:border-cyan-500'
+                : 'bg-slate-900/90 border-slate-800 text-slate-200 focus-within:border-cyan-500'
+            }`}
+          >
+            <Search size={13} className="opacity-50 flex-shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm bot, phòng ban..."
+              className="w-full bg-transparent outline-none text-xs placeholder:opacity-60"
+            />
+            {searchQuery && (
               <button
                 type="button"
-                onClick={onOpenUpgradeModal}
-                className="w-full mt-3 flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 hover:brightness-105 active:scale-[0.98] transition"
+                onClick={() => setSearchQuery('')}
+                className="opacity-50 hover:opacity-100"
               >
-                <Zap size={14} className="fill-slate-950" />
-                <span>Nâng Cấp Gói 24/7 (VietQR)</span>
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* SCROLLABLE BODY: HỘP THƯ + PHÒNG BAN/BOT TREE + CÔNG CỤ */}
+        <div className="flex-1 overflow-y-auto px-2.5 space-y-3 pb-3">
+          {/* HỘP THƯ */}
+          <button
+            type="button"
+            onClick={() => {
+              onTabChange('inbox');
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
+              activeTab === 'inbox'
+                ? isLight
+                  ? 'bg-slate-200/80 text-slate-950'
+                  : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                : isLight
+                  ? 'text-slate-700 hover:bg-slate-200/50'
+                  : 'text-slate-300 hover:bg-slate-900'
+            }`}
+          >
+            <span className="flex items-center gap-2.5">
+              <Inbox size={15} className={activeTab === 'inbox' ? 'text-cyan-600 dark:text-cyan-300' : 'opacity-70'} />
+              <span>Hộp thư</span>
+            </span>
+            {org.unreadInboxCount > 0 && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500 text-white font-bold">
+                {org.unreadInboxCount}
+              </span>
+            )}
+          </button>
+
+          {/* COLLAPSIBLE DEPARTMENTS & BOTS TREE */}
+          <div className="space-y-1.5">
+            <div className="px-2 flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider opacity-55">
+                Phòng ban & Bot ({activeCount}/{org.officeBots.length})
+              </span>
+              <button
+                type="button"
+                onClick={onRequestAddDepartment}
+                className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-0.5"
+                title="Thêm phòng ban không giới hạn"
+              >
+                <Plus size={11} /> Phòng
               </button>
             </div>
-          </div>
-        </nav>
 
-        {/* FOOTER: CONTACT & SUPPORT */}
-        <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/60 text-xs">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-              <LifeBuoy size={14} className="text-indigo-400" /> Hỗ Trợ 1-1 Chính Thức
-            </span>
-            <span className="text-[10px] text-slate-500 font-mono">v2.5</span>
-          </div>
+            {filteredDepartments.map(({ dept, bots: deptBots }) => {
+              const isCollapsed = Boolean(collapsedDepts[dept.id]);
+              return (
+                <div key={dept.id} className="space-y-0.5">
+                  {/* Department Row */}
+                  <div
+                    className={`group flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold transition ${
+                      isLight ? 'hover:bg-slate-200/60 text-slate-700' : 'hover:bg-slate-900 text-slate-200'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleDeptCollapse(dept.id)}
+                      className="flex items-center gap-1.5 min-w-0 flex-1 text-left"
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight size={13} className="opacity-50 flex-shrink-0" />
+                      ) : (
+                        <ChevronDown size={13} className="opacity-50 flex-shrink-0" />
+                      )}
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: dept.colorHex }}
+                      />
+                      <span className="truncate">{dept.shortLabel}</span>
+                      <span className="text-[10px] font-normal opacity-50">({deptBots.length})</span>
+                    </button>
 
-          <div className="space-y-1 text-[11px]">
-            <a
-              href={BRANDING.contact.zaloUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => onRequestEditDepartment(dept)}
+                        title="Sửa phòng ban"
+                        className={`p-1 rounded ${
+                          isLight ? 'hover:bg-slate-300/70' : 'hover:bg-slate-800'
+                        }`}
+                      >
+                        <Pencil size={11} />
+                      </button>
+                      {org.departments.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => onRequestDeleteDepartment(dept.id)}
+                          title="Xóa phòng ban"
+                          className="p-1 rounded hover:bg-rose-500/20 hover:text-rose-500"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bots inside Department */}
+                  {!isCollapsed && (
+                    <div className="pl-2 space-y-0.5">
+                      {deptBots.map((bot) => {
+                        const isSelected = selectedBotId === bot.id && activeTab === 'office3d';
+                        const dutyMeta = DUTY_META[bot.duty];
+                        const isWorking = !bot.isLocked && bot.isActive && bot.duty !== 'idle';
+                        return (
+                          <button
+                            key={bot.id}
+                            type="button"
+                            onClick={() => {
+                              onSelectBotFromSidebar(bot.id);
+                              setMobileMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-2.5 py-2 rounded-xl transition flex items-start gap-2.5 ${
+                              isSelected
+                                ? isLight
+                                  ? 'bg-white shadow-sm border border-cyan-400/70 text-slate-900'
+                                  : 'bg-cyan-500/15 border border-cyan-500/40 text-white'
+                                : isLight
+                                  ? 'hover:bg-slate-200/60 text-slate-700 border border-transparent'
+                                  : 'hover:bg-slate-900/90 text-slate-200 border border-transparent'
+                            }`}
+                          >
+                            {/* Bot Avatar Bubble + Status Dot */}
+                            <div className="relative flex-shrink-0 mt-0.5">
+                              <div
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold border ${
+                                  bot.isLocked
+                                    ? isLight
+                                      ? 'bg-slate-200 border-slate-300 text-slate-500'
+                                      : 'bg-slate-800 border-slate-700 text-slate-400'
+                                    : isLight
+                                      ? 'bg-cyan-50 border-cyan-300 text-cyan-800'
+                                      : 'bg-cyan-950/90 border-cyan-500/50 text-cyan-200'
+                                }`}
+                              >
+                                {bot.name.slice(0, 1).toUpperCase()}
+                              </div>
+                              <span
+                                className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 ${
+                                  isLight ? 'border-[#f7f7f8]' : 'border-[#040d1a]'
+                                }`}
+                                style={{
+                                  backgroundColor: bot.isLocked ? '#94a3b8' : dutyMeta.colorHex,
+                                }}
+                              />
+                            </div>
+
+                            {/* Bot Name + Role + Live Activity */}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-xs font-bold truncate flex items-center gap-1">
+                                  {bot.name}
+                                  {bot.isLead && <span className="text-[10px]">👑</span>}
+                                </span>
+                                {bot.isLocked ? (
+                                  <Lock size={10} className="text-amber-500 flex-shrink-0" />
+                                ) : (
+                                  <span
+                                    className="text-[9px] font-semibold flex-shrink-0"
+                                    style={{ color: isWorking ? '#10b981' : '#94a3b8' }}
+                                  >
+                                    {isWorking ? dutyMeta.shortLabel : '0 tok'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] opacity-65 truncate">
+                                {bot.roleBadge} · {bot.roleTitle}
+                              </div>
+                              {isWorking && bot.currentTaskTitle && (
+                                <div className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-300 font-medium truncate">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                                  <span className="truncate">{bot.currentTaskTitle}</span>
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+
+                      {/* Inline "+ Thêm bot" right inside each department (just like the screenshot!) */}
+                      <button
+                        type="button"
+                        onClick={() => onRequestAddBot(dept.id)}
+                        className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1.5 transition ${
+                          isLight
+                            ? 'text-slate-500 hover:text-cyan-700 hover:bg-slate-200/50'
+                            : 'text-slate-400 hover:text-cyan-300 hover:bg-slate-900'
+                        }`}
+                      >
+                        <Plus size={12} /> Thêm bot
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={onRequestAddDepartment}
+              className={`w-full mt-1 px-3 py-1.5 rounded-xl border border-dashed text-[11px] font-semibold flex items-center justify-center gap-1.5 transition ${
+                isLight
+                  ? 'border-slate-300 text-slate-600 hover:border-cyan-500 hover:text-cyan-700 bg-white/70'
+                  : 'border-slate-700 text-slate-300 hover:border-cyan-500 hover:text-cyan-300 bg-slate-900/50'
+              }`}
             >
-              <span className="flex items-center gap-1.5">
-                <PhoneCall size={12} className="text-emerald-400" />
-                Zalo Hỗ Trợ: <strong className="text-slate-100">{BRANDING.contact.zalo}</strong>
-              </span>
-              <ExternalLink size={11} className="text-slate-500" />
-            </a>
+              <Plus size={12} /> Thêm phòng ban mới (Không giới hạn)
+            </button>
+          </div>
 
-            <a
-              href={`mailto:${BRANDING.contact.email}`}
-              className="flex items-center justify-between p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
+          {/* SECTION: CÔNG CỤ (Exact 5 items matching screenshot!) */}
+          <div className="pt-1 border-t border-slate-200/70 dark:border-slate-800/80">
+            <button
+              type="button"
+              onClick={() => setToolsExpanded((v) => !v)}
+              className="w-full px-2 py-1.5 flex items-center justify-between text-[11px] font-bold opacity-60 hover:opacity-100"
             >
-              <span className="flex items-center gap-1.5">
-                <Mail size={12} className="text-blue-400" />
-                Email: <strong className="text-slate-100">{BRANDING.contact.email}</strong>
-              </span>
-              <ExternalLink size={11} className="text-slate-500" />
-            </a>
+              <span>Công cụ</span>
+              {toolsExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+            </button>
+
+            {toolsExpanded && (
+              <div className="space-y-0.5 mt-0.5">
+                {toolItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        onTabChange(item.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                        isActive
+                          ? isLight
+                            ? 'bg-slate-200/85 text-slate-950 font-bold'
+                            : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                          : isLight
+                            ? 'text-slate-700 hover:bg-slate-200/50'
+                            : 'text-slate-300 hover:bg-slate-900'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Icon
+                          size={15}
+                          className={
+                            isActive
+                              ? isLight
+                                ? 'text-blue-600'
+                                : 'text-cyan-300'
+                              : 'opacity-65'
+                          }
+                        />
+                        <span>{item.label}</span>
+                      </span>
+                      {item.id === 'office3d' && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 font-bold">
+                          3D
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* BOTTOM WORKSPACE FOOTER (Profile + BYOK + Upgrade + Official Contact) */}
+        <div
+          className={`p-3 border-t space-y-2 ${
+            isLight
+              ? 'border-slate-200 bg-white/80'
+              : 'border-slate-800 bg-[#020813]'
+          }`}
+        >
+          <div className="flex items-center gap-1.5">
+            {onOpenByokModal && (
+              <button
+                type="button"
+                onClick={onOpenByokModal}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-bold border flex items-center justify-center gap-1 transition ${
+                  byokConfigured
+                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/35'
+                    : isLight
+                      ? 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                      : 'bg-slate-900 text-cyan-200 border-cyan-500/30 hover:bg-slate-800'
+                }`}
+              >
+                <KeyRound size={12} />
+                <span>{byokConfigured ? 'BYOK OK' : 'API Key'}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onOpenUpgradeModal}
+              className="flex-1 py-1.5 px-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-extrabold text-[11px] flex items-center justify-center gap-1 hover:brightness-105 transition"
+            >
+              <Zap size={12} />
+              <span>Gói 24/7</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white text-[11px] font-black flex items-center justify-center flex-shrink-0">
+                AI
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold truncate">{BRANDING.name}</div>
+                <div className="text-[10px] opacity-55 font-mono">v2.6 · Cloud & Desktop</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <a
+                href={BRANDING.contact.zaloUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Zalo Hỗ trợ: ${BRANDING.contact.zalo}`}
+                className={`p-1.5 rounded-lg transition ${
+                  isLight ? 'hover:bg-slate-100 text-emerald-600' : 'hover:bg-slate-800 text-emerald-400'
+                }`}
+              >
+                <PhoneCall size={13} />
+              </a>
+              <a
+                href={`mailto:${BRANDING.contact.email}`}
+                title={`Email: ${BRANDING.contact.email}`}
+                className={`p-1.5 rounded-lg transition ${
+                  isLight ? 'hover:bg-slate-100 text-blue-600' : 'hover:bg-slate-800 text-blue-400'
+                }`}
+              >
+                <Mail size={13} />
+              </a>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* BACKDROP OVERLAY FOR MOBILE */}
+      {/* MOBILE BACKDROP */}
       {mobileMenuOpen && (
         <div
           onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-20 md:hidden"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-20 md:hidden"
         />
       )}
 
       {/* MAIN VIEWPORT */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 h-[calc(100vh-4rem)] overflow-hidden">
         {children}
       </main>
     </div>

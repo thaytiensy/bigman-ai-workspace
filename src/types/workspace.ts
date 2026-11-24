@@ -4,7 +4,16 @@
 
 export type WorkspaceMode = 'desktop_free' | 'cloud_247';
 
-export type WorkspaceTab = 'office3d' | 'roster' | 'room' | 'routines';
+export type WorkspaceTab =
+  | 'inbox'
+  | 'office3d'
+  | 'roster'
+  | 'room'
+  | 'routines'
+  | 'apps'
+  | 'files';
+
+export type WorkspaceUiTheme = 'light' | 'dark';
 
 /**
  * Hỗ trợ 4 phòng ban chuẩn mặc định + mở rộng không giới hạn tên phòng ban tùy biến.
@@ -33,6 +42,20 @@ export interface Bot {
   model: string;
   isActive: boolean;
   priorityOrder: number;
+  isLead?: boolean;
+}
+
+export interface InboxEntry {
+  id: string;
+  kind: 'command' | 'reply' | 'approval' | 'meeting' | 'handoff';
+  title: string;
+  body: string;
+  senderName: string;
+  senderBadge?: string;
+  targetLabels?: string[];
+  timestamp: string;
+  unread?: boolean;
+  botId?: string;
 }
 
 export interface ChatMessage {

@@ -55,6 +55,9 @@ interface ActiveBeam {
 export interface HologramOfficeController {
   syncBots: (bots: Office3DBot[], selectedBotId: string | null, highlightDeptId: string | null) => void;
   setCameraPreset: (preset: CameraPreset) => void;
+  rotateCamera: (deltaAzimuthRad: number) => void;
+  tiltCamera: (deltaPolarRad: number) => void;
+  zoomCamera: (scaleFactor: number) => void;
   focusBot: (botId: string) => void;
   setAutoRotate: (enabled: boolean) => void;
   say: (botId: string, text: string, durationMs?: number) => void;
@@ -563,6 +566,38 @@ export function createHologramOfficeScene(
     speechEl.style.boxShadow = '0 6px 20px rgba(0, 245, 255, 0.24)';
     wrapper.appendChild(speechEl);
 
+    if (!bot.isLocked && bot.isActive && bot.currentTaskTitle && bot.duty !== 'idle') {
+      const taskPill = document.createElement('div');
+      taskPill.style.display = 'flex';
+      taskPill.style.alignItems = 'center';
+      taskPill.style.gap = '5px';
+      taskPill.style.maxWidth = '210px';
+      taskPill.style.padding = '3px 9px';
+      taskPill.style.borderRadius = '9999px';
+      taskPill.style.background = 'rgba(4, 34, 48, 0.92)';
+      taskPill.style.border = '1px solid rgba(52, 211, 153, 0.65)';
+      taskPill.style.color = '#a7f3d0';
+      taskPill.style.fontSize = '10px';
+      taskPill.style.fontWeight = '600';
+      taskPill.style.whiteSpace = 'nowrap';
+      taskPill.style.overflow = 'hidden';
+      taskPill.style.textOverflow = 'ellipsis';
+      taskPill.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.25)';
+      const pulseDot = document.createElement('span');
+      pulseDot.style.width = '6px';
+      pulseDot.style.height = '6px';
+      pulseDot.style.borderRadius = '9999px';
+      pulseDot.style.background = '#34d399';
+      pulseDot.style.flexShrink = '0';
+      taskPill.appendChild(pulseDot);
+      const txt = document.createElement('span');
+      txt.textContent = bot.currentTaskTitle;
+      txt.style.overflow = 'hidden';
+      txt.style.textOverflow = 'ellipsis';
+      taskPill.appendChild(txt);
+      wrapper.appendChild(taskPill);
+    }
+
     // Crisp rounded glass pill matching the hero image ("AI Marketer", "AI Manager", "AI Researcher", "AI Customer Support")
     const pill = document.createElement('div');
     const safeAccent = sanitizeHexColor(bot.accentHex);
@@ -598,7 +633,7 @@ export function createHologramOfficeScene(
     topRow.appendChild(dot);
 
     const roleSpan = document.createElement('span');
-    roleSpan.textContent = bot.roleBadge;
+    roleSpan.textContent = (bot.isLead || bot.screenKind === 'manager') ? `${bot.roleBadge} ??` : bot.roleBadge;
     roleSpan.style.color = bot.isLocked ? '#cbd5e1' : '#f8fafc';
     roleSpan.style.fontWeight = '700';
     roleSpan.style.fontSize = '11.5px';
@@ -766,6 +801,62 @@ export function createHologramOfficeScene(
       const z = Math.cos(angle) * outerRadius;
       placeBot(bot, x, z, 0, 0, innerCount + idx, true);
     });
+  }
+
+  // Floating clickable "B?n h?p chung" pill anchored near conference table
+  const meetingPillEl = document.createElement('button');
+  meetingPillEl.type = 'button';
+  meetingPillEl.textContent = '?? B?n h?p chung';
+  meetingPillEl.style.pointerEvents = 'auto';
+  meetingPillEl.style.cursor = 'pointer';
+  meetingPillEl.style.padding = '5px 12px';
+  meetingPillEl.style.borderRadius = '9999px';
+  meetingPillEl.style.background = 'rgba(3, 28, 48, 0.88)';
+  meetingPillEl.style.backdropFilter = 'blur(8px)';
+  meetingPillEl.style.border = '1px solid rgba(56, 189, 248, 0.7)';
+  meetingPillEl.style.color = '#e0f2fe';
+  meetingPillEl.style.fontSize = '11px';
+  meetingPillEl.style.fontWeight = '700';
+  meetingPillEl.style.boxShadow = '0 4px 16px rgba(0, 245, 255, 0.28)';
+  meetingPillEl.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    callbacks.onClickMeetingTable?.();
+  });
+  const meetingLabelObj = new CSS2DObject(meetingPillEl);
+  meetingLabelObj.position.set(0, TABLE_HEIGHT + 0.16, 1.98);
+  staticGroup.add(meetingLabelObj);
+
+  function rotateCamera(deltaAzimuthRad: number): void {
+    desiredPos = null;
+    desiredTarget = null;
+    const offset = camera.position.clone().sub(controls.target);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.theta += deltaAzimuthRad;
+    offset.setFromSpherical(spherical);
+    camera.position.copy(controls.target).add(offset);
+    controls.update();
+  }
+
+  function tiltCamera(deltaPolarRad: number): void {
+    desiredPos = null;
+    desiredTarget = null;
+    const offset = camera.position.clone().sub(controls.target);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.phi = Math.max(0.28, Math.min(Math.PI / 2.08, spherical.phi + deltaPolarRad));
+    offset.setFromSpherical(spherical);
+    camera.position.copy(controls.target).add(offset);
+    controls.update();
+  }
+
+  function zoomCamera(scaleFactor: number): void {
+    desiredPos = null;
+    desiredTarget = null;
+    const offset = camera.position.clone().sub(controls.target);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.radius = Math.max(controls.minDistance, Math.min(controls.maxDistance, spherical.radius * scaleFactor));
+    offset.setFromSpherical(spherical);
+    camera.position.copy(controls.target).add(offset);
+    controls.update();
   }
 
   function setCameraPreset(preset: CameraPreset): void {
@@ -971,6 +1062,10 @@ export function createHologramOfficeScene(
       (b.spark.material as THREE.Material).dispose();
     });
     activeBeams.length = 0;
+    if (meetingLabelObj.element.parentNode) {
+      meetingLabelObj.element.parentNode.removeChild(meetingLabelObj.element);
+    }
+    staticGroup.remove(meetingLabelObj);
     disposeObject3D(staticGroup);
     renderer.dispose();
   }
@@ -978,6 +1073,9 @@ export function createHologramOfficeScene(
   return {
     syncBots,
     setCameraPreset,
+    rotateCamera,
+    tiltCamera,
+    zoomCamera,
     focusBot,
     setAutoRotate,
     say,

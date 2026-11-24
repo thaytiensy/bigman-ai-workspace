@@ -58,6 +58,7 @@ export interface Office3DBot {
   avatarStyle: AvatarStyle;
   isActive: boolean;
   isLocked: boolean;
+  isLead?: boolean;
   status: 'ready' | 'working' | 'offline';
   duty: DutyState;
   currentTaskTitle?: string;
@@ -75,6 +76,7 @@ export interface Office3DCallbacks {
   onSelectBot?: (botId: string) => void;
   onSelectLockedBot?: (botId: string) => void;
   onPeekBot?: (botId: string) => void;
+  onClickMeetingTable?: () => void;
   onSceneReady?: () => void;
 }
 
