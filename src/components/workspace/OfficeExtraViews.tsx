@@ -356,7 +356,7 @@ export const OfficeKpiModal: React.FC<OfficeKpiModalProps> = ({
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
                 <div className="text-[11px] text-slate-400">Trạng thái BYOK AI</div>
                 <div className="text-sm font-bold text-cyan-300 mt-1">
-                  {byokConfigured ? 'Đã kết nối khóa AI' : 'Chế độ mô phỏng / Demo'}
+                  {byokConfigured ? 'Đã kết nối khóa AI (BYOK)' : 'Dùng ngay Không cần API Key (Sẵn sàng)'}
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
@@ -855,6 +855,67 @@ export const OfficeTeamFilesView: React.FC<OfficeTeamFilesViewProps> = ({ org, u
           >
             <Download size={14} /> Xuất cấu hình Tổ chức (.json)
           </button>
+        </div>
+
+        {/* Real Deliverables Generated Files */}
+        <div className="space-y-2.5">
+          <h3 className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-300">
+            Thành phẩm thực tế đã xuất từ Xưởng Việc Thật ({org.generatedFiles.length})
+          </h3>
+          {org.generatedFiles.length === 0 ? (
+            <div
+              className={`rounded-2xl border p-5 text-center text-xs ${
+                isLight
+                  ? 'bg-white border-slate-200 text-slate-500'
+                  : 'bg-slate-900/70 border-slate-800 text-slate-400'
+              }`}
+            >
+              Chưa có file Excel/Word nào được xuất. Mở <strong>Xưởng Việc Thật (Không cần API)</strong> để xuất bảng tính giá bán hoặc báo cáo Word — mọi tệp sẽ tự động lưu tại đây.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {org.generatedFiles.map((file) => (
+                <div
+                  key={file.id}
+                  className={`rounded-2xl border p-4 flex flex-col justify-between gap-3 ${
+                    isLight
+                      ? 'bg-white border-emerald-200 shadow-sm'
+                      : 'bg-slate-900/80 border-emerald-500/30'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-extrabold truncate">{file.title}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 font-bold uppercase flex-shrink-0">
+                        .{file.format}
+                      </span>
+                    </div>
+                    <p className={`text-[11px] mt-1 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                      {file.summary}
+                    </p>
+                    <div className="text-[10px] text-slate-400 mt-1">
+                      {file.createdByName} ({file.createdByRole}) · {file.createdAt}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const blob = new Blob([file.content], { type: file.mimeType });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = file.fileName;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="w-full py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5"
+                  >
+                    <Download size={13} /> Tải lại {file.fileName}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Meeting Minutes Files */}

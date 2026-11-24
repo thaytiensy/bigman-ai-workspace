@@ -57,6 +57,7 @@ interface HologramOffice3DProps {
   activeIndustryName?: string;
   sampleCommands?: string[];
   onOpenIndustryModal?: () => void;
+  onOpenDeliverables?: () => void;
   selectedBotId: string | null;
   onSelectBotId: (botId: string | null) => void;
   onToggleBotActive: (botId: string) => void;
@@ -100,6 +101,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
   activeIndustryName = 'TMĐT & Shop',
   sampleCommands = [],
   onOpenIndustryModal,
+  onOpenDeliverables,
   selectedBotId,
   onSelectBotId,
   onToggleBotActive,
@@ -650,6 +652,16 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
 
         {/* Row 2: Action Pill Bar */}
         <div className="flex flex-wrap items-center gap-2">
+          {onOpenDeliverables && (
+            <button
+              type="button"
+              onClick={onOpenDeliverables}
+              className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 flex items-center gap-1.5 shadow-xs transition"
+            >
+              <Sparkles size={14} />
+              <span>Xưởng Việc Thật · Không API</span>
+            </button>
+          )}
           {onOpenIndustryModal && (
             <button
               type="button"

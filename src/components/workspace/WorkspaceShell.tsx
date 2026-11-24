@@ -19,6 +19,7 @@ import {
   Plus,
   Rocket,
   Search,
+  Sparkles,
   Trash2,
   Users,
   X,
@@ -106,6 +107,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
     label: string;
     icon: React.ComponentType<{ size?: number; className?: string }>;
   }> = [
+    { id: 'deliverables', label: 'Xưởng Việc Thật', icon: Sparkles },
     { id: 'routines', label: 'Tự động hóa', icon: Zap },
     { id: 'roster', label: 'Sơ đồ team', icon: Users },
     { id: 'office3d', label: 'Văn phòng 3D', icon: Building2 },
@@ -144,6 +146,13 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onTabChange('deliverables')}
+            className="text-xs px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold"
+          >
+            Việc Thật
+          </button>
           {onOpenIndustryModal && (
             <button
               type="button"
@@ -353,6 +362,38 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             </button>
           </div>
         )}
+
+        {/* HƯỚNG 1: XƯỞNG VIỆC THẬT (KHÔNG CẦN API KEY) */}
+        <div className="px-3 pb-2">
+          <button
+            type="button"
+            onClick={() => {
+              onTabChange('deliverables');
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-extrabold border transition ${
+              activeTab === 'deliverables'
+                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                : isLight
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                  : 'bg-emerald-500/15 border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/25'
+            }`}
+          >
+            <span className="flex items-center gap-1.5 truncate">
+              <Sparkles size={13} className="flex-shrink-0" />
+              <span className="truncate">Xưởng Việc Thật</span>
+            </span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${
+                activeTab === 'deliverables'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-200'
+              }`}
+            >
+              Không API
+            </span>
+          </button>
+        </div>
 
         {/* SEARCH BAR */}
         <div className="px-3 pb-2.5">
@@ -641,6 +682,11 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                         />
                         <span>{item.label}</span>
                       </span>
+                      {item.id === 'deliverables' && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 font-bold">
+                          0 API
+                        </span>
+                      )}
                       {item.id === 'office3d' && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 font-bold">
                           3D
@@ -676,7 +722,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                 }`}
               >
                 <KeyRound size={12} />
-                <span>{byokConfigured ? 'BYOK OK' : 'API Key'}</span>
+                <span>{byokConfigured ? 'BYOK OK' : 'Nâng cao'}</span>
               </button>
             )}
             <button

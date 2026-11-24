@@ -28,7 +28,7 @@ import {
   inferScreenKindFromBadge,
   type IndustryTemplate,
 } from '@/data/industryTemplates';
-import type { Bot, InboxEntry, WorkspaceMode } from '@/types/workspace';
+import type { Bot, InboxEntry, TeamDeliverableFile, WorkspaceMode } from '@/types/workspace';
 
 export const ORG_STORAGE_KEY = 'tochuc_nvai_office3d_org_v4';
 
@@ -136,6 +136,7 @@ interface SavedOrgConfig {
   minutesList: MeetingMinutes[];
   a2aTranscripts: A2ATranscriptEntry[];
   inboxEntries?: InboxEntry[];
+  generatedFiles?: TeamDeliverableFile[];
 }
 
 export function inferDefaultDepartmentId(bot: Bot): string {
@@ -241,6 +242,7 @@ export function useWorkspaceOrg({
   const [minutesList, setMinutesList] = useState<MeetingMinutes[]>([]);
   const [a2aTranscripts, setA2ATranscripts] = useState<A2ATranscriptEntry[]>(INITIAL_A2A_TRANSCRIPTS);
   const [inboxEntries, setInboxEntries] = useState<InboxEntry[]>(INITIAL_INBOX_ENTRIES);
+  const [generatedFiles, setGeneratedFiles] = useState<TeamDeliverableFile[]>([]);
 
   // Live Duty States & Activity strings
   const [activeMeetingBotIds, setActiveMeetingBotIds] = useState<string[]>([]);
@@ -279,6 +281,9 @@ export function useWorkspaceOrg({
       if (Array.isArray(parsed.inboxEntries) && parsed.inboxEntries.length > 0) {
         setInboxEntries(parsed.inboxEntries);
       }
+      if (Array.isArray(parsed.generatedFiles)) {
+        setGeneratedFiles(parsed.generatedFiles);
+      }
     } catch {
       // Ignore corrupted localStorage
     }
@@ -298,6 +303,7 @@ export function useWorkspaceOrg({
         minutesList,
         a2aTranscripts,
         inboxEntries,
+        generatedFiles: generatedFiles.slice(0, 15),
       };
       window.localStorage.setItem(ORG_STORAGE_KEY, JSON.stringify(payload));
     } catch {
@@ -314,6 +320,7 @@ export function useWorkspaceOrg({
     minutesList,
     a2aTranscripts,
     inboxEntries,
+    generatedFiles,
   ]);
 
   const appendBotLog = useCallback((botId: string, line: string) => {
@@ -920,6 +927,40 @@ export function useWorkspaceOrg({
     setInboxEntries((prev) => prev.map((e) => ({ ...e, unread: false })));
   }, []);
 
+  const recordGeneratedFile = useCallback(
+    (file: Omit<TeamDeliverableFile, 'id' | 'createdAt'>) => {
+      const now = new Date().toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      const entry: TeamDeliverableFile = {
+        ...file,
+        id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+        createdAt: now,
+      };
+      setGeneratedFiles((prev) => [entry, ...prev.slice(0, 19)]);
+      if (file.botId) {
+        setBotLiveActivity((prev) => ({
+          ...prev,
+          [file.botId!]: `Vừa xuất: ${file.fileName}`,
+        }));
+        appendBotLog(file.botId, `Đã xuất thành phẩm thật: ${file.fileName}`);
+      }
+      pushInbox({
+        kind: 'handoff',
+        title: `Thành phẩm mới (${file.format.toUpperCase()}): ${file.title}`,
+        body: `${file.summary}. Tệp ${file.fileName} đã sẵn sàng tải lại trong mục Tệp của nhóm.`,
+        senderName: file.createdByName,
+        senderBadge: file.createdByRole,
+        targetLabels: ['Tệp của nhóm'],
+        unread: true,
+        botId: file.botId,
+      });
+      return entry;
+    },
+    [appendBotLog, pushInbox]
+  );
+
   return {
     activeIndustryId,
     departments,
@@ -932,6 +973,8 @@ export function useWorkspaceOrg({
     a2aTranscripts,
     setA2ATranscripts,
     inboxEntries,
+    generatedFiles,
+    recordGeneratedFile,
     pushInbox,
     markAllInboxRead,
     unreadInboxCount,

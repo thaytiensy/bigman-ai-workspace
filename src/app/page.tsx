@@ -79,12 +79,19 @@ export default function HomePage() {
             {/* Primary CTAs */}
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               <Link
+                href="/workspace?tab=deliverables"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 sm:text-base"
+              >
+                <Sparkles className="h-4 w-4" />
+                Mở Xưởng Việc Thật (Không cần API)
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
                 href="/workspace"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 transition-all hover:bg-indigo-700 sm:text-base"
               >
                 <LayoutGrid className="h-4 w-4" />
                 Vào Văn Phòng 3D Hologram
-                <ArrowRight className="h-4 w-4" />
               </Link>
               <a
                 href="#bang-gia"

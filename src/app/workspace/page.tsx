@@ -9,6 +9,7 @@ import { MeetingRoomChat } from '@/components/workspace/MeetingRoomChat';
 import { RoutinesPanel } from '@/components/workspace/RoutinesPanel';
 import { UpgradeVietQrModal } from '@/components/workspace/UpgradeVietQrModal';
 import { IndustryTemplateModal } from '@/components/workspace/IndustryTemplateModal';
+import { RealDeliverablesStudio } from '@/components/workspace/RealDeliverablesStudio';
 import {
   ByokSettingsModal,
   DEFAULT_BYOK_SETTINGS,
@@ -102,6 +103,23 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     setByokSettings(loadByokSettings());
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (
+        tabParam === 'deliverables' ||
+        tabParam === 'files' ||
+        tabParam === 'inbox' ||
+        tabParam === 'roster' ||
+        tabParam === 'routines' ||
+        tabParam === 'apps' ||
+        tabParam === 'room'
+      ) {
+        setActiveTab(tabParam);
+      }
+    } catch {
+      // Ignore invalid search params
+    }
     try {
       const raw = window.localStorage.getItem(ORG_STORAGE_KEY);
       if (raw) {
@@ -273,6 +291,7 @@ export default function WorkspacePage() {
           activeIndustryName={activeIndustryTemplate.shortName}
           sampleCommands={activeIndustryTemplate.sampleCommands}
           onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
+          onOpenDeliverables={() => setActiveTab('deliverables')}
           selectedBotId={selectedBotId}
           onSelectBotId={setSelectedBotId}
           onToggleBotActive={handleToggleBotActive}
@@ -281,6 +300,14 @@ export default function WorkspacePage() {
           onRequestAddDepartment={() => setShowAddDeptModal(true)}
           onRequestAddBot={handleOpenAddBotModal}
           onRequestEditBot={(bot) => setEditingBot(bot)}
+        />
+      )}
+
+      {activeTab === 'deliverables' && (
+        <RealDeliverablesStudio
+          uiTheme={uiTheme}
+          onRecordFile={org.recordGeneratedFile}
+          onOpenTeamFiles={() => setActiveTab('files')}
         />
       )}
 

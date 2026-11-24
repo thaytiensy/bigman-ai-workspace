@@ -6,6 +6,7 @@ export type WorkspaceMode = 'desktop_free' | 'cloud_247';
 
 export type WorkspaceTab =
   | 'inbox'
+  | 'deliverables'
   | 'office3d'
   | 'roster'
   | 'room'
@@ -14,6 +15,20 @@ export type WorkspaceTab =
   | 'files';
 
 export type WorkspaceUiTheme = 'light' | 'dark';
+
+export interface TeamDeliverableFile {
+  id: string;
+  title: string;
+  fileName: string;
+  format: 'csv' | 'doc';
+  mimeType: string;
+  content: string;
+  createdByName: string;
+  createdByRole: string;
+  botId?: string;
+  summary: string;
+  createdAt: string;
+}
 
 /**
  * Hỗ trợ 4 phòng ban chuẩn mặc định + mở rộng không giới hạn tên phòng ban tùy biến.
