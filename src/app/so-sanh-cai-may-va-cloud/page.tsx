@@ -35,7 +35,7 @@ export default function CompareHybridPage() {
     <>
       <JsonLd includeFaq />
 
-      <section className="bg-grid-subtle border-b border-slate-200 py-12 sm:py-16">
+      <section className="bg-hero-aurora border-b border-slate-200 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <Link
             href="/"
@@ -64,8 +64,8 @@ export default function CompareHybridPage() {
               </div>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Bạn là cá nhân muốn trải nghiệm quy trình đa bot miễn phí 0đ với tối đa 2 Bot và 1
-                phòng họp cơ bản, đã có sẵn API key AI riêng (BYOK) và chỉ cần chạy khi đang mở máy
-                tính — hoặc mua bản quyền Desktop Pro License 1.890.000đ/máy.
+                phòng họp cơ bản, mở lên dùng ngay khi đang bật máy tính — hoặc nâng cấp bản quyền
+                Desktop Pro License 1.890.000đ/máy.
               </p>
             </div>
 
@@ -77,7 +77,7 @@ export default function CompareHybridPage() {
               <p className="mt-2 text-sm leading-relaxed text-indigo-900">
                 Bạn cần đội ngũ 5–10+ nhân viên AI tự quét đơn hàng, chạy báo cáo sáng, trực SEO và
                 CSKH 24/7 kể cả khi tắt máy, máy tính cá nhân cấu hình yếu, hoặc muốn quản lý ngay
-                trên điện thoại (chọn BYOK hoặc gói kèm sẵn AI Credits, giảm 20% theo năm).
+                trên điện thoại (chọn Trọn gói sẵn AI Credits dùng ngay hoặc Hạ tầng tiết kiệm, giảm 20% theo năm).
               </p>
             </div>
           </div>

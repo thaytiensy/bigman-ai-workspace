@@ -72,7 +72,7 @@ export default function WorkspacePage() {
   const [ownerToast, setOwnerToast] = useState<string | null>(null);
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('desktop_free');
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('office3d');
-  const [uiTheme, setUiTheme] = useState<WorkspaceUiTheme>('light');
+  const [uiTheme, setUiTheme] = useState<WorkspaceUiTheme>('dark');
   const [rosterSubView, setRosterSubView] = useState<'grid' | 'kanban'>('grid');
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -112,6 +112,16 @@ export default function WorkspacePage() {
           'Đã kích hoạt Quyền Chủ Ứng Dụng — Mở khóa toàn bộ không giới hạn và đã lưu vĩnh viễn trên trình duyệt này.'
         );
       }
+    }
+
+    // 1b. Restore saved UI theme (defaults to dark hologram theme)
+    try {
+      const savedTheme = window.localStorage.getItem('tochuc_ai_ui_theme_v1');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        setUiTheme(savedTheme);
+      }
+    } catch {
+      // Ignore storage errors
     }
 
     // 2. Restore tab from query params
@@ -161,6 +171,18 @@ export default function WorkspacePage() {
     const timer = window.setTimeout(() => setOwnerToast(null), 6000);
     return () => window.clearTimeout(timer);
   }, [ownerToast]);
+
+  const handleToggleUiTheme = () => {
+    setUiTheme((prev) => {
+      const next: WorkspaceUiTheme = prev === 'light' ? 'dark' : 'light';
+      try {
+        window.localStorage.setItem('tochuc_ai_ui_theme_v1', next);
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
 
   const activeBotsCount = bots.filter((b) => b.isActive).length;
 
@@ -329,6 +351,7 @@ export default function WorkspacePage() {
       isOwnerUnlimited={isOwnerUnlimited}
       onSignOutOwner={handleSignOutOwner}
       uiTheme={uiTheme}
+      onToggleTheme={handleToggleUiTheme}
       onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
       activeIndustryName={activeIndustryTemplate.shortName}
       onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
@@ -364,7 +387,7 @@ export default function WorkspacePage() {
           org={org}
           workspaceMode={workspaceMode}
           uiTheme={uiTheme}
-          onToggleUiTheme={() => setUiTheme((t) => (t === 'light' ? 'dark' : 'light'))}
+          onToggleUiTheme={handleToggleUiTheme}
           activeIndustryName={activeIndustryTemplate.shortName}
           sampleCommands={activeIndustryTemplate.sampleCommands}
           onOpenIndustryModal={() => setIsIndustryModalOpen(true)}

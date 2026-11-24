@@ -24,7 +24,7 @@ export function JsonLd({ includeFaq = true }: JsonLdProps) {
         priceCurrency: "VND",
         availability: "https://schema.org/InStock",
         description:
-          "Miễn phí 0đ trên máy cá nhân: tối đa 2 Bot, 1 phòng họp cơ bản, chạy khi bật máy, tự gắn API key BYOK.",
+          "Miễn phí 0đ trên máy cá nhân: tối đa 2 Bot, 1 phòng họp cơ bản, mở lên dùng ngay khi bật máy.",
       },
       {
         "@type": "Offer",
@@ -37,11 +37,11 @@ export function JsonLd({ includeFaq = true }: JsonLdProps) {
       ...CLOUD_TIERS.flatMap((tier) => [
         {
           "@type": "Offer",
-          name: `${tier.name} (BYOK)`,
+          name: `${tier.name} (Hạ tầng tiết kiệm)`,
           price: String(tier.byokMonthlyVnd),
           priceCurrency: "VND",
           availability: "https://schema.org/InStock",
-          description: `${tier.botCapacityLabel} — tự gắn API key riêng (giảm 20% khi đóng năm).`,
+          description: `${tier.botCapacityLabel} — gói hạ tầng Cloud 24/7 tiết kiệm (giảm 20% khi đóng năm).`,
         },
         {
           "@type": "Offer",

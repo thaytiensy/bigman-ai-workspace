@@ -22,16 +22,18 @@ export function Navbar() {
         <Link
           href="/"
           className="flex items-center gap-2.5 text-slate-900 transition-opacity hover:opacity-90"
-          aria-label={`Trang chủ ${BRAND_CONFIG.name}`}
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold tracking-tight text-white shadow-sm">
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-600 text-sm font-bold tracking-tight text-white shadow-sm"
+          >
             {BRAND_CONFIG.logoMark}
           </span>
           <div className="flex flex-col leading-tight">
             <span className="text-base font-bold tracking-tight text-slate-900">
               {BRAND_CONFIG.name}
             </span>
-            <span className="text-[11px] font-medium text-slate-500">
+            <span className="text-[11px] font-medium text-slate-600">
               Cài Máy &amp; Cloud 24/7
             </span>
           </div>

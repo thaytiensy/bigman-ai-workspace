@@ -14,7 +14,7 @@ export const BRAND_CONFIG = {
   /** Định vị thương mại cốt lõi */
   headline: "Tổ Chức Nhân Viên AI — Nền tảng Đội Ngũ Nhân Sự AI Đa Bot cho Cá nhân, Chủ shop & Doanh nghiệp Việt",
   subheadline:
-    "Bắt đầu miễn phí 0đ với Bản Cài Máy (tối đa 2 Bot, dùng API key riêng) hoặc nâng cấp Thuê Web Cloud chạy tự động 24/7 không phụ thuộc cấu hình máy. Tích hợp sẵn 4 Phòng ban AI theo ngành — bấm 1 chạm là làm việc.",
+    "Bắt đầu miễn phí 0đ với Bản Cài Máy (tối đa 2 Bot, mở lên dùng ngay) hoặc nâng cấp Thuê Web Cloud chạy tự động 24/7 không phụ thuộc cấu hình máy. Tích hợp sẵn 4 Phòng ban AI theo ngành — bấm 1 chạm là làm việc.",
 
   /** Tên miền chính thức (tự cập nhật khi gắn tên miền riêng qua biến môi trường) */
   siteUrl:

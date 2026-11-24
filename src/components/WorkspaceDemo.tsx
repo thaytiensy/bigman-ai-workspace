@@ -245,7 +245,7 @@ export function WorkspaceDemo({
                     : "border-slate-200 bg-white/70 hover:border-slate-300 hover:bg-white"
                 }`}
               >
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
                   Phòng ban 0{idx + 1}
                 </span>
                 <span
@@ -272,7 +272,7 @@ export function WorkspaceDemo({
               </div>
               <div className="text-xs sm:text-sm">
                 <span className="font-semibold text-white">{department.name}</span>
-                <span className="ml-2 hidden text-slate-400 sm:inline">
+                <span className="ml-2 hidden text-slate-300 sm:inline">
                   · {activeBotCount}/{department.bots.length} bot hoạt động
                 </span>
               </div>
@@ -361,7 +361,7 @@ export function WorkspaceDemo({
                     href={department.externalDemo.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-sky-700"
+                    className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-sky-800"
                   >
                     {department.externalDemo.label}
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -506,7 +506,7 @@ export function WorkspaceDemo({
                               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700">
                                 {step.actionTag}
                               </span>
-                              <span className="font-mono text-[11px] text-slate-400">
+                              <span className="font-mono text-[11px] text-slate-600">
                                 {step.durationLabel}
                               </span>
                             </div>

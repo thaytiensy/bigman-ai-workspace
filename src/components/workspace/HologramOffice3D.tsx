@@ -581,19 +581,25 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <Building2 size={18} className="text-blue-600 dark:text-cyan-400" />
+              <Building2 size={18} className={isLight ? 'text-indigo-700' : 'text-cyan-400'} />
               <h1 className="text-base md:text-lg font-extrabold tracking-tight">
                 Văn phòng 3D
               </h1>
               <span
                 className={`text-xs font-semibold ${
-                  isLight ? 'text-slate-500' : 'text-slate-400'
+                  isLight ? 'text-slate-600' : 'text-slate-300'
                 }`}
               >
                 {org.officeBots.length} bot · {org.departments.length} phòng ban
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                  isLight
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-emerald-500/15 text-emerald-300 border-emerald-400/35'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 {workingCount} đang làm việc
               </span>
               {org.pendingApprovalsCount > 0 && (
@@ -603,7 +609,11 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
                     setKpiInitialSection('kanban');
                     setShowKpiModal(true);
                   }}
-                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/35 hover:bg-amber-500/25 transition"
+                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition ${
+                    isLight
+                      ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+                      : 'bg-amber-500/15 text-amber-300 border-amber-400/35 hover:bg-amber-500/25'
+                  }`}
                 >
                   <ShieldAlert size={12} /> {org.pendingApprovalsCount} chờ duyệt
                 </button>
@@ -611,7 +621,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
             </div>
             <p
               className={`text-xs mt-0.5 ${
-                isLight ? 'text-slate-500' : 'text-slate-400'
+                isLight ? 'text-slate-600' : 'text-slate-300'
               }`}
             >
               Quan sát các bot làm việc trực tiếp tại bàn, xoay góc nhìn 3D và giao việc / họp nhóm ngay tại chỗ.
@@ -646,7 +656,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
             <button
               type="button"
               onClick={onOpenDeliverables}
-              className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 flex items-center gap-1.5 shadow-xs transition"
+              className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/70 flex items-center gap-1.5 shadow-xs transition"
             >
               <Sparkles size={14} />
               <span>Xưởng Việc Thật · Không API</span>
@@ -1218,21 +1228,33 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
 
               <form
                 onSubmit={handleSendCommand}
-                className="flex items-center gap-2 pl-4 pr-2 py-2 rounded-full bg-white/95 dark:bg-slate-950/92 backdrop-blur-xl border border-cyan-400/50 shadow-[0_8px_32px_rgba(0,0,0,0.45)]"
+                className={`flex items-center gap-2 pl-4 pr-2 py-2 rounded-full backdrop-blur-xl border border-cyan-400/50 shadow-[0_8px_32px_rgba(0,0,0,0.45)] ${
+                  isLight ? 'bg-white/95' : 'bg-[#041126]/95'
+                }`}
               >
                 <input
                   ref={commandInputRef}
+                  id="office3d-command-input"
+                  name="office3dCommandInput"
+                  aria-label="Nhắn lệnh cho các bot trong văn phòng 3D"
                   type="text"
                   value={commandInput}
                   onChange={(e) => handleCommandInputChange(e.target.value)}
                   placeholder="Nhắn cho các bot: gắn thẻ bằng @Tên, phòng ban hoặc @everyone"
-                  className="flex-1 bg-transparent outline-none text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+                  className={`flex-1 bg-transparent outline-none text-xs md:text-sm ${
+                    isLight ? 'text-slate-900 placeholder:text-slate-500' : 'text-slate-100 placeholder:text-slate-300'
+                  }`}
                 />
                 <button
                   type="submit"
                   disabled={!commandInput.trim()}
+                  aria-label="Gửi lệnh trực tiếp tới các bot được gắn thẻ"
                   title="Gửi lệnh trực tiếp tới các bot được gắn thẻ"
-                  className="w-8 h-8 rounded-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 flex items-center justify-center flex-shrink-0 transition shadow-sm"
+                  className={`w-8 h-8 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 flex items-center justify-center flex-shrink-0 transition shadow-sm ${
+                    isLight
+                      ? 'disabled:bg-slate-200 disabled:text-slate-500'
+                      : 'disabled:bg-slate-800 disabled:text-slate-300'
+                  }`}
                 >
                   <ArrowUp size={16} strokeWidth={2.5} />
                 </button>
@@ -1240,7 +1262,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
             </div>
 
             {/* BOTTOM-RIGHT VERSION CHIP */}
-            <div className="hidden lg:block absolute bottom-3.5 right-3.5 z-10 px-2.5 py-1 rounded-lg bg-slate-950/75 border border-slate-800 text-[10px] font-mono text-slate-400">
+            <div className="hidden lg:block absolute bottom-3.5 right-3.5 z-10 px-2.5 py-1 rounded-lg bg-slate-950/85 border border-slate-700 text-[10px] font-mono text-slate-300">
               v2.7 · {workspaceMode === 'cloud_247' ? 'Cloud 24/7' : 'Desktop Free'}
             </div>
           </div>

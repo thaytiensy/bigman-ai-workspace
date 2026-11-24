@@ -9,7 +9,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Bản Cài Máy và Bản Thuê Cloud 24/7 khác nhau điểm nào quan trọng nhất?",
     answer:
-      "Bản Cài Máy Miễn Phí (Desktop Free — 0đ) giúp bạn trải nghiệm ngay trên máy tính Windows/macOS cá nhân, nhưng giới hạn tối đa 2 Bot, 1 phòng họp cơ bản, chỉ chạy khi bật máy và tự gắn API key riêng (hoặc mua Desktop Pro License 1.890.000đ/máy). Bản Thuê Web Cloud (từ 199.000đ/tháng) chạy trực tiếp trên máy chủ đám mây 24/7 kể cả khi tắt máy, mở được trên điện thoại, mở khóa 5–10 đến không giới hạn Bot và có tùy chọn kèm sẵn AI Credits.",
+      "Bản Cài Máy Miễn Phí (Desktop Free — 0đ) giúp bạn trải nghiệm ngay trên máy tính Windows/macOS cá nhân, giới hạn tối đa 2 Bot, 1 phòng họp cơ bản và chỉ chạy khi bật máy (hoặc nâng cấp Desktop Pro License 1.890.000đ/máy). Bản Thuê Web Cloud (từ 199.000đ/tháng) chạy trực tiếp trên máy chủ đám mây 24/7 kể cả khi tắt máy, mở được trên điện thoại, mở khóa 5–10 đến không giới hạn Bot và có sẵn gói Trọn gói AI Credits không cần thiết lập kỹ thuật.",
   },
   {
     question: "Máy tính cấu hình yếu hoặc chỉ dùng điện thoại có sử dụng được Tổ Chức Nhân Viên AI không?",
@@ -27,9 +27,9 @@ export const FAQ_ITEMS: FaqItem[] = [
       "Có. Cả Bản Cài Máy và Bản Thuê Cloud đều dùng chung 1 cấu trúc lõi thống nhất. Khi công việc tăng lên và bạn cần hơn 2 Bot, chạy lịch ngầm 24/7 hoặc đồng bộ điện thoại, toàn bộ cấu hình bot và quy trình làm việc có thể chuyển lên gói Cloud nhanh chóng mà không phải thiết lập lại từ đầu.",
   },
   {
-    question: "Chi phí AI hoạt động ra sao? Gói BYOK và gói kèm AI Credits khác nhau thế nào?",
+    question: "Chi phí thuê Cloud hoạt động ra sao? Gói Trọn Gói Sẵn AI và Hạ Tầng Tiết Kiệm khác nhau thế nào?",
     answer:
-      "Với BYOK (tự gắn API key riêng), bạn chỉ trả phí hạ tầng từ 199.000đ/tháng trên Cloud (hoặc 0đ trên Desktop Free) và chủ động thanh toán trực tiếp cho nhà cung cấp AI theo mức dùng. Nếu muốn trọn gói tiện lợi không cần thẻ quốc tế, bạn chọn gói kèm sẵn AI Credits: Starter 349.000đ/tháng (3M Credits), Pro Team 799.000đ/tháng (10M Credits) hoặc Business 1.990.000đ/tháng (30M Credits) — giảm thêm 20% khi đóng theo năm.",
+      "Nếu muốn mở lên dùng ngay không cần thẻ quốc tế hay cấu hình kỹ thuật, bạn chọn gói Trọn Gói Sẵn AI Credits: Starter 349.000đ/tháng (3M Credits), Pro Team 799.000đ/tháng (10M Credits) hoặc Business 1.990.000đ/tháng (30M Credits). Nếu đội nhóm đã có sẵn hạ tầng vận hành riêng, bạn chọn gói Hạ Tầng Tiết Kiệm từ 199.000đ/tháng — tất cả đều giảm thêm 20% khi đóng theo năm.",
   },
   {
     question: "Dữ liệu cửa hàng, khách hàng và tài liệu nội bộ có được bảo mật không?",

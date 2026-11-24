@@ -9,9 +9,8 @@ export function FloatingContact() {
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-transform hover:scale-[1.02] hover:bg-indigo-700"
-        aria-label={`Nhắn Zalo Admin ${BRAND_CONFIG.contact.zaloPhone}`}
       >
-        <MessageCircle className="h-4 w-4" />
+        <MessageCircle aria-hidden="true" className="h-4 w-4" />
         <span className="hidden sm:inline">Tư vấn Zalo: {BRAND_CONFIG.contact.zaloPhone}</span>
         <span className="sm:hidden">Zalo Admin</span>
       </a>

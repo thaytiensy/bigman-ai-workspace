@@ -36,11 +36,11 @@ export const DESKTOP_EDITION = {
   proLicensePriceVnd: 1890000,
   proLicenseLabel: "1.890.000đ / máy (Bản quyền vĩnh viễn theo máy)",
   subtitle:
-    "Bắt đầu hoàn toàn miễn phí ngay trên máy Windows/macOS cá nhân, giữ dữ liệu cục bộ và chủ động gắn API key AI riêng (BYOK).",
+    "Bắt đầu hoàn toàn miễn phí ngay trên máy Windows/macOS cá nhân, dữ liệu lưu cục bộ ngay trên máy và mở lên dùng ngay không cần thiết lập rườm rà.",
   benefits: [
     "Desktop Free 0đ: cài nhanh trên Windows & macOS, trải nghiệm ngay 1 phòng họp cơ bản",
     "Dữ liệu hội thoại & ghi chú lưu cục bộ ngay trên máy tính cá nhân",
-    "Tự gắn API key AI riêng (BYOK) — kiểm soát trực tiếp chi phí gọi AI",
+    "Mở lên dùng ngay trên máy cá nhân, không mất phí thuê bao hằng tháng",
     "Có thể nâng cấp lên Desktop Pro License (1.890.000đ/máy) nếu muốn dùng lâu dài trên máy mạnh",
   ],
   intentionalLimits: [
@@ -66,7 +66,7 @@ export const CLOUD_TIERS: CloudTier[] = [
     limits: [
       "Tối đa 5 Bot hoạt động đồng thời, chạy tự động 24/7 trên Cloud",
       "Không cần máy mạnh — mở trình duyệt máy tính hoặc điện thoại là dùng",
-      "Chọn linh hoạt: 199.000đ/tháng (BYOK) hoặc 349.000đ/tháng (gồm 3M AI Credits)",
+      "Chọn linh hoạt: 349.000đ/tháng (Trọn gói 3M AI Credits) hoặc 199.000đ/tháng (Hạ tầng tiết kiệm)",
       "Hỗ trợ cài sẵn 1 Kho Đội Bot theo ngành + kích hoạt nhanh qua VietQR",
     ],
   },
@@ -84,7 +84,7 @@ export const CLOUD_TIERS: CloudTier[] = [
     limits: [
       "Mở khóa tới 10 Bot & nhiều phòng ban phối hợp giao việc chéo 24/7",
       "Lịch chạy tự động (Cron) 24/7 không giới hạn khung giờ theo giờ Việt Nam",
-      "Chọn linh hoạt: 499.000đ/tháng (BYOK) hoặc 799.000đ/tháng (gồm 10M AI Credits)",
+      "Chọn linh hoạt: 799.000đ/tháng (Trọn gói 10M AI Credits) hoặc 499.000đ/tháng (Hạ tầng tiết kiệm)",
       "Hỗ trợ cài sẵn đủ 4 Kho Đội Bot theo ngành & chuyển dữ liệu từ Bản Cài Máy",
     ],
   },
@@ -101,7 +101,7 @@ export const CLOUD_TIERS: CloudTier[] = [
     limits: [
       "Không giới hạn số lượng Bot & hỗ trợ tới 10 tài khoản nhân sự dùng chung",
       "Không gian dữ liệu tách biệt theo phòng ban, sẵn sàng gắn tên miền riêng",
-      "Chọn linh hoạt: 1.290.000đ/tháng (BYOK) hoặc 1.990.000đ/tháng (gồm 30M AI Credits)",
+      "Chọn linh hoạt: 1.990.000đ/tháng (Trọn gói 30M AI Credits) hoặc 1.290.000đ/tháng (Hạ tầng tiết kiệm)",
       "Hỗ trợ thiết kế quy trình riêng & ưu tiên kỹ thuật trực tiếp từ Admin",
     ],
   },
@@ -111,7 +111,7 @@ export const HYBRID_COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: "Chi phí khởi điểm",
     desktop: "Desktop Free 0đ (hoặc Desktop Pro License 1.890.000đ/máy)",
-    cloud: "Từ 199.000đ/tháng (BYOK) hoặc 349.000đ/tháng (gồm AI Credits) · Giảm 20% gói năm",
+    cloud: "Từ 199.000đ/tháng (Hạ tầng) hoặc 349.000đ/tháng (Trọn gói sẵn AI) · Giảm 20% gói năm",
     highlightCloud: true,
   },
   {
@@ -139,9 +139,9 @@ export const HYBRID_COMPARISON_ROWS: ComparisonRow[] = [
     highlightCloud: true,
   },
   {
-    feature: "Nguồn AI (BYOK / AI Credits trọn gói)",
-    desktop: "Tự gắn API key AI riêng (BYOK)",
-    cloud: "Tùy chọn BYOK hoặc gói kèm sẵn 3M / 10M / 30M AI Credits tiện lợi",
+    feature: "Gói vận hành & Hạn mức AI",
+    desktop: "Xử lý trực tiếp trên máy cá nhân, mở lên dùng ngay",
+    cloud: "Trọn gói sẵn 3M / 10M / 30M AI Credits (Không cần thiết lập) hoặc Hạ tầng tiết kiệm",
     highlightCloud: true,
   },
   {

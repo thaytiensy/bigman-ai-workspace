@@ -6,7 +6,7 @@ import {
   Check,
   Cloud,
   Copy,
-  KeyRound,
+  Server,
   Laptop,
   Mail,
   MessageCircle,
@@ -25,9 +25,9 @@ import {
 
 export function HybridComparison() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const [aiSourceMode, setAiSourceMode] = useState<"byok" | "credits">("byok");
+  const [aiSourceMode, setAiSourceMode] = useState<"byok" | "credits">("credits");
   const [selectedEdition, setSelectedEdition] = useState<string>(
-    "Pro Team Cloud (24/7, 10 Bot — BYOK 499.000đ/tháng)"
+    "Pro Team Cloud (24/7, 10 Bot — gồm 10M AI Credits 799.000đ/tháng)"
   );
   const [selectedIndustry, setSelectedIndustry] = useState<string>(DEPARTMENTS[0].name);
   const [customerNote, setCustomerNote] = useState<string>("");
@@ -176,7 +176,7 @@ export function HybridComparison() {
                 Bản Thuê Web SaaS Cloud 24/7
               </h3>
               <p className="mt-1 text-sm font-semibold text-indigo-700">
-                Chọn linh hoạt BYOK (tự gắn API key) hoặc trọn gói kèm sẵn 3M – 30M AI Credits
+                Trọn gói sẵn 3M – 30M AI Credits dùng ngay hoặc Hạ tầng tiết kiệm linh hoạt
               </p>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Giải phóng hoàn toàn máy tính cá nhân. Đội ngũ nhân viên AI làm việc liên tục trên
@@ -229,8 +229,8 @@ export function HybridComparison() {
                 Bảng giá Thuê Web Cloud 24/7 — {BRAND_CONFIG.name}
               </h3>
               <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-                Mỗi gói đều có 2 lựa chọn nguồn AI: <strong>BYOK (tự gắn API key)</strong> hoặc{" "}
-                <strong>kèm sẵn AI Credits</strong>. Giảm 20% khi thanh toán theo năm.
+                Mỗi gói đều có 2 lựa chọn: <strong>Trọn gói sẵn AI Credits (Không cần thiết lập)</strong> hoặc{" "}
+                <strong>Hạ tầng tiết kiệm</strong>. Giảm 20% khi thanh toán theo năm.
               </p>
             </div>
 
@@ -238,20 +238,8 @@ export function HybridComparison() {
               <div
                 className="inline-flex rounded-xl border border-slate-200 bg-white p-1"
                 role="group"
-                aria-label="Chọn nguồn AI BYOK hoặc kèm AI Credits"
+                aria-label="Chọn gói Trọn gói sẵn AI hoặc Hạ tầng tiết kiệm"
               >
-                <button
-                  type="button"
-                  onClick={() => setAiSourceMode("byok")}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    aiSourceMode === "byok"
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <KeyRound className="h-3.5 w-3.5" />
-                  Dùng API Key (BYOK)
-                </button>
                 <button
                   type="button"
                   onClick={() => setAiSourceMode("credits")}
@@ -262,7 +250,19 @@ export function HybridComparison() {
                   }`}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
-                  Kèm AI Credits
+                  Trọn gói sẵn AI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiSourceMode("byok")}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    aiSourceMode === "byok"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Server className="h-3.5 w-3.5" />
+                  Hạ tầng tiết kiệm
                 </button>
               </div>
 
@@ -287,7 +287,7 @@ export function HybridComparison() {
                   onClick={() => setBillingCycle("yearly")}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                     billingCycle === "yearly"
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-emerald-700 text-white"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -310,7 +310,7 @@ export function HybridComparison() {
                 billingCycle === "yearly" ? getYearlyMonthlyPrice(altMonthly) : altMonthly;
 
               const yearlySavings = (baseMonthly - getYearlyMonthlyPrice(baseMonthly)) * 12;
-              const modeLabel = aiSourceMode === "byok" ? "BYOK" : tier.creditsLabel;
+              const modeLabel = aiSourceMode === "byok" ? "Hạ tầng tiết kiệm" : tier.creditsLabel;
 
               return (
                 <div
@@ -343,12 +343,12 @@ export function HybridComparison() {
                     </div>
 
                     <p className="mt-1 text-xs font-semibold text-slate-700">
-                      Đang xem: {aiSourceMode === "byok" ? "Bản BYOK (tự gắn API key)" : `Bản ${tier.creditsLabel}`}
+                      Đang xem: {aiSourceMode === "byok" ? "Gói Hạ tầng tiết kiệm" : `Trọn gói ${tier.creditsLabel}`}
                     </p>
                     <p className="mt-0.5 text-xs text-slate-500">
                       {aiSourceMode === "byok"
                         ? `Hoặc ${formatVnd(altDisplayPrice)}/tháng (${tier.creditsLabel})`
-                        : `Hoặc ${formatVnd(altDisplayPrice)}/tháng (BYOK tự gắn API key)`}
+                        : `Hoặc ${formatVnd(altDisplayPrice)}/tháng (Gói Hạ tầng tiết kiệm)`}
                     </p>
 
                     {billingCycle === "yearly" && (
@@ -491,28 +491,28 @@ export function HybridComparison() {
                     className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   >
                     <option value="Bản Cài Máy Miễn Phí (Desktop Free — 0đ, tối đa 2 Bot)">
-                      Bản Cài Máy Miễn Phí — 0đ (Tối đa 2 Bot, BYOK)
+                      Bản Cài Máy Miễn Phí — 0đ (Tối đa 2 Bot, dùng ngay)
                     </option>
                     <option value="Desktop Pro License (1.890.000đ/máy)">
                       Desktop Pro License — 1.890.000đ/máy
                     </option>
-                    <option value="Starter Cloud (24/7, 5 Bot — BYOK 199.000đ/tháng)">
-                      Starter Cloud (5 Bot) — 199.000đ/tháng (BYOK)
-                    </option>
                     <option value="Starter Cloud (24/7, 5 Bot — gồm 3M AI Credits 349.000đ/tháng)">
-                      Starter Cloud (5 Bot) — 349.000đ/tháng (3M Credits)
+                      Starter Cloud (5 Bot) — 349.000đ/tháng (Trọn gói 3M Credits)
                     </option>
-                    <option value="Pro Team Cloud (24/7, 10 Bot — BYOK 499.000đ/tháng)">
-                      Pro Team Cloud (10 Bot) — 499.000đ/tháng (BYOK)
+                    <option value="Starter Cloud (24/7, 5 Bot — Hạ tầng tiết kiệm 199.000đ/tháng)">
+                      Starter Cloud (5 Bot) — 199.000đ/tháng (Hạ tầng tiết kiệm)
                     </option>
                     <option value="Pro Team Cloud (24/7, 10 Bot — gồm 10M AI Credits 799.000đ/tháng)">
-                      Pro Team Cloud (10 Bot) — 799.000đ/tháng (10M Credits)
+                      Pro Team Cloud (10 Bot) — 799.000đ/tháng (Trọn gói 10M Credits)
                     </option>
-                    <option value="Business Cloud (Không giới hạn Bot, 10 tài khoản — BYOK 1.290.000đ/tháng)">
-                      Business Cloud (Không giới hạn Bot) — 1.290.000đ/tháng (BYOK)
+                    <option value="Pro Team Cloud (24/7, 10 Bot — Hạ tầng tiết kiệm 499.000đ/tháng)">
+                      Pro Team Cloud (10 Bot) — 499.000đ/tháng (Hạ tầng tiết kiệm)
                     </option>
                     <option value="Business Cloud (Không giới hạn Bot, 10 tài khoản — gồm 30M AI Credits 1.990.000đ/tháng)">
-                      Business Cloud (Không giới hạn Bot) — 1.990.000đ/tháng (30M Credits)
+                      Business Cloud (Không giới hạn Bot) — 1.990.000đ/tháng (Trọn gói 30M Credits)
+                    </option>
+                    <option value="Business Cloud (Không giới hạn Bot, 10 tài khoản — Hạ tầng tiết kiệm 1.290.000đ/tháng)">
+                      Business Cloud (Không giới hạn Bot) — 1.290.000đ/tháng (Hạ tầng tiết kiệm)
                     </option>
                   </select>
                 </div>

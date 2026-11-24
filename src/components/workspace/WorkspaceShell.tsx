@@ -15,12 +15,14 @@ import {
   LogOut,
   Mail,
   Menu,
+  Moon,
   Pencil,
   PhoneCall,
   Plus,
   Rocket,
   Search,
   Sparkles,
+  Sun,
   Trash2,
   Users,
   X,
@@ -40,6 +42,7 @@ interface WorkspaceShellProps {
   isOwnerUnlimited?: boolean;
   onSignOutOwner?: () => void;
   uiTheme: WorkspaceUiTheme;
+  onToggleTheme?: () => void;
   onOpenUpgradeModal: () => void;
   activeIndustryName?: string;
   onOpenIndustryModal?: () => void;
@@ -61,6 +64,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   isOwnerUnlimited = false,
   onSignOutOwner,
   uiTheme,
+  onToggleTheme,
   onOpenUpgradeModal,
   activeIndustryName = 'TMĐT & Shop',
   onOpenIndustryModal,
@@ -151,7 +155,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           <button
             type="button"
             onClick={() => onTabChange('deliverables')}
-            className="text-xs px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold"
+            className="text-xs px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-bold"
           >
             Việc Thật
           </button>
@@ -200,8 +204,8 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
       <aside
         className={`fixed md:sticky top-16 left-0 h-[calc(100vh-4rem)] z-30 w-72 flex-shrink-0 flex flex-col border-r transition-transform duration-200 ${
           isLight
-            ? 'bg-[#f7f7f8] border-slate-200/90 text-slate-800'
-            : 'bg-[#040d1a] border-slate-800/90 text-slate-100'
+            ? 'bg-[#f8fafc] border-slate-200/90 text-slate-800'
+            : 'bg-gradient-to-b from-[#061126] via-[#040d1d] to-[#020814] border-cyan-500/15 text-slate-100'
         } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
         {/* TOP MODE SELECTOR + QUICK ADD */}
@@ -326,15 +330,32 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             )}
           </div>
 
+          {onToggleTheme && (
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              aria-label={isLight ? 'Chuyển sang giao diện Tối Hologram' : 'Chuyển sang giao diện Sáng'}
+              title={isLight ? 'Chuyển giao diện Tối' : 'Chuyển giao diện Sáng'}
+              className={`min-w-[30px] min-h-[30px] flex items-center justify-center rounded-xl border transition ${
+                isLight
+                  ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                  : 'bg-slate-900/90 border-cyan-500/25 text-cyan-300 hover:bg-slate-800'
+              }`}
+            >
+              {isLight ? <Moon size={14} /> : <Sun size={14} />}
+            </button>
+          )}
+
           <div className="relative">
             <button
               type="button"
               onClick={() => setQuickAddMenuOpen((v) => !v)}
+              aria-label="Thêm phòng ban, tuyển bot hoặc đổi mẫu ngành"
               title="Thêm phòng ban, tuyển bot hoặc đổi mẫu ngành"
-              className={`p-1.5 rounded-xl border transition ${
+              className={`min-w-[30px] min-h-[30px] flex items-center justify-center rounded-xl border transition ${
                 isLight
                   ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
-                  : 'bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800'
+                  : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:bg-slate-800'
               }`}
             >
               <Plus size={16} />
@@ -407,7 +428,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
               }`}
             >
               <span className="flex items-center gap-1.5 truncate">
-                <Layers size={13} className="text-indigo-500 dark:text-indigo-300 flex-shrink-0" />
+                <Layers size={13} className={isLight ? 'text-indigo-600 flex-shrink-0' : 'text-indigo-300 flex-shrink-0'} />
                 <span className="truncate">Ngành: {activeIndustryName}</span>
               </span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 font-semibold flex-shrink-0">
@@ -427,9 +448,9 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             }}
             className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-extrabold border transition ${
               activeTab === 'deliverables'
-                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                ? 'bg-emerald-700 border-emerald-600 text-white shadow-sm'
                 : isLight
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900 hover:bg-emerald-100'
                   : 'bg-emerald-500/15 border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/25'
             }`}
           >
@@ -441,7 +462,9 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
               className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${
                 activeTab === 'deliverables'
                   ? 'bg-white/20 text-white'
-                  : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-200'
+                  : isLight
+                    ? 'bg-emerald-100 text-emerald-900'
+                    : 'bg-emerald-500/25 text-emerald-200'
               }`}
             >
               Không API
@@ -458,13 +481,18 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                 : 'bg-slate-900/90 border-slate-800 text-slate-200 focus-within:border-cyan-500'
             }`}
           >
-            <Search size={13} className="opacity-50 flex-shrink-0" />
+            <Search size={13} aria-hidden="true" className={isLight ? 'text-slate-500 flex-shrink-0' : 'text-slate-400 flex-shrink-0'} />
             <input
+              id="workspace-sidebar-search"
+              name="workspaceSidebarSearch"
+              aria-label="Tìm kiếm bot, phòng ban"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm bot, phòng ban..."
-              className="w-full bg-transparent outline-none text-xs placeholder:opacity-60"
+              className={`w-full bg-transparent outline-none text-xs ${
+                isLight ? 'text-slate-900 placeholder:text-slate-500' : 'text-slate-100 placeholder:text-slate-400'
+              }`}
             />
             {searchQuery && (
               <button
@@ -498,7 +526,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             }`}
           >
             <span className="flex items-center gap-2.5">
-              <Inbox size={15} className={activeTab === 'inbox' ? 'text-cyan-600 dark:text-cyan-300' : 'opacity-70'} />
+              <Inbox size={15} className={activeTab === 'inbox' ? (isLight ? 'text-cyan-700' : 'text-cyan-300') : (isLight ? 'text-slate-600' : 'text-slate-300')} />
               <span>Hộp thư</span>
             </span>
             {org.unreadInboxCount > 0 && (
@@ -511,13 +539,13 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           {/* COLLAPSIBLE DEPARTMENTS & BOTS TREE */}
           <div className="space-y-1.5">
             <div className="px-2 flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider opacity-55">
+              <span className={`text-[11px] font-bold uppercase tracking-wider ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                 Phòng ban & Bot ({activeCount}/{org.officeBots.length})
               </span>
               <button
                 type="button"
                 onClick={onRequestAddDepartment}
-                className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-0.5"
+                className={`text-[11px] font-semibold hover:underline flex items-center gap-0.5 ${isLight ? 'text-cyan-800' : 'text-cyan-300'}`}
                 title="Thêm phòng ban không giới hạn"
               >
                 <Plus size={11} /> Phòng
@@ -549,28 +577,36 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                         style={{ backgroundColor: dept.colorHex }}
                       />
                       <span className="truncate">{dept.shortLabel}</span>
-                      <span className="text-[10px] font-normal opacity-50">({deptBots.length})</span>
+                      <span className={`text-[10px] font-normal ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>({deptBots.length})</span>
                     </button>
 
-                    <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100">
+                    <div className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => onRequestEditDepartment(dept)}
+                        aria-label={`Sửa ${dept.shortLabel}`}
                         title="Sửa phòng ban"
-                        className={`p-1 rounded ${
-                          isLight ? 'hover:bg-slate-300/70' : 'hover:bg-slate-800'
+                        className={`min-w-[26px] min-h-[26px] flex items-center justify-center p-1.5 rounded-md transition ${
+                          isLight
+                            ? 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                         }`}
                       >
-                        <Pencil size={11} />
+                        <Pencil size={12} />
                       </button>
                       {org.departments.length > 1 && (
                         <button
                           type="button"
                           onClick={() => onRequestDeleteDepartment(dept.id)}
+                          aria-label={`Xóa ${dept.shortLabel}`}
                           title="Xóa phòng ban"
-                          className="p-1 rounded hover:bg-rose-500/20 hover:text-rose-500"
+                          className={`min-w-[26px] min-h-[26px] flex items-center justify-center p-1.5 rounded-md transition ${
+                            isLight
+                              ? 'text-slate-600 hover:bg-rose-100 hover:text-rose-700'
+                              : 'text-slate-300 hover:bg-rose-500/20 hover:text-rose-300'
+                          }`}
                         >
-                          <Trash2 size={11} />
+                          <Trash2 size={12} />
                         </button>
                       )}
                     </div>
@@ -637,18 +673,26 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                                   <Lock size={10} className="text-amber-500 flex-shrink-0" />
                                 ) : (
                                   <span
-                                    className="text-[9px] font-semibold flex-shrink-0"
-                                    style={{ color: isWorking ? '#10b981' : '#94a3b8' }}
+                                    className="text-[10px] font-semibold flex-shrink-0"
+                                    style={{
+                                      color: isWorking
+                                        ? isLight
+                                          ? '#047857'
+                                          : '#34d399'
+                                        : isLight
+                                          ? '#475569'
+                                          : '#cbd5e1',
+                                    }}
                                   >
                                     {isWorking ? dutyMeta.shortLabel : '0 tok'}
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[10px] opacity-65 truncate">
+                              <div className={`text-[10px] truncate ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                                 {bot.roleBadge} · {bot.roleTitle}
                               </div>
                               {isWorking && bot.currentTaskTitle && (
-                                <div className="mt-1 flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-300 font-medium truncate">
+                                <div className={`mt-1 flex items-center gap-1 text-[10px] font-medium truncate ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
                                   <span className="truncate">{bot.currentTaskTitle}</span>
                                 </div>
@@ -664,8 +708,8 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                         onClick={() => onRequestAddBot(dept.id)}
                         className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1.5 transition ${
                           isLight
-                            ? 'text-slate-500 hover:text-cyan-700 hover:bg-slate-200/50'
-                            : 'text-slate-400 hover:text-cyan-300 hover:bg-slate-900'
+                            ? 'text-slate-600 hover:text-cyan-800 hover:bg-slate-200/50'
+                            : 'text-slate-300 hover:text-cyan-300 hover:bg-slate-900'
                         }`}
                       >
                         <Plus size={12} /> Thêm bot
@@ -690,11 +734,11 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           </div>
 
           {/* SECTION: CÔNG CỤ (5 items) */}
-          <div className="pt-1 border-t border-slate-200/70 dark:border-slate-800/80">
+          <div className={`pt-1 border-t ${isLight ? 'border-slate-200/80' : 'border-slate-800/80'}`}>
             <button
               type="button"
               onClick={() => setToolsExpanded((v) => !v)}
-              className="w-full px-2 py-1.5 flex items-center justify-between text-[11px] font-bold opacity-60 hover:opacity-100"
+              className={`w-full px-2 py-1.5 flex items-center justify-between text-[11px] font-bold transition ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white'}`}
             >
               <span>Công cụ</span>
               {toolsExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
@@ -737,12 +781,12 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                         <span>{item.label}</span>
                       </span>
                       {item.id === 'deliverables' && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 font-bold">
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isLight ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-500/20 text-emerald-300'}`}>
                           0 API
                         </span>
                       )}
                       {item.id === 'office3d' && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 font-bold">
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isLight ? 'bg-cyan-100 text-cyan-800' : 'bg-cyan-500/20 text-cyan-300'}`}>
                           3D
                         </span>
                       )}
@@ -805,7 +849,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold truncate">{BRANDING.name}</div>
-                <div className="text-[10px] opacity-55 font-mono">
+                <div className={`text-[10px] font-mono ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
                   {isOwnerFullActive ? 'Chủ sở hữu · Không giới hạn' : 'v2.7 · Cloud & Desktop'}
                 </div>
               </div>
@@ -815,18 +859,20 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                 href={BRANDING.contact.zaloUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`Zalo Hỗ trợ ${BRANDING.contact.zalo}`}
                 title={`Zalo Hỗ trợ: ${BRANDING.contact.zalo}`}
-                className={`p-1.5 rounded-lg transition ${
-                  isLight ? 'hover:bg-slate-100 text-emerald-600' : 'hover:bg-slate-800 text-emerald-400'
+                className={`min-w-[28px] min-h-[28px] flex items-center justify-center rounded-lg transition ${
+                  isLight ? 'hover:bg-slate-100 text-emerald-700' : 'hover:bg-slate-800 text-emerald-300'
                 }`}
               >
                 <PhoneCall size={13} />
               </a>
               <a
                 href={`mailto:${BRANDING.contact.email}`}
+                aria-label={`Gửi email hỗ trợ ${BRANDING.contact.email}`}
                 title={`Email: ${BRANDING.contact.email}`}
-                className={`p-1.5 rounded-lg transition ${
-                  isLight ? 'hover:bg-slate-100 text-blue-600' : 'hover:bg-slate-800 text-blue-400'
+                className={`min-w-[28px] min-h-[28px] flex items-center justify-center rounded-lg transition ${
+                  isLight ? 'hover:bg-slate-100 text-blue-700' : 'hover:bg-slate-800 text-sky-300'
                 }`}
               >
                 <Mail size={13} />

@@ -57,7 +57,7 @@ export default function HomePage() {
       <JsonLd includeFaq />
 
       {/* HERO SECTION */}
-      <section className="bg-grid-subtle relative overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-16 lg:pt-20">
+      <section className="bg-hero-aurora relative overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-16 lg:pt-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mx-auto max-w-4xl text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/90 px-3.5 py-1.5 text-xs font-semibold text-indigo-700 shadow-2xs sm:text-sm">
@@ -80,7 +80,7 @@ export default function HomePage() {
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/workspace?tab=deliverables"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 sm:text-base"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 py-3.5 text-sm font-semibold text-white shadow-md shadow-emerald-700/25 transition-all hover:-translate-y-0.5 hover:bg-emerald-800 sm:text-base"
               >
                 <Sparkles className="h-4 w-4" />
                 Mở Xưởng Việc Thật (Không cần API)
@@ -105,7 +105,7 @@ export default function HomePage() {
 
           {/* Official Brand Hero Showcase (Zero CLS) */}
           <div className="mx-auto mt-10 max-w-5xl">
-            <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-slate-950 p-1.5 shadow-2xl shadow-slate-900/15 sm:p-2">
+            <div className="overflow-hidden rounded-3xl border border-indigo-200/70 bg-slate-950 p-1.5 shadow-2xl shadow-indigo-950/20 ring-1 ring-indigo-500/15 sm:p-2">
               <div className="overflow-hidden rounded-2xl bg-slate-950">
                 <Image
                   src={HERO_IMAGE.src}
@@ -123,28 +123,28 @@ export default function HomePage() {
           <div className="mx-auto mt-8 max-w-5xl">
             <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 text-left shadow-sm sm:grid-cols-4 sm:gap-4 sm:p-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                   Kho dựng sẵn
                 </p>
                 <p className="mt-1 text-lg font-extrabold text-slate-900">4 Phòng ban AI</p>
-                <p className="text-xs text-slate-500">TikTok, SEO, GVCN, SME</p>
+                <p className="text-xs text-slate-600">TikTok, SEO, GVCN, SME</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                   Bản Cài Máy Free
                 </p>
                 <p className="mt-1 text-lg font-extrabold text-slate-900">0đ · Tối đa 2 Bot</p>
-                <p className="text-xs text-slate-500">Windows/macOS · BYOK</p>
+                <p className="text-xs text-slate-600">Windows/macOS · Dùng ngay</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                   Thuê Cloud 24/7
                 </p>
                 <p className="mt-1 text-lg font-extrabold text-indigo-700">Từ 199k/tháng</p>
-                <p className="text-xs text-slate-500">5–10+ Bot · Giảm 20%/năm</p>
+                <p className="text-xs text-slate-600">5–10+ Bot · Giảm 20%/năm</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                   Sản phẩm Live
                 </p>
                 <a
@@ -156,7 +156,7 @@ export default function HomePage() {
                   Trợ lý GVCN
                   <ExternalLink className="h-4 w-4" />
                 </a>
-                <p className="text-xs text-slate-500">Kiểm chứng thực tế ngay</p>
+                <p className="text-xs text-slate-600">Kiểm chứng thực tế ngay</p>
               </div>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function HomePage() {
               return (
                 <div
                   key={pillar.title}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs"
+                  className="card-elevated rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs hover:border-indigo-200"
                 >
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                     <Icon className="h-5 w-5" />
