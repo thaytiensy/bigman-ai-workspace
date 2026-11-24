@@ -23,9 +23,14 @@ import type {
   OfficeDepartment,
   SelfRepairReport,
 } from './types';
+import {
+  DEFAULT_INDUSTRY_ID,
+  inferScreenKindFromBadge,
+  type IndustryTemplate,
+} from '@/data/industryTemplates';
 import type { Bot, InboxEntry, WorkspaceMode } from '@/types/workspace';
 
-export const ORG_STORAGE_KEY = 'tochuc_nvai_office3d_org_v3';
+export const ORG_STORAGE_KEY = 'tochuc_nvai_office3d_org_v4';
 
 export const DEFAULT_DEPARTMENTS: OfficeDepartment[] = [
   {
@@ -36,18 +41,18 @@ export const DEFAULT_DEPARTMENTS: OfficeDepartment[] = [
     description: 'Giám sát trạng thái, phân bổ việc chéo và tổng hợp báo cáo toàn hệ thống.',
   },
   {
-    id: 'dept-growth',
-    name: 'Phòng Tăng Trưởng & Marketing',
-    shortLabel: 'Marketing & SEO',
-    colorHex: '#38bdf8',
-    description: 'SEO Top Google, SEO sàn TMĐT, kịch bản video ngắn và chuốt nội dung tự nhiên.',
-  },
-  {
     id: 'dept-commerce',
     name: 'Phòng Kinh Doanh & CSKH',
     shortLabel: 'Shop & CSKH',
     colorHex: '#34d399',
     description: 'Vận hành TikTok Shop, nghiên cứu KOC Affiliate, tư vấn chốt đơn và chăm sóc 24/7.',
+  },
+  {
+    id: 'dept-growth',
+    name: 'Phòng Tăng Trưởng & Marketing',
+    shortLabel: 'Marketing & SEO',
+    colorHex: '#38bdf8',
+    description: 'SEO Top Google, SEO sàn TMĐT, kịch bản video ngắn và chuốt nội dung tự nhiên.',
   },
   {
     id: 'dept-tech',
@@ -92,23 +97,25 @@ export const INITIAL_INBOX_ENTRIES: InboxEntry[] = [
     id: 'inb-1',
     kind: 'handoff',
     title: 'Điều phối sáng toàn hệ thống (08:30)',
-    body: 'Orbit đã kiểm tra tính sẵn sàng của toàn bộ phòng ban. Sunny & Wren đang xử lý phân tích biên lợi nhuận Flash Sale và lọc 25 KOC mục tiêu.',
-    senderName: 'Orbit',
+    body: 'Minh đã kiểm tra tính sẵn sàng của toàn bộ phòng ban. Lan & Hùng đang xử lý phân tích biên lợi nhuận Flash Sale và lọc 25 KOC mục tiêu.',
+    senderName: 'Minh',
     senderBadge: 'AI Manager',
     targetLabels: ['@everyone'],
     timestamp: '08:30',
     unread: true,
+    botId: 'bot-orbit',
   },
   {
     id: 'inb-2',
     kind: 'approval',
     title: 'Chờ phê duyệt: Flash Sale -18% cho 5 mã Hero SKU',
-    body: 'Sunny đã tính biên lợi nhuận ròng còn +24% sau phí sàn & hoa hồng Affiliate. Bot tự tạm dừng chờ bạn xác nhận trước khi bấm lưu.',
-    senderName: 'Sunny',
+    body: 'Lan đã tính biên lợi nhuận ròng còn +24% sau phí sàn & hoa hồng Affiliate. Bot tự tạm dừng chờ bạn xác nhận trước khi bấm lưu.',
+    senderName: 'Lan',
     senderBadge: 'AI Commerce',
     targetLabels: ['@Ban Điều Hành Tổng'],
     timestamp: '09:12',
     unread: true,
+    botId: 'bot-sunny',
   },
 ];
 
@@ -119,6 +126,7 @@ export interface BotVisualOverride {
 }
 
 interface SavedOrgConfig {
+  activeIndustryId?: string;
   departments: OfficeDepartment[];
   botDeptMap: Record<string, string>;
   botVisuals: Record<string, BotVisualOverride>;
@@ -131,9 +139,19 @@ interface SavedOrgConfig {
 }
 
 export function inferDefaultDepartmentId(bot: Bot): string {
-  if (bot.codeName === 'orbit') return 'dept-exec';
-  if (bot.department === 'Marketing & SEO') return 'dept-growth';
-  if (bot.department === 'Shop TMĐT & TikTok' || bot.department === 'Vận Hành & CSKH') {
+  const cn = bot.codeName.toLowerCase();
+  if (cn === 'minh' || cn === 'orbit' || bot.department === 'Ban Điều Hành Tổng') return 'dept-exec';
+  if (
+    bot.department === 'Phòng Tăng Trưởng & Marketing' ||
+    bot.department === 'Marketing & SEO'
+  ) {
+    return 'dept-growth';
+  }
+  if (
+    bot.department === 'Phòng Kinh Doanh & CSKH' ||
+    bot.department === 'Shop TMĐT & TikTok' ||
+    bot.department === 'Vận Hành & CSKH'
+  ) {
     return 'dept-commerce';
   }
   return 'dept-tech';
@@ -144,46 +162,53 @@ export function inferRoleVisuals(bot: Bot): {
   screen: HologramScreenKind;
   avatarStyle: AvatarStyle;
 } {
-  const cn = bot.codeName.toLowerCase();
-  if (cn.includes('orbit')) {
+  if (bot.roleBadge) {
     return {
-      badge: bot.roleBadge || 'AI Manager',
+      badge: bot.roleBadge,
+      screen: inferScreenKindFromBadge(bot.roleBadge),
+      avatarStyle: bot.avatarStyle || 'male',
+    };
+  }
+  const cn = bot.codeName.toLowerCase();
+  if (cn === 'minh' || cn.includes('orbit')) {
+    return {
+      badge: 'AI Manager',
       screen: 'manager',
       avatarStyle: bot.avatarStyle || 'male',
     };
   }
-  if (cn.includes('listing') || cn.includes('echo')) {
+  if (cn === 'nam' || cn === 'trang' || cn.includes('listing') || cn.includes('echo')) {
     return {
-      badge: bot.roleBadge || 'AI Marketer',
+      badge: 'AI Marketer',
       screen: 'marketer',
-      avatarStyle: bot.avatarStyle || 'female',
+      avatarStyle: bot.avatarStyle || (cn === 'nam' ? 'male' : 'female'),
     };
   }
-  if (cn.includes('wren')) {
+  if (cn === 'hung' || cn.includes('wren')) {
     return {
-      badge: bot.roleBadge || 'AI Researcher',
+      badge: 'AI Researcher',
       screen: 'researcher',
-      avatarStyle: bot.avatarStyle || 'female',
+      avatarStyle: bot.avatarStyle || 'male',
     };
   }
-  if (cn.includes('sale') || cn.includes('cskh')) {
+  if (cn === 'thao' || cn.includes('sale') || cn.includes('cskh')) {
     return {
-      badge: bot.roleBadge || 'AI Customer Support',
+      badge: 'AI Customer Support',
       screen: 'support',
       avatarStyle: bot.avatarStyle || 'female',
     };
   }
-  if (cn.includes('sunny')) {
+  if (cn === 'lan' || cn.includes('sunny')) {
     return {
-      badge: bot.roleBadge || 'AI Commerce',
+      badge: 'AI Commerce',
       screen: 'commerce',
       avatarStyle: bot.avatarStyle || 'female',
     };
   }
   return {
-    badge: bot.roleBadge || 'AI Engineer',
+    badge: 'AI Engineer',
     screen: 'code',
-    avatarStyle: bot.avatarStyle || 'male',
+    avatarStyle: bot.avatarStyle || (cn === 'ha' || cn === 'linh' ? 'female' : 'male'),
   };
 }
 
@@ -206,6 +231,7 @@ export function useWorkspaceOrg({
   onRemoveBot,
   onUpdateBotDepartment,
 }: UseWorkspaceOrgParams) {
+  const [activeIndustryId, setActiveIndustryId] = useState<string>(DEFAULT_INDUSTRY_ID);
   const [departments, setDepartments] = useState<OfficeDepartment[]>(DEFAULT_DEPARTMENTS);
   const [botDeptMap, setBotDeptMap] = useState<Record<string, string>>({});
   const [botVisuals, setBotVisuals] = useState<Record<string, BotVisualOverride>>({});
@@ -227,14 +253,15 @@ export function useWorkspaceOrg({
   const [botLogs, setBotLogs] = useState<Record<string, string[]>>({});
   const [lastRepair, setLastRepair] = useState<SelfRepairReport | null>(null);
 
-  // Hydrate saved org from localStorage
+  // Hydrate saved org from localStorage (v4 only — clean Vietnamese staff defaults)
   useEffect(() => {
     try {
-      const raw =
-        window.localStorage.getItem(ORG_STORAGE_KEY) ||
-        window.localStorage.getItem('tochuc_nvai_office3d_org_v2');
+      const raw = window.localStorage.getItem(ORG_STORAGE_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Partial<SavedOrgConfig>;
+      if (typeof parsed.activeIndustryId === 'string' && parsed.activeIndustryId) {
+        setActiveIndustryId(parsed.activeIndustryId);
+      }
       if (Array.isArray(parsed.departments) && parsed.departments.length > 0) {
         setDepartments(parsed.departments);
       }
@@ -261,6 +288,7 @@ export function useWorkspaceOrg({
   useEffect(() => {
     try {
       const payload: SavedOrgConfig = {
+        activeIndustryId,
         departments,
         botDeptMap,
         botVisuals,
@@ -276,6 +304,7 @@ export function useWorkspaceOrg({
       // Ignore storage quota errors
     }
   }, [
+    activeIndustryId,
     departments,
     botDeptMap,
     botVisuals,
@@ -306,6 +335,74 @@ export function useWorkspaceOrg({
       ...prev.slice(0, 40),
     ]);
   }, []);
+
+  // ── Switch Entire Office to Any of the 8 Industry Templates (1 Click) ─────
+  const applyIndustryOrg = useCallback(
+    (payload: {
+      template: IndustryTemplate;
+      departments: OfficeDepartment[];
+      bots: Bot[];
+      botDeptMap: Record<string, string>;
+      handoffs: HandoffLink[];
+    }) => {
+      const lead = payload.bots[0];
+      const second = payload.bots[1];
+      setActiveIndustryId(payload.template.id);
+      setDepartments(payload.departments);
+      setBotDeptMap(payload.botDeptMap);
+      setBotVisuals({});
+      setHandoffs(payload.handoffs);
+      setActiveMeetingBotIds([]);
+      setActiveA2ABotIds([]);
+      setBotLiveActivity(
+        lead
+          ? {
+              [lead.id]: `Khởi tạo vận hành mẫu ${payload.template.shortName}`,
+              ...(second ? { [second.id]: `Sẵn sàng nhận lệnh tại ${second.department}` } : {}),
+            }
+          : {}
+      );
+      setTasks(
+        lead
+          ? [
+              {
+                id: `task-${Date.now()}-1`,
+                title: `Triển khai quy trình mẫu ${payload.template.name}`,
+                description: payload.template.tagline,
+                departmentId: payload.departments[0]?.id || 'dept-exec',
+                assigneeBotId: lead.id,
+                reviewerBotId: lead.id,
+                status: 'in_progress',
+                priority: 'P0',
+                evidence: [],
+                verification: { status: 'unverified' },
+                createdAt: new Date().toLocaleTimeString('vi-VN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }),
+                updatedAt: new Date().toLocaleTimeString('vi-VN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }),
+              },
+            ]
+          : []
+      );
+      setApprovals([]);
+      setA2ATranscripts([]);
+      pushInbox({
+        kind: 'handoff',
+        title: `Đã chuyển sang mẫu ngành: ${payload.template.name}`,
+        body: `Khởi tạo thành công ${payload.departments.length} phòng ban & ${payload.bots.length} nhân viên AI (${payload.bots.map((b) => b.name).join(', ')}). Gõ @Tên ngay phía dưới Văn phòng 3D để bắt đầu.`,
+        senderName: lead?.name || 'Hệ thống',
+        senderBadge: lead?.roleBadge || 'AI Manager',
+        targetLabels: ['@everyone'],
+        unread: true,
+        botId: lead?.id,
+      });
+    },
+    [pushInbox]
+  );
 
   // Compute unified Office3DBot list with strict 5-priority Duty State Machine
   const officeBots: Office3DBot[] = useMemo(() => {
@@ -665,7 +762,12 @@ export function useWorkspaceOrg({
   }, []);
 
   const verifyKanbanTask = useCallback(
-    (taskId: string, verdict: 'verified' | 'changes_requested', note: string, reviewerName = 'Orbit (QA ??c l?p)') => {
+    (
+      taskId: string,
+      verdict: 'verified' | 'changes_requested',
+      note: string,
+      reviewerName = 'Minh (QA Độc lập)'
+    ) => {
       const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
       setTasks((prev) =>
         prev.map((t) =>
@@ -819,6 +921,7 @@ export function useWorkspaceOrg({
   }, []);
 
   return {
+    activeIndustryId,
     departments,
     officeBots,
     handoffs,
@@ -842,6 +945,7 @@ export function useWorkspaceOrg({
     appendBotLog,
     doctorChecks,
     lastRepair,
+    applyIndustryOrg,
     addDepartment,
     updateDepartment,
     deleteDepartment,

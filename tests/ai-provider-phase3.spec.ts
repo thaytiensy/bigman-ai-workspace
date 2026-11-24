@@ -52,12 +52,12 @@ describe('Phase 3 — Real AI BYOK Provider Routing & Payment Hardening', () => 
 
   it('builds brand-compliant Vietnamese system prompts for custom bot personas', () => {
     const prompt = buildBotSystemPrompt({
-      name: 'Sunny',
-      roleTitle: 'Chuyên gia Vận hành TikTok Shop',
+      name: 'Lan',
+      roleTitle: 'Vận hành & Tăng trưởng Shop',
       department: 'Phòng Kinh Doanh & CSKH',
       systemPrompt: 'Tập trung tối ưu tỷ lệ chuyển đổi CR và biên lợi nhuận.',
     });
-    expect(prompt).toContain('Sunny');
+    expect(prompt).toContain('Lan');
     expect(prompt).toContain('Tổ Chức Nhân Viên AI');
     expect(prompt).toContain('biên lợi nhuận');
   });

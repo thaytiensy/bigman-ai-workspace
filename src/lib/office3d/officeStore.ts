@@ -125,7 +125,7 @@ export const INITIAL_KANBAN_TASKS: KanbanTask[] = [
       {
         id: 'ev-1',
         kind: 'metric',
-        summary: 'Đã rà soát 14 SKU chủ lực: 0 từ khóa vi phạm chính sách sàn.',
+        summary: 'Lan đã rà soát 14 SKU chủ lực: 0 từ khóa vi phạm chính sách sàn.',
         createdAt: '21:15',
       },
     ],
@@ -146,7 +146,7 @@ export const INITIAL_KANBAN_TASKS: KanbanTask[] = [
       {
         id: 'ev-2',
         kind: 'artifact',
-        summary: 'Hoàn tất bảng 32 KOC (GMV 30 ngày > 80 triệu, tỷ lệ trả mẫu 92%).',
+        summary: 'Hùng hoàn tất bảng 32 KOC (GMV 30 ngày > 80 triệu, tỷ lệ trả mẫu 92%).',
         createdAt: '21:20',
       },
     ],
@@ -167,13 +167,13 @@ export const INITIAL_KANBAN_TASKS: KanbanTask[] = [
       {
         id: 'ev-3',
         kind: 'log',
-        summary: 'Smoke Test SEO đạt 22/22, sitemap.xml và JSON-LD hợp lệ.',
+        summary: 'Nam & Trang hoàn thiện cụm bài: Smoke Test SEO đạt 22/22, sitemap.xml và JSON-LD hợp lệ.',
         createdAt: '20:05',
       },
     ],
     verification: {
       status: 'verified',
-      reviewerName: 'Orbit (AI Manager)',
+      reviewerName: 'Minh (AI Manager)',
       note: 'Đã kiểm chứng trực tiếp trên bản live /blog và /so-sanh-cai-may-va-cloud.',
       verifiedAt: '20:12',
     },
@@ -200,9 +200,9 @@ export const INITIAL_APPROVALS: ApprovalItem[] = [
   {
     id: 'apr-01',
     title: 'Duyệt kích hoạt Flash Sale -18% cho 5 mã Hero SKU',
-    detail: 'Sunny đề xuất giảm 18% (biên lợi nhuận ròng còn +24% sau phí sàn & Affiliate 8%). Cần chủ nhân duyệt trước khi bấm lưu.',
+    detail: 'Lan đề xuất giảm 18% (biên lợi nhuận ròng còn +24% sau phí sàn & Affiliate 8%). Cần chủ nhân duyệt trước khi bấm lưu.',
     requestedByBotId: 'bot-sunny',
-    requestedByName: 'Sunny',
+    requestedByName: 'Lan',
     departmentId: 'dept-commerce',
     riskLevel: 'high',
     status: 'pending',
@@ -211,9 +211,9 @@ export const INITIAL_APPROVALS: ApprovalItem[] = [
   {
     id: 'apr-02',
     title: 'Duyệt gửi 25 lời mời Cộng tác mục tiêu (hoa hồng 12%)',
-    detail: 'Wren đã lọc 25 KOC uy tín; mức hoa hồng cao hơn Cộng tác mở 4% đúng biên độ mục tiêu.',
+    detail: 'Hùng đã lọc 25 KOC uy tín; mức hoa hồng cao hơn Cộng tác mở 4% đúng biên độ mục tiêu.',
     requestedByBotId: 'bot-wren',
-    requestedByName: 'Wren',
+    requestedByName: 'Hùng',
     departmentId: 'dept-commerce',
     riskLevel: 'medium',
     status: 'pending',
@@ -225,9 +225,9 @@ export const INITIAL_A2A_TRANSCRIPTS: A2ATranscriptEntry[] = [
   {
     id: 'a2a-01',
     fromBotId: 'bot-wren',
-    fromBotName: 'Wren',
+    fromBotName: 'Hùng',
     toBotId: 'bot-listing-pro',
-    toBotName: 'Listing Pro',
+    toBotName: 'Nam',
     departmentFlow: 'Shop & CSKH → Marketing & SEO',
     message: 'Bàn giao bộ 18 từ khóa tìm kiếm tăng trưởng mạnh tuần này để cập nhật cụm bài Pillar SEO.',
     timestamp: '20:42',
@@ -236,9 +236,9 @@ export const INITIAL_A2A_TRANSCRIPTS: A2ATranscriptEntry[] = [
   {
     id: 'a2a-02',
     fromBotId: 'bot-sunny',
-    fromBotName: 'Sunny',
+    fromBotName: 'Lan',
     toBotId: 'bot-orbit',
-    toBotName: 'Orbit',
+    toBotName: 'Minh',
     departmentFlow: 'Shop & CSKH → Ban Điều Hành',
     message: 'Đã gửi đề xuất Flash Sale vào Hàng đợi Phê duyệt và tạm dừng bước lưu chờ chủ nhân xác nhận.',
     timestamp: '21:31',
@@ -248,7 +248,6 @@ export const INITIAL_A2A_TRANSCRIPTS: A2ATranscriptEntry[] = [
 
 /**
  * Sinh biên bản họp bàn tròn có cấu trúc (Quyết định · Đầu việc · Rủi ro)
- * theo đúng chuẩn Meeting Protocol của Hermes Virtual Office.
  */
 export function generateStructuredMeetingMinutes(
   topic: string,

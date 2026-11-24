@@ -10,6 +10,7 @@ import {
   Inbox,
   KeyRound,
   Laptop,
+  Layers,
   Lock,
   Mail,
   Menu,
@@ -38,6 +39,8 @@ interface WorkspaceShellProps {
   onOpenUpgradeModal: () => void;
   byokConfigured?: boolean;
   onOpenByokModal?: () => void;
+  activeIndustryName?: string;
+  onOpenIndustryModal?: () => void;
   org: WorkspaceOrgState;
   selectedBotId: string | null;
   onSelectBotFromSidebar: (botId: string) => void;
@@ -57,6 +60,8 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   onOpenUpgradeModal,
   byokConfigured = false,
   onOpenByokModal,
+  activeIndustryName = 'TMĐT & Shop',
+  onOpenIndustryModal,
   org,
   selectedBotId,
   onSelectBotFromSidebar,
@@ -139,6 +144,15 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          {onOpenIndustryModal && (
+            <button
+              type="button"
+              onClick={onOpenIndustryModal}
+              className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500 text-white font-bold"
+            >
+              8 Ngành
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onRequestAddBot()}
@@ -253,7 +267,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             <button
               type="button"
               onClick={() => setQuickAddMenuOpen((v) => !v)}
-              title="Thêm phòng ban hoặc tuyển bot mới"
+              title="Thêm phòng ban, tuyển bot hoặc đổi mẫu ngành"
               className={`p-1.5 rounded-xl border transition ${
                 isLight
                   ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -265,12 +279,26 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
 
             {quickAddMenuOpen && (
               <div
-                className={`absolute right-0 top-full mt-1.5 w-48 p-1.5 rounded-xl border shadow-xl z-40 space-y-1 ${
+                className={`absolute right-0 top-full mt-1.5 w-56 p-1.5 rounded-xl border shadow-xl z-40 space-y-1 ${
                   isLight
                     ? 'bg-white border-slate-200 text-slate-800'
                     : 'bg-slate-900 border-slate-700 text-slate-100'
                 }`}
               >
+                {onOpenIndustryModal && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuickAddMenuOpen(false);
+                      onOpenIndustryModal();
+                    }}
+                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                      isLight ? 'hover:bg-slate-100' : 'hover:bg-slate-800'
+                    }`}
+                  >
+                    <Layers size={14} className="text-indigo-500" /> Đổi mẫu ngành nghề (8 mẫu)
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
@@ -299,6 +327,32 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             )}
           </div>
         </div>
+
+        {/* 1-CLICK INDUSTRY TEMPLATE SWITCHER BUTTON */}
+        {onOpenIndustryModal && (
+          <div className="px-3 pb-2">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenIndustryModal();
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition ${
+                isLight
+                  ? 'bg-indigo-50/80 border-indigo-200 text-indigo-800 hover:bg-indigo-100'
+                  : 'bg-indigo-500/15 border-indigo-400/35 text-indigo-200 hover:bg-indigo-500/25'
+              }`}
+            >
+              <span className="flex items-center gap-1.5 truncate">
+                <Layers size={13} className="text-indigo-500 dark:text-indigo-300 flex-shrink-0" />
+                <span className="truncate">Ngành: {activeIndustryName}</span>
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 font-semibold flex-shrink-0">
+                8 mẫu
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* SEARCH BAR */}
         <div className="px-3 pb-2.5">
@@ -509,7 +563,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                         );
                       })}
 
-                      {/* Inline "+ Thêm bot" right inside each department (just like the screenshot!) */}
+                      {/* Inline "+ Thêm bot" right inside each department */}
                       <button
                         type="button"
                         onClick={() => onRequestAddBot(dept.id)}
@@ -540,7 +594,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             </button>
           </div>
 
-          {/* SECTION: CÔNG CỤ (Exact 5 items matching screenshot!) */}
+          {/* SECTION: CÔNG CỤ (5 items) */}
           <div className="pt-1 border-t border-slate-200/70 dark:border-slate-800/80">
             <button
               type="button"
@@ -642,7 +696,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold truncate">{BRANDING.name}</div>
-                <div className="text-[10px] opacity-55 font-mono">v2.6 · Cloud & Desktop</div>
+                <div className="text-[10px] opacity-55 font-mono">v2.7 · Cloud & Desktop</div>
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">

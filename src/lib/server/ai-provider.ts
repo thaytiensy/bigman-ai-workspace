@@ -139,9 +139,9 @@ export function isPlatformAiConfigured(): boolean {
  * Dựng System Prompt chuẩn thương hiệu Tổ Chức Nhân Viên AI cho từng Bot chuyên môn
  */
 export function buildBotSystemPrompt(bot?: BotPersonaContext): string {
-  const name = bot?.name?.trim() || 'Orbit';
-  const role = bot?.roleTitle?.trim() || 'Trợ lý Giám sát & Điều phối AI';
-  const dept = bot?.department?.trim() || 'Ban Điều Hành';
+  const name = bot?.name?.trim() || 'Minh';
+  const role = bot?.roleTitle?.trim() || 'Quản lý & Điều phối tổng';
+  const dept = bot?.department?.trim() || 'Ban Điều Hành Tổng';
   const custom = bot?.systemPrompt?.trim();
 
   const base = [

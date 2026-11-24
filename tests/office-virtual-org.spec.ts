@@ -7,6 +7,12 @@ import {
   runOfficeDoctor,
   runOfficeSelfRepair,
 } from '../src/lib/office3d/officeStore';
+import { INITIAL_BOTS } from '../src/data/mockWorkspaceData';
+import {
+  buildWorkspaceFromIndustryTemplate,
+  INDUSTRY_TEMPLATES,
+} from '../src/data/industryTemplates';
+import { DEPLOYABLE_PACKS } from '../src/components/workspace/OfficeExtraViews';
 import type { HandoffLink, OfficeDepartment } from '../src/lib/office3d/types';
 
 describe('Virtual Office Organization Engine (Hermes Parity + Unlimited Expansion)', () => {
@@ -65,8 +71,8 @@ describe('Virtual Office Organization Engine (Hermes Parity + Unlimited Expansio
     const minutes = generateStructuredMeetingMinutes(
       'Chiến dịch Mega Sale 12.12',
       [
-        { id: 'b1', name: 'Echo', roleBadge: 'AI Marketer', departmentId: 'dept-1' },
-        { id: 'b2', name: 'Nova', roleBadge: 'AI Live Host', departmentId: 'dept-2' },
+        { id: 'b1', name: 'Trang', roleBadge: 'AI Marketer', departmentId: 'dept-1' },
+        { id: 'b2', name: 'Vy', roleBadge: 'AI Live Host', departmentId: 'dept-2' },
       ],
       depts
     );
@@ -75,7 +81,7 @@ describe('Virtual Office Organization Engine (Hermes Parity + Unlimited Expansio
     expect(minutes.decisions.length).toBeGreaterThanOrEqual(3);
     expect(minutes.actionItems).toHaveLength(2);
     expect(minutes.risks.length).toBeGreaterThanOrEqual(2);
-    expect(minutes.actionItems[1].ownerName).toBe('Nova');
+    expect(minutes.actionItems[1].ownerName).toBe('Vy');
   });
 
   it('supports unlimited departments/bots and repairs broken links idempotently via Doctor & Self-Repair', () => {
@@ -131,5 +137,53 @@ describe('Virtual Office Organization Engine (Hermes Parity + Unlimited Expansio
       tasks: repaired.tasks,
     });
     expect(secondPass.report.repairedCount).toBe(0);
+  });
+
+  it('uses short 1-word Vietnamese human names for all 10 default bots & 7 deployable packs', () => {
+    expect(INITIAL_BOTS).toHaveLength(10);
+    expect(INITIAL_BOTS.map((b) => b.name)).toEqual([
+      'Minh',
+      'Lan',
+      'Hùng',
+      'Thảo',
+      'Nam',
+      'Trang',
+      'Đức',
+      'Hà',
+      'Khôi',
+      'Linh',
+    ]);
+    // Desktop Free lock: only first 2 active by default
+    expect(INITIAL_BOTS.filter((b) => b.isActive)).toHaveLength(2);
+
+    const packBotNames = DEPLOYABLE_PACKS.flatMap((p) => p.bots.map((b) => b.name));
+    expect(packBotNames).toEqual(['Vy', 'Tuấn', 'Ngọc', 'Quân', 'Mai', 'Hương', 'Phong']);
+    packBotNames.forEach((name) => {
+      expect(name.trim().split(/\s+/)).toHaveLength(1);
+    });
+  });
+
+  it('provides 8 valid Vietnamese 1-click industry templates respecting Desktop Free 2-bot cap', () => {
+    expect(INDUSTRY_TEMPLATES).toHaveLength(8);
+    const serialized = JSON.stringify(INDUSTRY_TEMPLATES);
+    expect(serialized).not.toContain('chuotbachchiase');
+    expect(serialized).not.toContain('65654566778899');
+    expect(serialized).not.toContain('DO TIEN SY');
+
+    for (const tpl of INDUSTRY_TEMPLATES) {
+      expect(tpl.departments.length).toBeGreaterThanOrEqual(1);
+      expect(tpl.bots.length).toBeGreaterThanOrEqual(2);
+      expect(tpl.sampleCommands.length).toBeGreaterThanOrEqual(3);
+      expect(tpl.sampleRoutines.length).toBeGreaterThanOrEqual(2);
+      tpl.bots.forEach((b) => {
+        expect(b.name.trim().split(/\s+/)).toHaveLength(1);
+      });
+
+      const freeBuilt = buildWorkspaceFromIndustryTemplate(tpl, 'desktop_free');
+      expect(freeBuilt.bots.filter((b) => b.isActive).length).toBeLessThanOrEqual(2);
+
+      const cloudBuilt = buildWorkspaceFromIndustryTemplate(tpl, 'cloud_247');
+      expect(cloudBuilt.bots.every((b) => b.isActive)).toBe(true);
+    }
   });
 });

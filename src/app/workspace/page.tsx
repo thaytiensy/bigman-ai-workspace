@@ -8,6 +8,7 @@ import { BotRosterGrid } from '@/components/workspace/BotRosterGrid';
 import { MeetingRoomChat } from '@/components/workspace/MeetingRoomChat';
 import { RoutinesPanel } from '@/components/workspace/RoutinesPanel';
 import { UpgradeVietQrModal } from '@/components/workspace/UpgradeVietQrModal';
+import { IndustryTemplateModal } from '@/components/workspace/IndustryTemplateModal';
 import {
   ByokSettingsModal,
   DEFAULT_BYOK_SETTINGS,
@@ -26,6 +27,7 @@ import {
 import { OfficeKanbanBoard } from '@/components/workspace/OfficeKanbanBoard';
 import {
   NEON_COLORS,
+  ORG_STORAGE_KEY,
   useWorkspaceOrg,
 } from '@/lib/office3d/useWorkspaceOrg';
 import type {
@@ -34,6 +36,12 @@ import type {
   Office3DBot,
   OfficeDepartment,
 } from '@/lib/office3d/types';
+import {
+  buildWorkspaceFromIndustryTemplate,
+  DEFAULT_INDUSTRY_ID,
+  getIndustryTemplateById,
+  type IndustryTemplate,
+} from '@/data/industryTemplates';
 import { INITIAL_BOTS, INITIAL_ROUTINES } from '@/data/mockWorkspaceData';
 import type {
   Bot,
@@ -67,6 +75,7 @@ export default function WorkspacePage() {
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isByokModalOpen, setIsByokModalOpen] = useState(false);
+  const [isIndustryModalOpen, setIsIndustryModalOpen] = useState(false);
   const [byokSettings, setByokSettings] = useState<ByokClientSettings>(DEFAULT_BYOK_SETTINGS);
 
   const [bots, setBots] = useState<Bot[]>(INITIAL_BOTS);
@@ -93,6 +102,20 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     setByokSettings(loadByokSettings());
+    try {
+      const raw = window.localStorage.getItem(ORG_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { activeIndustryId?: string };
+        if (parsed.activeIndustryId && parsed.activeIndustryId !== DEFAULT_INDUSTRY_ID) {
+          const tpl = getIndustryTemplateById(parsed.activeIndustryId);
+          const built = buildWorkspaceFromIndustryTemplate(tpl, 'desktop_free');
+          setBots(built.bots);
+          setRoutines(built.routines);
+        }
+      }
+    } catch {
+      // Ignore invalid localStorage
+    }
   }, []);
 
   const activeBotsCount = bots.filter((b) => b.isActive).length;
@@ -145,6 +168,23 @@ export default function WorkspacePage() {
     onRemoveBot: handleRemoveBot,
     onUpdateBotDepartment: handleUpdateBotDepartment,
   });
+
+  const activeIndustryTemplate = getIndustryTemplateById(org.activeIndustryId);
+
+  const handleApplyIndustryTemplate = (template: IndustryTemplate) => {
+    const built = buildWorkspaceFromIndustryTemplate(template, workspaceMode);
+    setBots(built.bots);
+    setRoutines(built.routines);
+    setSelectedBotId(null);
+    org.applyIndustryOrg({
+      template,
+      departments: built.departments,
+      bots: built.bots,
+      botDeptMap: built.botDeptMap,
+      handoffs: built.handoffs,
+    });
+    setActiveTab('office3d');
+  };
 
   const handleToggleRoutine = (id: string) => {
     setRoutines((prev) =>
@@ -208,6 +248,8 @@ export default function WorkspacePage() {
       onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
       byokConfigured={byokConfigured}
       onOpenByokModal={() => setIsByokModalOpen(true)}
+      activeIndustryName={activeIndustryTemplate.shortName}
+      onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
       org={org}
       selectedBotId={selectedBotId}
       onSelectBotFromSidebar={(botId) => {
@@ -228,6 +270,9 @@ export default function WorkspacePage() {
           onToggleUiTheme={() => setUiTheme((t) => (t === 'light' ? 'dark' : 'light'))}
           byokConfigured={byokConfigured}
           byokSettings={byokSettings}
+          activeIndustryName={activeIndustryTemplate.shortName}
+          sampleCommands={activeIndustryTemplate.sampleCommands}
+          onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
           selectedBotId={selectedBotId}
           onSelectBotId={setSelectedBotId}
           onToggleBotActive={handleToggleBotActive}
@@ -278,6 +323,13 @@ export default function WorkspacePage() {
               </button>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsIndustryModalOpen(true)}
+                className="px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-semibold flex items-center gap-1"
+              >
+                Ngành: {activeIndustryTemplate.shortName}
+              </button>
               <button
                 type="button"
                 onClick={() => setShowAddDeptModal(true)}
@@ -460,7 +512,7 @@ export default function WorkspacePage() {
                     required
                     value={newBotName}
                     onChange={(e) => setNewBotName(e.target.value)}
-                    placeholder="VD: Nova, Mira, Kế Toán AI..."
+                    placeholder="VD: An, Bình, Chi, Dũng..."
                     className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-white outline-none focus:border-cyan-400"
                   />
                 </div>
@@ -592,6 +644,14 @@ export default function WorkspacePage() {
           onRemoveBot={editingBot.id.startsWith('bot-custom-') ? org.removeBot : undefined}
         />
       )}
+
+      <IndustryTemplateModal
+        isOpen={isIndustryModalOpen}
+        activeIndustryId={org.activeIndustryId}
+        workspaceMode={workspaceMode}
+        onClose={() => setIsIndustryModalOpen(false)}
+        onApplyTemplate={handleApplyIndustryTemplate}
+      />
 
       <UpgradeVietQrModal
         isOpen={isUpgradeModalOpen}

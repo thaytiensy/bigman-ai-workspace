@@ -35,9 +35,9 @@ export const MeetingRoomChat: React.FC<MeetingRoomChatProps> = ({
       senderType: 'system',
       senderName: 'Hệ Thống Điều Phối',
       senderAvatar: '🛰️',
-      senderRole: 'Orchestrator',
+      senderRole: 'Điều phối tổng',
       content:
-        'Chào mừng bạn đến với **Phòng Họp Chiến Lược Đa Bot** của Tổ Chức Nhân Viên AI. Bạn có thể gắn thẻ `@tên-bot` (ví dụ: `@Sunny`, `@Wren`, `@Listing Pro`) để yêu cầu từng chuyên gia giải quyết vấn đề hoặc để các bot tự động giao việc chéo cho nhau.',
+        'Chào mừng bạn đến với **Phòng Họp Chiến Lược Đa Bot** của Tổ Chức Nhân Viên AI. Bạn có thể gắn thẻ `@Tên` (ví dụ: `@Minh`, `@Lan`, `@Hùng`, `@Nam`) để yêu cầu từng chuyên gia giải quyết vấn đề hoặc để các bot tự động giao việc chéo cho nhau.',
       timestamp: '15:40',
     },
     {
@@ -46,18 +46,18 @@ export const MeetingRoomChat: React.FC<MeetingRoomChatProps> = ({
       senderName: 'Chủ Gian Hàng',
       senderAvatar: '👤',
       content:
-        '@Sunny Gian hàng TikTok Shop của mình tuần này lượt xem thẻ Shop Tab tăng gấp đôi nhưng tỷ lệ chuyển đổi CR lại tụt xuống 1.4%. Bạn và @Wren kiểm tra giúp mình nhé!',
+        '@Lan Gian hàng TikTok Shop của mình tuần này lượt xem thẻ Shop Tab tăng gấp đôi nhưng tỷ lệ chuyển đổi CR lại tụt xuống 1.4%. Bạn và @Hùng kiểm tra giúp mình nhé!',
       timestamp: '15:42',
-      mentions: ['Sunny', 'Wren'],
+      mentions: ['Lan', 'Hùng'],
     },
     {
       id: 'msg-3',
       senderType: 'bot',
       senderId: 'bot-sunny',
-      senderName: 'Sunny',
+      senderName: 'Lan',
       senderAvatar: '🛍️',
       senderRole: 'Chuyên gia Vận hành TikTok Shop',
-      delegatedTo: 'Wren',
+      delegatedTo: 'Hùng',
       content:
         `Chào bạn! Theo công thức **GMV Flywheel = Impressions × CTR × CR × AOV**, trường hợp của bạn rơi vào **Trường hợp 3: Lượt hiển thị tốt nhưng CR thấp (< 2%)**.
 
@@ -66,18 +66,18 @@ export const MeetingRoomChat: React.FC<MeetingRoomChatProps> = ({
 2. Chưa có đánh giá 5 sao kèm hình ảnh thực tế trong 10 đánh giá đầu tiên.
 3. Thiếu **Voucher Khách Hàng Mới** để kích thích chốt đơn tức thì.
 
-Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 3 shop đối thủ sang cho **@Wren** để bóc tách chi tiết.`,
+Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 3 shop đối thủ sang cho **@Hùng** để bóc tách chi tiết.`,
       timestamp: '15:43',
     },
     {
       id: 'msg-4',
       senderType: 'bot',
       senderId: 'bot-wren',
-      senderName: 'Wren',
+      senderName: 'Hùng',
       senderAvatar: '📊',
       senderRole: 'Chuyên gia Nghiên cứu KOC & Thị trường',
       content:
-        `Nhận lệnh từ **@Sunny**, tôi đã quét nhanh 3 đối thủ lớn nhất cùng phân khúc trên TikTok Shop:
+        `Nhận lệnh từ **@Lan**, tôi đã quét nhanh 3 đối thủ lớn nhất cùng phân khúc trên TikTok Shop:
 - **Giá bán:** Đối thủ đang cài cấu hình SKU mồi (phụ kiện kèm) để kéo giá hiển thị ngoài thẻ Shop Tab thấp hơn gian hàng bạn 15%.
 - **Voucher sàn:** Đối thủ đã đăng ký gói **Voucher Xtra** và cài thêm **Combo Mua 2 giảm 5%**.
 - **Kế hoạch hành động:** Bạn nên tối ưu lại đủ 7–9 ảnh theo chuẩn USP, bổ sung voucher giảm 10k cho đơn từ 150k và gửi 30 lời mời mẫu thử miễn phí cho KOC ngách thời trang để kéo đánh giá video có gắn giỏ hàng!`,
@@ -145,11 +145,13 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
     if (!trimmed || isStreaming) return;
 
     // Detect mentioned bots
-    const mentionedBots = bots.filter((b) =>
-      trimmed.toLowerCase().includes(`@${b.name.toLowerCase()}`) ||
-      trimmed.toLowerCase().includes(`@${b.codeName.toLowerCase()}`)
+    const mentionedBots = bots.filter(
+      (b) =>
+        trimmed.toLowerCase().includes(`@${b.name.toLowerCase()}`) ||
+        trimmed.toLowerCase().includes(`@${b.codeName.toLowerCase()}`)
     );
     const targetBot = mentionedBots.length > 0 ? mentionedBots[0] : bots[0];
+    if (!targetBot) return;
     const nowTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
     const userMsg: ChatMessage = {
@@ -307,18 +309,27 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
 
   // Helper to generate context-rich responses
   const generateBotResponse = (bot: Bot, query: string): string => {
-    if (bot.codeName === 'sunny' || query.toLowerCase().includes('tiktok') || query.toLowerCase().includes('shop')) {
-      return `Tôi là **Sunny** (Chuyên gia Vận hành TikTok Shop). Đối với yêu cầu của bạn:
+    if (
+      bot.codeName === 'lan' ||
+      bot.codeName === 'sunny' ||
+      query.toLowerCase().includes('tiktok') ||
+      query.toLowerCase().includes('shop')
+    ) {
+      return `Tôi là **${bot.name}** (${bot.roleTitle}). Đối với yêu cầu của bạn:
 
 1. **Chuẩn hóa Tiêu đề & Listing:** Hãy áp dụng công thức: \`[Loại sản phẩm] + [Thương hiệu] + [USP đặc tính nổi bật] + [Đối tượng sử dụng] + [Quy cách]\`. Độ dài vàng 60–120 ký tự, viết hoa chữ cái đầu và tuyệt đối không dùng từ ngữ cấm như "100%", "trị dứt điểm", "tốt nhất".
 2. **Kiểm soát Biên Lợi Nhuận (Unit Economics):** Nhắc bạn cẩn trọng việc cộng dồn: **Chiết khấu sàn + Voucher Shop + Hoa hồng KOC Affiliate**. Phải đảm bảo tỷ suất lợi nhuận ròng sau khi trừ chi phí vận hành vẫn duy trì trên 25%–35%.
 3. **SLA Vận chuyển:** Đảm bảo bàn giao cho đơn vị vận chuyển trong vòng 24–48h để giữ tỷ lệ giao hàng trễ (LDR) luôn < 4%.`;
     }
 
-    if (bot.codeName === 'listing_pro' || query.toLowerCase().includes('seo')) {
-      return `Chào bạn, tôi là **Listing Pro** (Chuyên gia SEO Tổng Thể):
+    if (
+      bot.codeName === 'nam' ||
+      bot.codeName === 'listing_pro' ||
+      query.toLowerCase().includes('seo')
+    ) {
+      return `Chào bạn, tôi là **${bot.name}** (${bot.roleTitle}):
 
-- **Phân tầng từ khóa:** Cần chia bộ từ khóa làm 3 tầng: Tầng Nhận diện (Informatonal), Tầng Cân nhắc (Navigational) và Tầng Chốt đơn (Commercial Intent).
+- **Phân tầng từ khóa:** Cần chia bộ từ khóa làm 3 tầng: Tầng Nhận diện (Informational), Tầng Cân nhắc (Navigational) và Tầng Chốt đơn (Commercial Intent).
 - **Tối ưu Shop Tab:** Đưa từ khóa có lượng tìm kiếm cao nhất lên 35 ký tự đầu tiên của tiêu đề để tối ưu hiển thị trên ứng dụng di động.
 - **Backlink & Entity:** Xây dựng liên kết nội bộ chặt chẽ giữa bài viết blog trụ cột (Pillar) và thẻ sản phẩm để tối đa hóa điểm chất lượng thuật toán.`;
     }
@@ -388,7 +399,9 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
                 {b.avatar}
               </div>
             ))}
-            <span className="text-xs text-slate-400 pl-3 font-medium">+{bots.length - 5} bot</span>
+            {bots.length > 5 && (
+              <span className="text-xs text-slate-400 pl-3 font-medium">+{bots.length - 5} bot</span>
+            )}
           </div>
 
           <button
@@ -579,7 +592,7 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
             value={inputContent}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Gửi câu hỏi hoặc giao việc cho @Sunny, @Wren, @Echo... (Enter để gửi, Shift+Enter xuống dòng)"
+            placeholder="Gửi câu hỏi hoặc giao việc cho @Minh, @Lan, @Hùng, @Trang... (Enter để gửi, Shift+Enter xuống dòng)"
             className="flex-1 bg-transparent border-0 resize-none text-xs md:text-sm text-slate-100 placeholder-slate-500 focus:outline-none p-1.5 max-h-32"
           />
 

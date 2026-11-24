@@ -14,11 +14,16 @@ import { BRANDING } from '@/config/branding';
 export const runtime = 'nodejs';
 
 function buildRoleAwareDemoReply(bot: BotPersonaContext | undefined, lastUserMessage: string): string {
-  const botName = bot?.name || 'Orbit';
-  const botRole = bot?.roleTitle || 'Trợ lý Giám sát & Điều phối AI';
+  const botName = bot?.name || 'Minh';
+  const botRole = bot?.roleTitle || 'Quản lý & Điều phối tổng';
   const lower = lastUserMessage.toLowerCase();
 
-  if (botName.toLowerCase().includes('sunny') || lower.includes('tiktok') || lower.includes('shop')) {
+  if (
+    botName.toLowerCase() === 'lan' ||
+    botName.toLowerCase().includes('sunny') ||
+    lower.includes('tiktok') ||
+    lower.includes('shop')
+  ) {
     return `Tôi là **${botName}** (${botRole}). Phân tích nhanh cho yêu cầu "${lastUserMessage}":
 
 1. **Chuẩn hóa Listing & Shop Tab:** Tối ưu tiêu đề 60–120 ký tự theo công thức \`[Loại sản phẩm] + [Thương hiệu] + [USP nổi bật] + [Đối tượng] + [Quy cách]\`, tránh tuyệt đối từ cấm cam kết tuyệt đối.
@@ -28,7 +33,11 @@ function buildRoleAwareDemoReply(bot: BotPersonaContext | undefined, lastUserMes
 > 💡 *Đang chạy ở **Chế độ Demo**. Bấm nút **"Cài đặt API Key (BYOK)"** ở góc trên để cắm OpenAI / Gemini / Claude / OpenRouter và trò chuyện trực tiếp với AI thực!*`;
   }
 
-  if (botName.toLowerCase().includes('listing') || lower.includes('seo')) {
+  if (
+    botName.toLowerCase() === 'nam' ||
+    botName.toLowerCase().includes('listing') ||
+    lower.includes('seo')
+  ) {
     return `Tôi là **${botName}** (${botRole}). Đề xuất tối ưu cho yêu cầu "${lastUserMessage}":
 
 - **Phân tầng từ khóa:** Tách rõ bộ từ khóa Nhận diện (Informational), Cân nhắc (Navigational) và Chốt đơn (Commercial Intent).

@@ -11,6 +11,7 @@ import {
   Contrast,
   Edit3,
   Eye,
+  Layers,
   LayoutGrid,
   Lock,
   MessageSquare,
@@ -53,6 +54,9 @@ interface HologramOffice3DProps {
   onToggleUiTheme: () => void;
   byokConfigured: boolean;
   byokSettings: ByokClientSettings;
+  activeIndustryName?: string;
+  sampleCommands?: string[];
+  onOpenIndustryModal?: () => void;
   selectedBotId: string | null;
   onSelectBotId: (botId: string | null) => void;
   onToggleBotActive: (botId: string) => void;
@@ -93,6 +97,9 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
   onToggleUiTheme,
   byokConfigured,
   byokSettings,
+  activeIndustryName = 'TMĐT & Shop',
+  sampleCommands = [],
+  onOpenIndustryModal,
   selectedBotId,
   onSelectBotId,
   onToggleBotActive,
@@ -339,9 +346,8 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
   };
 
   // Dispatch command from Floating @mention Command Bar
-  const handleSendCommand = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = commandInput.trim();
+  const dispatchCommandText = async (rawText: string) => {
+    const text = rawText.trim();
     if (!text) return;
 
     setCommandInput('');
@@ -453,30 +459,51 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: text,
-            botName: primary.name,
-            botRole: primary.roleTitle,
-            byok: byokSettings,
+            workspaceId: '00000000-0000-0000-0000-000000000001',
+            botId: primary.id,
+            messages: [{ role: 'user', content: text }],
+            iterationCount: 1,
+            botProfile: {
+              name: primary.name,
+              roleTitle: primary.roleTitle,
+              department: primary.departmentName,
+            },
+            byok: {
+              provider: byokSettings.provider || 'auto',
+              apiKey: byokSettings.apiKey.trim(),
+              model: byokSettings.model?.trim() || undefined,
+            },
           }),
         });
         if (res.ok && res.body) {
           const reader = res.body.getReader();
           const decoder = new TextDecoder();
           let acc = '';
+          let buffer = '';
           while (true) {
             const { value, done } = await reader.read();
             if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split(/\r?\n/);
+            buffer = lines.pop() ?? '';
             for (const line of lines) {
               if (line.startsWith('data: ')) {
                 const payload = line.slice(6).trim();
                 if (payload && payload !== '[DONE]') {
                   try {
-                    const parsed = JSON.parse(payload) as { delta?: string; content?: string };
-                    acc += parsed.delta || parsed.content || '';
+                    const parsed = JSON.parse(payload) as {
+                      type?: string;
+                      text?: string;
+                      delta?: string;
+                      content?: string;
+                    };
+                    if (parsed.type === 'token' && typeof parsed.text === 'string') {
+                      acc += parsed.text;
+                    } else if (parsed.delta || parsed.content) {
+                      acc += parsed.delta || parsed.content || '';
+                    }
                   } catch {
-                    acc += payload;
+                    // Ignore partial JSON chunk
                   }
                 }
               }
@@ -523,6 +550,11 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
     });
   };
 
+  const handleSendCommand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await dispatchCommandText(commandInput);
+  };
+
   const handleIntervene = (botId: string, instruction: string) => {
     org.setBotLiveActivity((prev) => ({ ...prev, [botId]: instruction.slice(0, 48) }));
     org.appendBotLog(botId, `Lệnh can thiệp trực tiếp: "${instruction}"`);
@@ -545,7 +577,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
         isLight ? 'bg-[#f4f6f9] text-slate-900' : 'bg-[#020914] text-slate-100'
       }`}
     >
-      {/* ─── TOP APP HEADER (EXACT MATCH TO SCREENSHOT) ───────────────────────── */}
+      {/* ─── TOP APP HEADER ───────────────────────── */}
       <div
         className={`px-4 md:px-6 pt-3.5 pb-3 border-b flex-shrink-0 space-y-2.5 ${
           isLight
@@ -616,8 +648,23 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
           </div>
         </div>
 
-        {/* Row 2: Action Pill Bar matching screenshot 1:1 */}
+        {/* Row 2: Action Pill Bar */}
         <div className="flex flex-wrap items-center gap-2">
+          {onOpenIndustryModal && (
+            <button
+              type="button"
+              onClick={onOpenIndustryModal}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition ${
+                isLight
+                  ? 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700'
+                  : 'bg-indigo-500/20 hover:bg-indigo-500/30 border-indigo-400/45 text-indigo-200'
+              }`}
+            >
+              <Layers size={14} />
+              <span>Ngành: {activeIndustryName} (8 mẫu)</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setShowMeetingModal(true)}
@@ -758,7 +805,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
               </div>
             )}
 
-            {/* TOP-LEFT FLOATING DROPDOWN: "Bàn làm việc · N ⌄" (Exact match to screenshot!) */}
+            {/* TOP-LEFT FLOATING DROPDOWN: "Bàn làm việc · N ⌄" */}
             <div className="absolute top-3.5 left-3.5 z-20">
               <button
                 type="button"
@@ -1052,7 +1099,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
               </div>
             )}
 
-            {/* BOTTOM-LEFT 3D CAMERA CONTROL BAR (EXACT MATCH TO SCREENSHOT) */}
+            {/* BOTTOM-LEFT 3D CAMERA CONTROL BAR */}
             <div className="hidden sm:flex flex-col gap-1.5 absolute bottom-3.5 left-3.5 z-20">
               <div className="inline-flex items-center gap-0.5 p-1 rounded-xl bg-slate-950/85 backdrop-blur-md border border-cyan-500/35 shadow-lg text-slate-200">
                 <button
@@ -1117,8 +1164,26 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
               </div>
             </div>
 
-            {/* BOTTOM-CENTER FLOATING @MENTION COMMAND BAR (EXACT SIGNATURE FEATURE!) */}
-            <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 w-[min(92%,560px)]">
+            {/* BOTTOM-CENTER FLOATING @MENTION COMMAND BAR */}
+            <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 w-[min(92%,580px)]">
+              {/* 1-click industry sample command chips */}
+              {!liveReply && !commandInput && mentionOptions.length === 0 && sampleCommands.length > 0 && (
+                <div className="mb-1.5 flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                  {sampleCommands.slice(0, 3).map((cmd, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => void dispatchCommandText(cmd)}
+                      title={cmd}
+                      className="px-2.5 py-1 rounded-full bg-slate-950/85 hover:bg-cyan-500/20 backdrop-blur-md border border-cyan-500/35 text-[11px] text-cyan-200 hover:text-white whitespace-nowrap max-w-[230px] truncate transition shadow-sm flex items-center gap-1"
+                    >
+                      <Sparkles size={10} className="text-cyan-400 flex-shrink-0" />
+                      <span className="truncate">{cmd}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Autocomplete popup when typing @ */}
               {mentionOptions.length > 0 && (
                 <div className="mb-2 rounded-2xl bg-slate-950/95 backdrop-blur-xl border border-cyan-500/45 shadow-2xl p-1.5 max-h-56 overflow-y-auto space-y-0.5">
@@ -1158,7 +1223,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
                   type="text"
                   value={commandInput}
                   onChange={(e) => handleCommandInputChange(e.target.value)}
-                  placeholder="Nhắn cho các bot: gắn thẻ bằng @, một phòng ban hoặc @everyone"
+                  placeholder="Nhắn cho các bot: gắn thẻ bằng @Tên, phòng ban hoặc @everyone"
                   className="flex-1 bg-transparent outline-none text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
                 />
                 <button
@@ -1174,7 +1239,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
 
             {/* BOTTOM-RIGHT VERSION CHIP */}
             <div className="hidden lg:block absolute bottom-3.5 right-3.5 z-10 px-2.5 py-1 rounded-lg bg-slate-950/75 border border-slate-800 text-[10px] font-mono text-slate-400">
-              v2.6 · {workspaceMode === 'cloud_247' ? 'Cloud 24/7' : 'Desktop Free'}
+              v2.7 · {workspaceMode === 'cloud_247' ? 'Cloud 24/7' : 'Desktop Free'}
             </div>
           </div>
         </div>
@@ -1189,7 +1254,7 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
           onSendIntervention={handleIntervene}
           onSetIdle={(botId: string) => {
             org.setBotIdle(botId);
-            controllerRef.current?.say(botId, '?? ?? chuy?n Ngh? ng?i (0 token)', 2800);
+            controllerRef.current?.say(botId, '🌙 Đã chuyển Nghỉ ngơi (0 token)', 2800);
           }}
           onOpenDirectChat={(botId: string) => {
             const raw = bots.find((b) => b.id === botId);

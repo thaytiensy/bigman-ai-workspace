@@ -519,7 +519,7 @@ export const OfficeKpiModal: React.FC<OfficeKpiModalProps> = ({
 };
 
 /* ============================================================================
- * 3. ỨNG DỤNG ĐÃ XUẤT BẢN & GÓI PHÒNG BAN 1-CHẠM
+ * 3. ỨNG DỤNG ĐÃ XUẤT BẢN & GÓI PHÒNG BAN 1-CHẠM (Tên Việt ngắn 1 từ)
  * ========================================================================== */
 interface DepartmentPack {
   id: string;
@@ -537,7 +537,7 @@ interface DepartmentPack {
   }>;
 }
 
-const DEPLOYABLE_PACKS: DepartmentPack[] = [
+export const DEPLOYABLE_PACKS: DepartmentPack[] = [
   {
     id: 'pack-livestream',
     deptName: 'Phòng Livestream & Video Ngắn',
@@ -546,7 +546,7 @@ const DEPLOYABLE_PACKS: DepartmentPack[] = [
     badge: '3 Bot · TMĐT',
     bots: [
       {
-        name: 'Host Script AI',
+        name: 'Vy',
         roleBadge: 'AI Scriptwriter',
         roleTitle: 'Viết kịch bản Mega LIVE & Video 60s',
         screenKind: 'marketer',
@@ -554,7 +554,7 @@ const DEPLOYABLE_PACKS: DepartmentPack[] = [
         model: 'Claude 3.7 Sonnet',
       },
       {
-        name: 'Live Ops AI',
+        name: 'Tuấn',
         roleBadge: 'AI Live Ops',
         roleTitle: 'Điều phối ghim giỏ hàng & Flash Sale LIVE',
         screenKind: 'commerce',
@@ -562,7 +562,7 @@ const DEPLOYABLE_PACKS: DepartmentPack[] = [
         model: 'GPT-4o',
       },
       {
-        name: 'Comment Closer',
+        name: 'Ngọc',
         roleBadge: 'AI Customer Support',
         roleTitle: 'Trả lời bình luận & chốt đơn tự động',
         screenKind: 'support',
@@ -579,7 +579,7 @@ const DEPLOYABLE_PACKS: DepartmentPack[] = [
     badge: '2 Bot · Quản trị',
     bots: [
       {
-        name: 'CFO Guard AI',
+        name: 'Quân',
         roleBadge: 'AI Finance',
         roleTitle: 'Kiểm soát biên lợi nhuận & dòng tiền',
         screenKind: 'manager',
@@ -587,7 +587,7 @@ const DEPLOYABLE_PACKS: DepartmentPack[] = [
         model: 'Claude 3.7 Sonnet',
       },
       {
-        name: 'Policy Shield AI',
+        name: 'Mai',
         roleBadge: 'AI Legal',
         roleTitle: 'Chống vi phạm từ khóa sàn & rà hợp đồng',
         screenKind: 'researcher',
@@ -604,7 +604,7 @@ const DEPLOYABLE_PACKS: DepartmentPack[] = [
     badge: '2 Bot · Giáo dục',
     bots: [
       {
-        name: 'Trợ lý GVCN Pro',
+        name: 'Hương',
         roleBadge: 'AI Educator',
         roleTitle: 'Quản lý lớp học, điểm danh & nhận xét TT27',
         screenKind: 'support',
@@ -612,7 +612,7 @@ const DEPLOYABLE_PACKS: DepartmentPack[] = [
         model: 'Gemini 2.5 Pro',
       },
       {
-        name: 'Đề Thi & Giáo Án AI',
+        name: 'Phong',
         roleBadge: 'AI Researcher',
         roleTitle: 'Biên soạn đề kiểm tra & giáo án chuẩn mới',
         screenKind: 'researcher',
