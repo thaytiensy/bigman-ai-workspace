@@ -484,7 +484,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             <span
               className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${
                 activeTab === 'deliverables'
-                  ? 'bg-white/20 text-white'
+                  ? 'bg-emerald-950/60 text-white'
                   : isLight
                     ? 'bg-emerald-100 text-emerald-900'
                     : 'bg-emerald-500/25 text-emerald-200'
@@ -502,7 +502,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             }}
             className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-extrabold border transition ${
               activeTab === 'extensions'
-                ? 'bg-cyan-700 border-cyan-600 text-white shadow-sm'
+                ? 'bg-cyan-800 border-cyan-600 text-white shadow-sm'
                 : isLight
                   ? 'bg-cyan-50 border-cyan-200 text-cyan-900 hover:bg-cyan-100'
                   : 'bg-cyan-500/15 border-cyan-400/40 text-cyan-200 hover:bg-cyan-500/25'
@@ -515,7 +515,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             <span
               className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${
                 activeTab === 'extensions'
-                  ? 'bg-white/20 text-white'
+                  ? 'bg-cyan-950/60 text-white'
                   : isLight
                     ? 'bg-cyan-100 text-cyan-900'
                     : 'bg-cyan-500/25 text-cyan-200'

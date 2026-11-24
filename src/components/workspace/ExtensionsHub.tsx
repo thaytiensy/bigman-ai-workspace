@@ -672,7 +672,8 @@ export const ExtensionsHub: React.FC<ExtensionsHubProps> = ({
                     <button
                       type="button"
                       onClick={() => extensions.toggleMcp(mcp.id)}
-                      aria-label={mcp.enabled ? `Tắt MCP ${mcp.name}` : `Bật MCP ${mcp.name}`}
+                      aria-pressed={mcp.enabled}
+                    aria-label={mcp.enabled ? `Đang bật — ${mcp.name}` : `Đang tắt — ${mcp.name}`}
                       className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold border flex-shrink-0 transition ${
                         mcp.enabled
                           ? 'bg-emerald-700 border-emerald-600 text-white hover:bg-emerald-800'
@@ -803,7 +804,8 @@ export const ExtensionsHub: React.FC<ExtensionsHubProps> = ({
                       <button
                         type="button"
                         onClick={() => extensions.toggleSkill(skill.id)}
-                        aria-label={skill.enabled ? `Tắt Skill ${skill.name}` : `Bật Skill ${skill.name}`}
+                        aria-pressed={skill.enabled}
+                    aria-label={skill.enabled ? `Đang bật — ${skill.name}` : `Đang tắt — ${skill.name}`}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold border flex-shrink-0 transition ${
                           skill.enabled
                             ? 'bg-emerald-700 border-emerald-600 text-white hover:bg-emerald-800'
@@ -987,7 +989,8 @@ export const ExtensionsHub: React.FC<ExtensionsHubProps> = ({
                         <button
                           type="button"
                           onClick={() => extensions.toggleAiProvider(ai.id)}
-                          aria-label={ai.enabled ? `Tắt ${ai.name}` : `Bật ${ai.name}`}
+                          aria-pressed={ai.enabled}
+                    aria-label={ai.enabled ? `Đang bật — ${ai.name}` : `Đang tắt — ${ai.name}`}
                           className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold border flex-shrink-0 transition ${
                             ai.enabled
                               ? 'bg-emerald-700 border-emerald-600 text-white'
