@@ -10,6 +10,7 @@ import { RoutinesPanel } from '@/components/workspace/RoutinesPanel';
 import { UpgradeVietQrModal } from '@/components/workspace/UpgradeVietQrModal';
 import { IndustryTemplateModal } from '@/components/workspace/IndustryTemplateModal';
 import { RealDeliverablesStudio } from '@/components/workspace/RealDeliverablesStudio';
+import { ExtensionsHub } from '@/components/workspace/ExtensionsHub';
 import {
   EditBotModal,
   EditDepartmentModal,
@@ -25,6 +26,7 @@ import {
   ORG_STORAGE_KEY,
   useWorkspaceOrg,
 } from '@/lib/office3d/useWorkspaceOrg';
+import { useWorkspaceExtensions } from '@/lib/extensions/extensionsStore';
 import type {
   AvatarStyle,
   HologramScreenKind,
@@ -97,8 +99,10 @@ export default function WorkspacePage() {
   const [newBotDeptId, setNewBotDeptId] = useState('');
   const [newBotScreen, setNewBotScreen] = useState<HologramScreenKind>('marketer');
   const [newBotAvatarStyle, setNewBotAvatarStyle] = useState<AvatarStyle>('female');
-  const [newBotModel, setNewBotModel] = useState('Claude 3.7 Sonnet');
+  const [newBotModel, setNewBotModel] = useState('tochuc-ai-pro');
   const [editingBot, setEditingBot] = useState<Office3DBot | null>(null);
+
+  const extensions = useWorkspaceExtensions();
 
   useEffect(() => {
     // 1. Check creator / owner unlimited access (URL param or persistent localStorage)
@@ -130,6 +134,7 @@ export default function WorkspacePage() {
       const tabParam = params.get('tab');
       if (
         tabParam === 'deliverables' ||
+        tabParam === 'extensions' ||
         tabParam === 'files' ||
         tabParam === 'inbox' ||
         tabParam === 'roster' ||
@@ -308,6 +313,7 @@ export default function WorkspacePage() {
 
   const handleOpenAddBotModal = (defaultDeptId?: string) => {
     setNewBotDeptId(defaultDeptId || org.departments[0]?.id || 'dept-exec');
+    setNewBotModel(extensions.defaultAiProvider.defaultModel || 'tochuc-ai-pro');
     setShowAddBotModal(true);
   };
 
@@ -355,6 +361,11 @@ export default function WorkspacePage() {
       onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
       activeIndustryName={activeIndustryTemplate.shortName}
       onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
+      extensionsSummary={{
+        mcps: extensions.enabledMcpCount,
+        skills: extensions.enabledSkillCount,
+        ais: extensions.enabledAiCount,
+      }}
       org={org}
       selectedBotId={selectedBotId}
       onSelectBotFromSidebar={(botId) => {
@@ -392,6 +403,8 @@ export default function WorkspacePage() {
           sampleCommands={activeIndustryTemplate.sampleCommands}
           onOpenIndustryModal={() => setIsIndustryModalOpen(true)}
           onOpenDeliverables={() => setActiveTab('deliverables')}
+          extensions={extensions}
+          onOpenExtensions={() => setActiveTab('extensions')}
           selectedBotId={selectedBotId}
           onSelectBotId={setSelectedBotId}
           onToggleBotActive={handleToggleBotActive}
@@ -408,6 +421,14 @@ export default function WorkspacePage() {
           uiTheme={uiTheme}
           onRecordFile={org.recordGeneratedFile}
           onOpenTeamFiles={() => setActiveTab('files')}
+        />
+      )}
+
+      {activeTab === 'extensions' && (
+        <ExtensionsHub
+          extensions={extensions}
+          bots={org.officeBots}
+          uiTheme={uiTheme}
         />
       )}
 
@@ -507,6 +528,8 @@ export default function WorkspacePage() {
           bots={bots}
           preselectedBot={preselectedBot}
           onClearPreselectedBot={() => setPreselectedBot(null)}
+          extensions={extensions}
+          onOpenExtensions={() => setActiveTab('extensions')}
         />
       )}
 
@@ -544,6 +567,7 @@ export default function WorkspacePage() {
               </h3>
               <button
                 type="button"
+                aria-label="Đóng hộp thoại tạo phòng ban"
                 onClick={() => setShowAddDeptModal(false)}
                 className="text-slate-400 hover:text-white"
               >
@@ -552,8 +576,12 @@ export default function WorkspacePage() {
             </div>
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Tên phòng ban</label>
+                <label htmlFor="add-dept-name" className="block text-slate-300 font-semibold mb-1">
+                  Tên phòng ban
+                </label>
                 <input
+                  id="add-dept-name"
+                  name="addDeptName"
                   type="text"
                   required
                   value={newDeptName}
@@ -563,8 +591,12 @@ export default function WorkspacePage() {
                 />
               </div>
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Chức năng chính</label>
+                <label htmlFor="add-dept-desc" className="block text-slate-300 font-semibold mb-1">
+                  Chức năng chính
+                </label>
                 <textarea
+                  id="add-dept-desc"
+                  name="addDeptDesc"
                   rows={2}
                   value={newDeptDesc}
                   onChange={(e) => setNewDeptDesc(e.target.value)}
@@ -573,14 +605,15 @@ export default function WorkspacePage() {
                 />
               </div>
               <div>
-                <label className="block text-slate-300 font-semibold mb-1.5">
+                <span className="block text-slate-300 font-semibold mb-1.5">
                   Màu nhận diện Hologram
-                </label>
+                </span>
                 <div className="flex items-center gap-2">
                   {NEON_COLORS.map((hex) => (
                     <button
                       key={hex}
                       type="button"
+                      aria-label={`Chọn màu ${hex}`}
                       onClick={() => setNewDeptColor(hex)}
                       className={`w-7 h-7 rounded-full border-2 transition ${
                         newDeptColor === hex ? 'border-white scale-110' : 'border-transparent'
@@ -622,6 +655,7 @@ export default function WorkspacePage() {
               </h3>
               <button
                 type="button"
+                aria-label="Đóng hộp thoại tuyển nhân viên AI"
                 onClick={() => setShowAddBotModal(false)}
                 className="text-slate-400 hover:text-white"
               >
@@ -631,8 +665,12 @@ export default function WorkspacePage() {
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Tên nhân viên AI</label>
+                  <label htmlFor="add-bot-name" className="block text-slate-300 font-semibold mb-1">
+                    Tên nhân viên AI
+                  </label>
                   <input
+                    id="add-bot-name"
+                    name="addBotName"
                     type="text"
                     required
                     value={newBotName}
@@ -642,8 +680,12 @@ export default function WorkspacePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Nhãn thẻ 3D</label>
+                  <label htmlFor="add-bot-badge" className="block text-slate-300 font-semibold mb-1">
+                    Nhãn thẻ 3D
+                  </label>
                   <input
+                    id="add-bot-badge"
+                    name="addBotBadge"
                     type="text"
                     value={newBotRoleBadge}
                     onChange={(e) => setNewBotRoleBadge(e.target.value)}
@@ -653,8 +695,12 @@ export default function WorkspacePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Chức danh chuyên môn</label>
+                <label htmlFor="add-bot-title" className="block text-slate-300 font-semibold mb-1">
+                  Chức danh chuyên môn
+                </label>
                 <input
+                  id="add-bot-title"
+                  name="addBotTitle"
                   type="text"
                   value={newBotRoleTitle}
                   onChange={(e) => setNewBotRoleTitle(e.target.value)}
@@ -663,8 +709,12 @@ export default function WorkspacePage() {
                 />
               </div>
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Gán vào Phòng ban</label>
+                <label htmlFor="add-bot-dept" className="block text-slate-300 font-semibold mb-1">
+                  Gán vào Phòng ban
+                </label>
                 <select
+                  id="add-bot-dept"
+                  name="addBotDept"
                   value={newBotDeptId}
                   onChange={(e) => setNewBotDeptId(e.target.value)}
                   className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-white outline-none focus:border-cyan-400"
@@ -678,8 +728,12 @@ export default function WorkspacePage() {
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Dáng Hologram</label>
+                  <label htmlFor="add-bot-avatar" className="block text-slate-300 font-semibold mb-1">
+                    Dáng Hologram
+                  </label>
                   <select
+                    id="add-bot-avatar"
+                    name="addBotAvatar"
                     value={newBotAvatarStyle}
                     onChange={(e) => setNewBotAvatarStyle(e.target.value as AvatarStyle)}
                     className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-white outline-none"
@@ -690,8 +744,12 @@ export default function WorkspacePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Màn hình HUD</label>
+                  <label htmlFor="add-bot-screen" className="block text-slate-300 font-semibold mb-1">
+                    Màn hình HUD
+                  </label>
                   <select
+                    id="add-bot-screen"
+                    name="addBotScreen"
                     value={newBotScreen}
                     onChange={(e) => setNewBotScreen(e.target.value as HologramScreenKind)}
                     className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-white outline-none"
@@ -706,13 +764,25 @@ export default function WorkspacePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Mô hình AI mặc định</label>
+                <label htmlFor="add-bot-model" className="block text-slate-300 font-semibold mb-1">
+                  Mô hình AI (từ Kho AI mở rộng)
+                </label>
                 <input
+                  id="add-bot-model"
+                  name="addBotModel"
+                  list="add-bot-models-list"
                   type="text"
                   value={newBotModel}
                   onChange={(e) => setNewBotModel(e.target.value)}
-                  className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-white outline-none"
+                  className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-white outline-none focus:border-cyan-400"
                 />
+                <datalist id="add-bot-models-list">
+                  {extensions.availableModels.map((opt) => (
+                    <option key={opt.label} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </datalist>
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
@@ -754,6 +824,7 @@ export default function WorkspacePage() {
         <EditBotModal
           bot={editingBot}
           departments={org.departments}
+          availableModels={extensions.availableModels}
           onClose={() => setEditingBot(null)}
           onSave={(patch) =>
             org.editBotFull(patch.botId, {
@@ -784,7 +855,6 @@ export default function WorkspacePage() {
         onSuccessUpgrade={handleSuccessUpgrade}
         onActivateOwner={handleActivateOwner}
       />
-
     </WorkspaceShell>
   );
 }

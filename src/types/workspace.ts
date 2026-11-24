@@ -7,6 +7,7 @@ export type WorkspaceMode = 'desktop_free' | 'cloud_247';
 export type WorkspaceTab =
   | 'inbox'
   | 'deliverables'
+  | 'extensions'
   | 'office3d'
   | 'roster'
   | 'room'

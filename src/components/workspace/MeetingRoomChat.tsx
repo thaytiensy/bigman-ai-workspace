@@ -7,21 +7,28 @@ import {
   Copy,
   Check,
   ArrowRightLeft,
+  Plug,
   Trash2,
 } from 'lucide-react';
 import { Bot, ChatMessage } from '@/types/workspace';
 import { QUICK_PROMPT_CATEGORIES } from '@/data/mockWorkspaceData';
+import type { WorkspaceExtensionsController } from '@/lib/extensions/extensionsStore';
+import { buildChatStreamExtras } from '@/lib/extensions/chatPayload';
 
 interface MeetingRoomChatProps {
   bots: Bot[];
   preselectedBot?: Bot | null;
   onClearPreselectedBot?: () => void;
+  extensions?: WorkspaceExtensionsController;
+  onOpenExtensions?: () => void;
 }
 
 export const MeetingRoomChat: React.FC<MeetingRoomChatProps> = ({
   bots,
   preselectedBot,
   onClearPreselectedBot,
+  extensions,
+  onOpenExtensions,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -184,6 +191,10 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
     setShowMentionMenu(false);
     setIsStreaming(true);
 
+    const extPayload = extensions
+      ? buildChatStreamExtras(extensions.state, targetBot.id)
+      : undefined;
+
     try {
       const res = await fetch('/api/v1/chat/stream', {
         method: 'POST',
@@ -193,11 +204,14 @@ Tôi đã bàn giao yêu cầu quét dữ liệu giá và mẫu ảnh của top 
           botId: targetBot.id,
           messages: historyForApi,
           iterationCount: 1,
+          byok: extPayload?.byok,
           botProfile: {
             name: targetBot.name,
             roleTitle: targetBot.roleTitle,
             department: targetBot.department,
             systemPrompt: targetBot.description,
+            activeMcps: extPayload?.activeMcps,
+            activeSkills: extPayload?.activeSkills,
           },
         }),
       });
@@ -333,30 +347,45 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden">
       {/* ROOM HEADER */}
-      <div className="px-4 py-3 md:px-6 md:py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white text-lg shadow-md shadow-emerald-500/20">
+      <div className="px-4 py-3 md:px-6 md:py-3.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 flex-shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white text-lg shadow-md shadow-emerald-500/20 flex-shrink-0">
             💬
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-sm md:text-base text-white">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-extrabold text-sm md:text-base text-white truncate">
                 Phòng Họp Chiến Lược Đa Bot
               </h3>
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                 Trực tiếp
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              Gõ <code className="text-indigo-400 bg-slate-800 px-1 py-0.2 rounded font-mono">@</code> để chỉ định chuyên gia hoặc nhận hỗ trợ đa chiều.
+            <p className="text-xs text-slate-300 truncate">
+              Gõ <code className="text-cyan-300 bg-slate-800 px-1 py-0.2 rounded font-mono">@</code> để chỉ định chuyên gia hoặc nhận hỗ trợ đa chiều.
             </p>
           </div>
         </div>
 
-        {/* QUICK BOT PARTICIPANTS PREVIEW */}
-        <div className="flex items-center gap-2">
-          <div className="hidden lg:flex items-center -space-x-2 mr-2">
+        {/* QUICK BOT PARTICIPANTS + ACTIVE EXTENSIONS PILL */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {extensions && onOpenExtensions && (
+            <button
+              type="button"
+              onClick={onOpenExtensions}
+              className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/35 text-cyan-200 text-[11px] font-semibold transition"
+              title="Quản lý MCP, Skill và Model AI đang kích hoạt cho phòng họp"
+            >
+              <Plug size={12} />
+              <span>
+                {extensions.enabledMcpCount} MCP · {extensions.enabledSkillCount} Skill ·{' '}
+                {extensions.defaultAiProvider.name}
+              </span>
+            </button>
+          )}
+
+          <div className="hidden lg:flex items-center -space-x-2 mr-1">
             {bots.slice(0, 5).map((b) => (
               <div
                 key={b.id}
@@ -367,15 +396,16 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
               </div>
             ))}
             {bots.length > 5 && (
-              <span className="text-xs text-slate-400 pl-3 font-medium">+{bots.length - 5} bot</span>
+              <span className="text-xs text-slate-300 pl-3 font-medium">+{bots.length - 5} bot</span>
             )}
           </div>
 
           <button
             type="button"
             onClick={() => setMessages([messages[0]])}
+            aria-label="Xóa lịch sử phòng họp"
             title="Xóa lịch sử phòng họp"
-            className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-rose-400 hover:bg-slate-700/80 transition"
+            className="min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:text-rose-300 hover:bg-slate-700/80 transition"
           >
             <Trash2 size={15} />
           </button>
@@ -385,12 +415,13 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
       {/* QUICK INDUSTRY PROMPT BAR */}
       <div className="px-4 py-2.5 md:px-6 bg-slate-900/60 border-b border-slate-800/80 flex-shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300 whitespace-nowrap">
             Mẫu lệnh nhanh:
           </span>
           {QUICK_PROMPT_CATEGORIES.map((cat, idx) => (
             <button
               key={cat.id}
+              type="button"
               onClick={() => setSelectedCategoryTab(idx)}
               className={`px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
                 selectedCategoryTab === idx
@@ -408,8 +439,9 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
           {QUICK_PROMPT_CATEGORIES[selectedCategoryTab].prompts.map((p, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => handleApplyQuickPrompt(p.content)}
-              className="text-left px-3 py-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-[11px] text-slate-300 hover:text-white border border-slate-700/60 whitespace-nowrap transition flex items-center gap-1.5 group"
+              className="text-left px-3 py-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-[11px] text-slate-200 hover:text-white border border-slate-700/60 whitespace-nowrap transition flex items-center gap-1.5 group"
             >
               <Sparkles size={11} className="text-amber-400 group-hover:scale-110 transition-transform" />
               <span>{p.title}</span>
@@ -428,12 +460,12 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
             return (
               <div
                 key={msg.id}
-                className="max-w-3xl mx-auto my-3 p-3.5 rounded-xl bg-slate-900/90 border border-indigo-500/30 text-xs text-slate-300 flex items-start gap-3 shadow-md"
+                className="max-w-3xl mx-auto my-3 p-3.5 rounded-xl bg-slate-900/90 border border-indigo-500/30 text-xs text-slate-200 flex items-start gap-3 shadow-md"
               >
                 <div className="text-xl flex-shrink-0">{msg.senderAvatar}</div>
                 <div className="flex-1 leading-relaxed">
                   <div className="font-bold text-indigo-300 mb-0.5">{msg.senderName}</div>
-                  <div className="prose prose-invert prose-xs text-slate-300">{msg.content}</div>
+                  <div className="prose prose-invert prose-xs text-slate-200">{msg.content}</div>
                 </div>
               </div>
             );
@@ -465,7 +497,7 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
                       {msg.senderRole}
                     </span>
                   )}
-                  <span className="text-[10px] text-slate-500">{msg.timestamp}</span>
+                  <span className="text-[10px] text-slate-400">{msg.timestamp}</span>
                 </div>
 
                 {/* DELEGATION NOTICE PILL */}
@@ -492,11 +524,11 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
 
                 {/* BOTTOM ACTION BUTTONS */}
                 {!isUser && (
-                  <div className="mt-1.5 flex items-center gap-2 px-1 text-[11px] text-slate-500">
+                  <div className="mt-1.5 flex items-center gap-2 px-1 text-[11px] text-slate-400">
                     <button
                       type="button"
                       onClick={() => handleCopyMessage(msg.id, msg.content)}
-                      className="hover:text-slate-300 flex items-center gap-1 transition"
+                      className="hover:text-slate-200 flex items-center gap-1 transition"
                     >
                       {copiedId === msg.id ? (
                         <>
@@ -524,7 +556,7 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
         {/* MENTION SUGGESTION MENU */}
         {showMentionMenu && (
           <div className="absolute bottom-full left-4 mb-2 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-20">
-            <div className="px-3 py-1.5 bg-slate-800/90 text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+            <div className="px-3 py-1.5 bg-slate-800/90 text-[10px] font-bold uppercase text-slate-300 tracking-wider">
               Chỉ Định Nhân Viên AI
             </div>
             <div className="max-h-48 overflow-y-auto">
@@ -543,7 +575,7 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
                         <span>{b.name}</span>
                         <span className="text-[10px] text-slate-400 font-mono">@{b.codeName}</span>
                       </div>
-                      <div className="text-[10px] text-slate-400 truncate">{b.roleTitle}</div>
+                      <div className="text-[10px] text-slate-300 truncate">{b.roleTitle}</div>
                     </div>
                   </button>
                 ))}
@@ -554,22 +586,26 @@ Bạn có cần tôi bàn giao thêm thông tin này cho phòng ban nào khác k
         {/* INPUT CONTAINER */}
         <div className="flex items-end gap-2 bg-slate-950 border border-slate-800 rounded-2xl p-2 focus-within:border-indigo-500 transition shadow-inner">
           <textarea
+            id="meeting-room-input"
+            name="meetingRoomInput"
+            aria-label="Nhập câu hỏi hoặc lệnh giao việc cho nhân viên AI"
             ref={inputRef}
             rows={2}
             value={inputContent}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Gửi câu hỏi hoặc giao việc cho @Minh, @Lan, @Hùng, @Trang... (Enter để gửi, Shift+Enter xuống dòng)"
-            className="flex-1 bg-transparent border-0 resize-none text-xs md:text-sm text-slate-100 placeholder-slate-500 focus:outline-none p-1.5 max-h-32"
+            className="flex-1 bg-transparent border-0 resize-none text-xs md:text-sm text-slate-100 placeholder-slate-400 focus:outline-none p-1.5 max-h-32"
           />
 
           <button
             type="button"
             onClick={handleSend}
             disabled={!inputContent.trim() || isStreaming}
-            className={`p-2.5 rounded-xl font-semibold transition-all flex items-center justify-center ${
+            aria-label="Gửi tin nhắn"
+            className={`min-w-[38px] min-h-[38px] p-2.5 rounded-xl font-semibold transition-all flex items-center justify-center ${
               !inputContent.trim() || isStreaming
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
                 : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/30 active:scale-95'
             }`}
           >

@@ -13,6 +13,16 @@ import { BRANDING } from '@/config/branding';
 
 export const runtime = 'nodejs';
 
+function formatActiveExtensionsNote(bot: BotPersonaContext | undefined): string {
+  const skillNames = (bot?.activeSkills || []).map((s) => s.name).filter(Boolean).slice(0, 4);
+  const mcpNames = (bot?.activeMcps || []).filter(Boolean).slice(0, 5);
+  if (skillNames.length === 0 && mcpNames.length === 0) return '';
+  const parts: string[] = [];
+  if (skillNames.length > 0) parts.push(`Skills: *${skillNames.join(', ')}*`);
+  if (mcpNames.length > 0) parts.push(`MCP: \`${mcpNames.join('`, `')}\``);
+  return `\n\n⚙️ **Tích hợp đang áp dụng:** ${parts.join(' · ')}`;
+}
+
 function buildRoleAwareBuiltInReply(
   bot: BotPersonaContext | undefined,
   lastUserMessage: string
@@ -20,6 +30,7 @@ function buildRoleAwareBuiltInReply(
   const botName = bot?.name || 'Minh';
   const botRole = bot?.roleTitle || 'Quản lý & Điều phối tổng';
   const lower = lastUserMessage.toLowerCase();
+  const extNote = formatActiveExtensionsNote(bot);
 
   if (
     botName.toLowerCase() === 'lan' ||
@@ -36,7 +47,7 @@ function buildRoleAwareBuiltInReply(
 2. **Chuẩn hóa Listing & Shop Tab:** Dùng tiêu đề 60–120 ký tự theo công thức \`[Loại sản phẩm] + [Thương hiệu] + [USP nổi bật] + [Đối tượng] + [Quy cách]\`, tránh hoàn toàn từ cấm cam kết tuyệt đối.
 3. **Tăng chuyển đổi (CR):** Đủ 7–9 ảnh giải tỏa nỗi sợ mua hàng + Voucher khách mới + kiểm soát tỷ lệ giao trễ (LDR) < 4%.
 
-👉 Mở mục **Xưởng Việc Thật** ở cột bên trái để tôi tính bảng lãi/lỗ chi tiết và **xuất file Excel (.csv)** ngay lập tức.`;
+👉 Mở mục **Xưởng Việc Thật** ở cột bên trái để tôi tính bảng lãi/lỗ chi tiết và **xuất file Excel (.csv)** ngay lập tức.${extNote}`;
   }
 
   if (
@@ -52,7 +63,7 @@ function buildRoleAwareBuiltInReply(
 - **35 ký tự đầu tiên:** Đặt từ khóa chính có lượng tìm kiếm cao nhất lên đầu tiêu đề để tối ưu hiển thị trên di động.
 - **Bộ lọc an toàn chính sách:** Loại bỏ toàn bộ từ cam kết tuyệt đối (*100%, tốt nhất, trị dứt điểm, cam kết khỏi hẳn*) và tuyệt đối không kéo giao dịch ngoài sàn.
 
-👉 Mở **Xưởng Việc Thật → Nam (Quét Từ Cấm & Chấm SEO)** để chấm điểm 0–100, viết lại bản sạch và **tải báo cáo Word (.doc)** ngay.`;
+👉 Mở **Xưởng Việc Thật → Nam (Quét Từ Cấm & Chấm SEO)** để chấm điểm 0–100, viết lại bản sạch và **tải báo cáo Word (.doc)** ngay.${extNote}`;
   }
 
   if (
@@ -69,7 +80,7 @@ function buildRoleAwareBuiltInReply(
 - **Thân bài 25–35 giây:** Chứng minh trực quan chất liệu/trải nghiệm thật, không dùng từ ngữ thổi phồng vi phạm chính sách.
 - **Mời KOC Affiliate:** Gửi lời mời Cộng tác mục tiêu với mức hoa hồng nhỉnh hơn Cộng tác mở 3%–5% kèm mẫu thử cho nhóm KOC đúng ngách.
 
-👉 Mở **Xưởng Việc Thật → Trang & Hùng** để xuất ngay 3 Hook, phân cảnh 45s và 2 mẫu tin mời KOC dạng **file Word (.doc)**.`;
+👉 Mở **Xưởng Việc Thật → Trang & Hùng** để xuất ngay 3 Hook, phân cảnh 45s và 2 mẫu tin mời KOC dạng **file Word (.doc)**.${extNote}`;
   }
 
   if (
@@ -86,7 +97,7 @@ function buildRoleAwareBuiltInReply(
 - **Quản lý lớp & phụ huynh:** Chuẩn hóa thông báo tuần ngắn gọn, tích cực, phân rõ lịch học – lưu ý rèn nề nếp – lời khen khích lệ học sinh.
 - **Đánh giá chuẩn Thông tư 27:** Phân nhóm nhận xét T/H/C sát thực tế, tránh lặp mẫu khô cứng.
 
-👉 Mở **Xưởng Việc Thật → Phong & Vy (Giáo dục / GVCN)** để tạo kế hoạch chủ nhiệm tuần, 3 mẫu Zalo phụ huynh và **tải file Word (.doc)** dùng ngay.`;
+👉 Mở **Xưởng Việc Thật → Phong & Vy (Giáo dục / GVCN)** để tạo kế hoạch chủ nhiệm tuần, 3 mẫu Zalo phụ huynh và **tải file Word (.doc)** dùng ngay.${extNote}`;
   }
 
   return `Tôi là **${botName}** (${botRole}) thuộc **${BRANDING.appName}**. Tôi đã tiếp nhận yêu cầu: *"${lastUserMessage}"*.
@@ -96,7 +107,7 @@ function buildRoleAwareBuiltInReply(
 - **Bước 2:** Phân rã đầu việc cụ thể và bàn giao chéo cho các phòng ban liên quan ngay trong Văn Phòng 3D.
 - **Bước 3:** Theo dõi tiến độ, kiểm duyệt chất lượng (QA) và xuất file kết quả vào **Tệp của nhóm**.
 
-👉 Bạn có thể mở **Xưởng Việc Thật** ở cột bên trái để tạo ngay file Excel/Word hoàn chỉnh theo đúng nhu cầu.`;
+👉 Bạn có thể mở **Xưởng Việc Thật** ở cột bên trái để tạo ngay file Excel/Word hoàn chỉnh theo đúng nhu cầu.${extNote}`;
 }
 
 export async function POST(req: NextRequest) {

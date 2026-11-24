@@ -18,6 +18,7 @@ import {
   Moon,
   Pencil,
   PhoneCall,
+  Plug,
   Plus,
   Rocket,
   Search,
@@ -46,6 +47,7 @@ interface WorkspaceShellProps {
   onOpenUpgradeModal: () => void;
   activeIndustryName?: string;
   onOpenIndustryModal?: () => void;
+  extensionsSummary?: { mcps: number; skills: number; ais: number };
   org: WorkspaceOrgState;
   selectedBotId: string | null;
   onSelectBotFromSidebar: (botId: string) => void;
@@ -68,6 +70,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   onOpenUpgradeModal,
   activeIndustryName = 'TMĐT & Shop',
   onOpenIndustryModal,
+  extensionsSummary,
   org,
   selectedBotId,
   onSelectBotFromSidebar,
@@ -113,6 +116,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
     icon: React.ComponentType<{ size?: number; className?: string }>;
   }> = [
     { id: 'deliverables', label: 'Xưởng Việc Thật', icon: Sparkles },
+    { id: 'extensions', label: 'MCP, Skill & AI', icon: Plug },
     { id: 'routines', label: 'Tự động hóa', icon: Zap },
     { id: 'roster', label: 'Sơ đồ team', icon: Users },
     { id: 'office3d', label: 'Văn phòng 3D', icon: Building2 },
@@ -159,11 +163,18 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           >
             Việc Thật
           </button>
+          <button
+            type="button"
+            onClick={() => onTabChange('extensions')}
+            className="text-xs px-2.5 py-1 rounded-lg bg-cyan-700 text-white font-bold"
+          >
+            MCP & AI
+          </button>
           {onOpenIndustryModal && (
             <button
               type="button"
               onClick={onOpenIndustryModal}
-              className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500 text-white font-bold"
+              className="text-xs px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold"
             >
               8 Ngành
             </button>
@@ -387,6 +398,18 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                   type="button"
                   onClick={() => {
                     setQuickAddMenuOpen(false);
+                    onTabChange('extensions');
+                  }}
+                  className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                    isLight ? 'hover:bg-slate-100' : 'hover:bg-slate-800'
+                  }`}
+                >
+                  <Plug size={14} className="text-cyan-500" /> + Thêm MCP, Skill & AI khác
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuickAddMenuOpen(false);
                     onRequestAddDepartment();
                   }}
                   className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 ${
@@ -438,8 +461,8 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
           </div>
         )}
 
-        {/* HƯỚNG 1: XƯỞNG VIỆC THẬT (KHÔNG CẦN API KEY) */}
-        <div className="px-3 pb-2">
+        {/* XƯỞNG VIỆC THẬT + TRUNG TÂM MCP, SKILL & AI */}
+        <div className="px-3 pb-2 space-y-1.5">
           <button
             type="button"
             onClick={() => {
@@ -467,7 +490,40 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                     : 'bg-emerald-500/25 text-emerald-200'
               }`}
             >
-              Không API
+              Sẵn sàng
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onTabChange('extensions');
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-extrabold border transition ${
+              activeTab === 'extensions'
+                ? 'bg-cyan-700 border-cyan-600 text-white shadow-sm'
+                : isLight
+                  ? 'bg-cyan-50 border-cyan-200 text-cyan-900 hover:bg-cyan-100'
+                  : 'bg-cyan-500/15 border-cyan-400/40 text-cyan-200 hover:bg-cyan-500/25'
+            }`}
+          >
+            <span className="flex items-center gap-1.5 truncate">
+              <Plug size={13} className="flex-shrink-0" />
+              <span className="truncate">MCP, Skill & AI</span>
+            </span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${
+                activeTab === 'extensions'
+                  ? 'bg-white/20 text-white'
+                  : isLight
+                    ? 'bg-cyan-100 text-cyan-900'
+                    : 'bg-cyan-500/25 text-cyan-200'
+              }`}
+            >
+              {extensionsSummary
+                ? `${extensionsSummary.mcps} MCP · ${extensionsSummary.skills} Skill`
+                : 'Mở rộng'}
             </span>
           </button>
         </div>
@@ -497,6 +553,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             {searchQuery && (
               <button
                 type="button"
+                aria-label="Xóa từ khóa tìm kiếm"
                 onClick={() => setSearchQuery('')}
                 className="opacity-50 hover:opacity-100"
               >
@@ -733,7 +790,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
             </button>
           </div>
 
-          {/* SECTION: CÔNG CỤ (5 items) */}
+          {/* SECTION: CÔNG CỤ */}
           <div className={`pt-1 border-t ${isLight ? 'border-slate-200/80' : 'border-slate-800/80'}`}>
             <button
               type="button"
@@ -782,7 +839,12 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
                       </span>
                       {item.id === 'deliverables' && (
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isLight ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-500/20 text-emerald-300'}`}>
-                          0 API
+                          Tức thì
+                        </span>
+                      )}
+                      {item.id === 'extensions' && extensionsSummary && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isLight ? 'bg-cyan-100 text-cyan-900' : 'bg-cyan-500/20 text-cyan-300'}`}>
+                          {extensionsSummary.mcps}+{extensionsSummary.skills}
                         </span>
                       )}
                       {item.id === 'office3d' && (
@@ -850,7 +912,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
               <div className="min-w-0">
                 <div className="text-xs font-bold truncate">{BRANDING.name}</div>
                 <div className={`text-[10px] font-mono ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-                  {isOwnerFullActive ? 'Chủ sở hữu · Không giới hạn' : 'v2.7 · Cloud & Desktop'}
+                  {isOwnerFullActive ? 'Chủ sở hữu · Không giới hạn' : 'v2.8 · MCP, Skill & AI'}
                 </div>
               </div>
             </div>

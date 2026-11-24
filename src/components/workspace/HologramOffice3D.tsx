@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Minus,
   Play,
+  Plug,
   Plus,
   RotateCcw,
   RotateCw,
@@ -32,6 +33,8 @@ import {
 } from '@/lib/office3d/scene';
 import { DUTY_META } from '@/lib/office3d/officeStore';
 import type { WorkspaceOrgState } from '@/lib/office3d/useWorkspaceOrg';
+import type { WorkspaceExtensionsController } from '@/lib/extensions/extensionsStore';
+import { buildChatStreamExtras } from '@/lib/extensions/chatPayload';
 import type {
   CameraPreset,
   Office3DBot,
@@ -55,6 +58,8 @@ interface HologramOffice3DProps {
   sampleCommands?: string[];
   onOpenIndustryModal?: () => void;
   onOpenDeliverables?: () => void;
+  extensions?: WorkspaceExtensionsController;
+  onOpenExtensions?: () => void;
   selectedBotId: string | null;
   onSelectBotId: (botId: string | null) => void;
   onToggleBotActive: (botId: string) => void;
@@ -97,6 +102,8 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
   sampleCommands = [],
   onOpenIndustryModal,
   onOpenDeliverables,
+  extensions,
+  onOpenExtensions,
   selectedBotId,
   onSelectBotId,
   onToggleBotActive,
@@ -460,10 +467,13 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
             botId: primary.id,
             messages: [{ role: 'user', content: text }],
             iterationCount: 1,
+            byok: extensions ? buildChatStreamExtras(extensions.state, primary.id).byok : undefined,
             botProfile: {
               name: primary.name,
               roleTitle: primary.roleTitle,
               department: primary.departmentName,
+              activeMcps: extensions ? buildChatStreamExtras(extensions.state, primary.id).activeMcps : undefined,
+              activeSkills: extensions ? buildChatStreamExtras(extensions.state, primary.id).activeSkills : undefined,
             },
           }),
         });
@@ -659,7 +669,23 @@ export const HologramOffice3D: React.FC<HologramOffice3DProps> = ({
               className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/70 flex items-center gap-1.5 shadow-xs transition"
             >
               <Sparkles size={14} />
-              <span>Xưởng Việc Thật · Không API</span>
+                            <span>Xưởng Việc Thật · Sẵn sàng</span>
+            </button>
+          )}
+          {onOpenExtensions && (
+            <button
+              type="button"
+              onClick={onOpenExtensions}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border flex items-center gap-1.5 transition ${
+                isLight
+                  ? 'bg-cyan-50 hover:bg-cyan-100 border-cyan-300 text-cyan-900'
+                  : 'bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-400/45 text-cyan-100'
+              }`}
+            >
+              <Plug size={14} />
+              <span>
+                MCP, Skill & AI{extensions ? ` (${extensions.enabledMcpCount}·${extensions.enabledSkillCount}·${extensions.enabledAiCount})` : ''}
+              </span>
             </button>
           )}
           {onOpenIndustryModal && (

@@ -75,6 +75,7 @@ export const LivePeekModal: React.FC<LivePeekModalProps> = ({
           </div>
           <button
             type="button"
+            aria-label="Đóng cửa sổ soi màn hình"
             onClick={onClose}
             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
           >
@@ -101,6 +102,9 @@ export const LivePeekModal: React.FC<LivePeekModalProps> = ({
 
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input
+              id="live-peek-command"
+              name="livePeekCommand"
+              aria-label="Nhập lệnh chỉnh hướng trực tiếp cho nhân viên AI"
               type="text"
               value={command}
               onChange={(e) => setCommand(e.target.value)}
@@ -212,6 +216,7 @@ export const MeetingMinutesModal: React.FC<MeetingMinutesModalProps> = ({
             </div>
             <button
               type="button"
+              aria-label="Đóng cửa sổ họp bàn tròn"
               onClick={onClose}
               className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
             >
@@ -228,10 +233,12 @@ export const MeetingMinutesModal: React.FC<MeetingMinutesModalProps> = ({
                 className="rounded-xl border border-cyan-500/30 bg-slate-900/80 p-3.5 space-y-3"
               >
                 <div>
-                  <label className="text-[11px] font-bold text-cyan-300 block mb-1">
+                  <label htmlFor="roundtable-topic" className="text-[11px] font-bold text-cyan-300 block mb-1">
                     Chủ đề phiên họp bàn tròn 3D
                   </label>
                   <input
+                    id="roundtable-topic"
+                    name="roundtableTopic"
                     type="text"
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
@@ -241,9 +248,9 @@ export const MeetingMinutesModal: React.FC<MeetingMinutesModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300 block mb-1.5">
+                  <span className="text-[11px] font-bold text-slate-300 block mb-1.5">
                     Chọn nhân viên AI tham gia ({selectedIds.length} đã chọn · {departments.length} phòng ban)
-                  </label>
+                  </span>
                   <div className="flex flex-wrap gap-1.5">
                     {unlockedBots.map((b) => {
                       const active = selectedIds.includes(b.id);
@@ -405,6 +412,7 @@ export const SystemDoctorModal: React.FC<SystemDoctorModalProps> = ({
           </div>
           <button
             type="button"
+            aria-label="Đóng cửa sổ Doctor"
             onClick={onClose}
             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
           >
@@ -559,15 +567,17 @@ export const EditDepartmentModal: React.FC<EditDepartmentModalProps> = ({
       >
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <h3 className="text-sm font-bold text-white">Chỉnh Sửa Phòng Ban</h3>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-white">
+          <button type="button" aria-label="Đóng cửa sổ chỉnh sửa phòng ban" onClick={onClose} className="text-slate-400 hover:text-white">
             <X size={16} />
           </button>
         </div>
 
         <div className="space-y-2.5 text-xs">
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Tên phòng ban</label>
+            <label htmlFor="edit-dept-name" className="text-slate-300 font-semibold block mb-1">Tên phòng ban</label>
             <input
+              id="edit-dept-name"
+              name="editDeptName"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -576,8 +586,10 @@ export const EditDepartmentModal: React.FC<EditDepartmentModalProps> = ({
             />
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Nhãn ngắn hiển thị 3D</label>
+            <label htmlFor="edit-dept-short" className="text-slate-300 font-semibold block mb-1">Nhãn ngắn hiển thị 3D</label>
             <input
+              id="edit-dept-short"
+              name="editDeptShort"
               type="text"
               value={shortLabel}
               onChange={(e) => setShortLabel(e.target.value)}
@@ -585,8 +597,10 @@ export const EditDepartmentModal: React.FC<EditDepartmentModalProps> = ({
             />
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Chức năng phòng ban</label>
+            <label htmlFor="edit-dept-desc" className="text-slate-300 font-semibold block mb-1">Chức năng phòng ban</label>
             <textarea
+              id="edit-dept-desc"
+              name="editDeptDesc"
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -594,12 +608,13 @@ export const EditDepartmentModal: React.FC<EditDepartmentModalProps> = ({
             />
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Màu Hologram Neon</label>
+            <span className="text-slate-300 font-semibold block mb-1">Màu Hologram Neon</span>
             <div className="flex flex-wrap gap-2">
               {NEON_SWATCHES.map((c) => (
                 <button
                   key={c}
                   type="button"
+                  aria-label={`Chọn màu ${c}`}
                   onClick={() => setColorHex(c)}
                   className={`w-7 h-7 rounded-full border-2 transition ${
                     colorHex === c ? 'border-white scale-110' : 'border-transparent'
@@ -624,7 +639,7 @@ export const EditDepartmentModal: React.FC<EditDepartmentModalProps> = ({
               <Trash2 size={13} /> Xóa phòng
             </button>
           ) : (
-            <span className="text-[10px] text-slate-500">Cần giữ tối thiểu 1 phòng ban</span>
+            <span className="text-[10px] text-slate-400">Cần giữ tối thiểu 1 phòng ban</span>
           )}
           <button
             type="submit"
@@ -641,6 +656,7 @@ export const EditDepartmentModal: React.FC<EditDepartmentModalProps> = ({
 interface EditBotModalProps {
   bot: Office3DBot;
   departments: OfficeDepartment[];
+  availableModels?: Array<{ label: string; value: string }>;
   onSave: (patch: {
     botId: string;
     name: string;
@@ -658,6 +674,7 @@ interface EditBotModalProps {
 export const EditBotModal: React.FC<EditBotModalProps> = ({
   bot,
   departments,
+  availableModels = [],
   onSave,
   onRemoveBot,
   onClose,
@@ -668,7 +685,7 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
   const [departmentId, setDepartmentId] = useState(bot.departmentId);
   const [screenKind, setScreenKind] = useState<HologramScreenKind>(bot.screenKind);
   const [avatarStyle, setAvatarStyle] = useState<AvatarStyle>(bot.avatarStyle);
-  const [model, setModel] = useState(bot.model || 'Claude Sonnet / DeepSeek-V3');
+  const [model, setModel] = useState(bot.model || 'tochuc-ai-pro');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -681,7 +698,7 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
       departmentId,
       screenKind,
       avatarStyle,
-      model: model.trim() || 'Claude Sonnet / DeepSeek-V3',
+      model: model.trim() || 'tochuc-ai-pro',
     });
     onClose();
   };
@@ -694,15 +711,17 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
       >
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <h3 className="text-sm font-bold text-white">Tùy Biến Nhân Viên AI Hologram</h3>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-white">
+          <button type="button" aria-label="Đóng cửa sổ tùy biến nhân viên AI" onClick={onClose} className="text-slate-400 hover:text-white">
             <X size={16} />
           </button>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5 text-xs">
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Tên Bot</label>
+            <label htmlFor="edit-bot-name" className="text-slate-300 font-semibold block mb-1">Tên Bot</label>
             <input
+              id="edit-bot-name"
+              name="editBotName"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -711,8 +730,10 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
             />
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Nhãn Hologram 3D</label>
+            <label htmlFor="edit-bot-badge" className="text-slate-300 font-semibold block mb-1">Nhãn Hologram 3D</label>
             <input
+              id="edit-bot-badge"
+              name="editBotBadge"
               type="text"
               value={roleBadge}
               onChange={(e) => setRoleBadge(e.target.value)}
@@ -721,8 +742,10 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
             />
           </div>
           <div className="col-span-2">
-            <label className="text-slate-300 font-semibold block mb-1">Vai trò chuyên môn</label>
+            <label htmlFor="edit-bot-title" className="text-slate-300 font-semibold block mb-1">Vai trò chuyên môn</label>
             <input
+              id="edit-bot-title"
+              name="editBotTitle"
               type="text"
               value={roleTitle}
               onChange={(e) => setRoleTitle(e.target.value)}
@@ -730,8 +753,10 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
             />
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Phòng ban</label>
+            <label htmlFor="edit-bot-dept" className="text-slate-300 font-semibold block mb-1">Phòng ban</label>
             <select
+              id="edit-bot-dept"
+              name="editBotDept"
               value={departmentId}
               onChange={(e) => setDepartmentId(e.target.value)}
               className="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
@@ -744,8 +769,10 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
             </select>
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Kiểu màn hình HUD 3D</label>
+            <label htmlFor="edit-bot-screen" className="text-slate-300 font-semibold block mb-1">Kiểu màn hình HUD 3D</label>
             <select
+              id="edit-bot-screen"
+              name="editBotScreen"
               value={screenKind}
               onChange={(e) => setScreenKind(e.target.value as HologramScreenKind)}
               className="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
@@ -759,8 +786,10 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
             </select>
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Dáng Hologram</label>
+            <label htmlFor="edit-bot-avatar" className="text-slate-300 font-semibold block mb-1">Dáng Hologram</label>
             <select
+              id="edit-bot-avatar"
+              name="editBotAvatar"
               value={avatarStyle}
               onChange={(e) => setAvatarStyle(e.target.value as AvatarStyle)}
               className="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
@@ -771,13 +800,25 @@ export const EditBotModal: React.FC<EditBotModalProps> = ({
             </select>
           </div>
           <div>
-            <label className="text-slate-300 font-semibold block mb-1">Mô hình AI mặc định</label>
+            <label htmlFor="edit-bot-model" className="text-slate-300 font-semibold block mb-1">Mô hình AI (Kho mở rộng)</label>
             <input
+              id="edit-bot-model"
+              name="editBotModel"
+              list="edit-bot-models-list"
               type="text"
               value={model}
               onChange={(e) => setModel(e.target.value)}
               className="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
             />
+            {availableModels.length > 0 && (
+              <datalist id="edit-bot-models-list">
+                {availableModels.map((opt) => (
+                  <option key={opt.label} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </datalist>
+            )}
           </div>
         </div>
 
