@@ -13,6 +13,10 @@ desktop-tauri/node_modules/
 desktop-tauri/src-tauri/target/
 desktop-tauri/src-tauri/gen/
 
+# Code protection & local checkpoints (Agent Rewind / Turnback)
+.rewind/
+.turnback/
+
 # Environment & secrets (never commit keys/tokens)
 .env
 .env.*

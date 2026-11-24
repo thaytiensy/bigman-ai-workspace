@@ -236,6 +236,30 @@ export const BUILTIN_MCPS: McpServerItem[] = [
     isBuiltIn: true,
     assignedBotIds: 'all',
   },
+  {
+    id: 'mcp-code-rewind',
+    slug: 'code_rewind',
+    name: 'Agent Rewind — Chống Mất Mã Nguồn',
+    category: 'system',
+    description:
+      'Tạo điểm khôi phục toàn dự án (checkpoint/rewind) kèm chuỗi xác thực SHA-256 và lớp chặn guard_effect giúp chống mất code, hoàn tác tức thì mọi lần sửa lỗi hoặc chạy lệnh nhầm.',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['-y', '@agent-rewind/mcp@1.1.0', 'mcp'],
+    tools: [
+      'checkpoint',
+      'list',
+      'rewind',
+      'replay',
+      'guard_effect',
+      'backtrack_candidates',
+      'backtrack_commit',
+      'savings',
+    ],
+    enabled: true,
+    isBuiltIn: true,
+    assignedBotIds: 'all',
+  },
 ];
 
 export const MCP_QUICK_PRESETS: Array<{
@@ -250,6 +274,17 @@ export const MCP_QUICK_PRESETS: Array<{
   description: string;
   tools: string[];
 }> = [
+  {
+    label: 'Turnback Shadow Git',
+    slug: 'turnback',
+    name: 'Turnback — Shadow Git Undo',
+    category: 'system',
+    transport: 'stdio',
+    command: 'npx',
+    args: ['-y', 'turnback@latest', 'mcp'],
+    description: 'Lưu bản chụp ẩn trước mọi lệnh sửa file/shell (kể cả file chưa commit và .env) để hoàn tác từng bước.',
+    tools: ['list_turns', 'diff_turn', 'plan_restore', 'apply_restore'],
+  },
   {
     label: 'GitHub MCP',
     slug: 'github',
@@ -439,6 +474,22 @@ export const BUILTIN_SKILLS: SkillItem[] = [
     instructions: `# SKILL: Chuốt Văn phong Tự nhiên
 - Mở đầu đi thẳng vào vấn đề người đọc quan tâm, tránh sáo rỗng kiểu máy móc.
 - Dùng câu ngắn xen kẽ câu dẫn mạch lạc, ví dụ sát thực tế Việt Nam và lời kêu gọi hành động rõ ràng.`,
+    enabled: true,
+    isBuiltIn: true,
+    assignedBotIds: 'all',
+  },
+  {
+    id: 'skill-code-loss-guard',
+    slug: 'code-loss-guard',
+    name: 'Bảo Vệ Mã Nguồn & Checkpoint An Toàn (Code Rewind)',
+    category: 'qa',
+    description:
+      'Quy chuẩn bắt buộc khi tạo và sửa app: tạo checkpoint toàn bộ mã nguồn trước mỗi đợt sửa lớn, đối chiếu diff và rewind tức thì nếu xảy ra lỗi hoặc mất code.',
+    triggers: ['checkpoint', 'rewind', 'chống mất code', 'sửa app', 'refactor', 'backup code'],
+    instructions: `# SKILL: Bảo Vệ Mã Nguồn & Checkpoint An Toàn
+- Luôn gọi \`checkpoint\` (kèm nhãn mô tả rõ ràng) trước khi tái cấu trúc, chỉnh sửa nhiều tệp hoặc chạy lệnh shell có nguy cơ ghi đè/xóa mã nguồn.
+- Dùng \`list\` kiểm tra lịch sử điểm khôi phục; nếu lỗi build, mất chức năng hoặc ghi đè nhầm thì gọi \`rewind\` để quay về nguyên trạng an toàn mà vẫn giữ lịch sử \`replay\`.
+- Dùng \`guard_effect\` trước các thao tác triển khai hoặc di chuyển dữ liệu không thể hoàn tác.`,
     enabled: true,
     isBuiltIn: true,
     assignedBotIds: 'all',

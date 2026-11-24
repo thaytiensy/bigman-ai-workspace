@@ -22,9 +22,9 @@ import {
 } from '@/lib/server/ai-provider';
 
 describe('Extensions Hub — MCP, Skills & Multi-AI Registry', () => {
-  it('includes all 10 built-in MCP servers, 8 core skills, and 8 AI providers', () => {
-    expect(BUILTIN_MCPS).toHaveLength(10);
-    expect(BUILTIN_SKILLS).toHaveLength(8);
+  it('includes all 11 built-in MCP servers (including code_rewind), 9 core skills, and 8 AI providers', () => {
+    expect(BUILTIN_MCPS).toHaveLength(11);
+    expect(BUILTIN_SKILLS).toHaveLength(9);
     expect(BUILTIN_AI_PROVIDERS).toHaveLength(8);
     expect(MCP_QUICK_PRESETS.length).toBeGreaterThanOrEqual(6);
 
@@ -41,6 +41,7 @@ describe('Extensions Hub — MCP, Skills & Multi-AI Registry', () => {
         'data',
         'composio',
         'openmode',
+        'code_rewind',
       ])
     );
 
@@ -55,6 +56,7 @@ describe('Extensions Hub — MCP, Skills & Multi-AI Registry', () => {
         'vietqr-billing',
         'education-gvcn',
         'natural-copywriting',
+        'code-loss-guard',
       ])
     );
 
