@@ -25,7 +25,6 @@ import {
   getAllBlogPosts,
   getAllBlogSlugs,
   getBlogPostBySlug,
-  HERO_IMAGE,
 } from "@/lib/blog";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
@@ -70,8 +69,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [
         {
           url: post.coverImage,
-          width: HERO_IMAGE.width,
-          height: HERO_IMAGE.height,
+          width: post.coverImageWidth,
+          height: post.coverImageHeight,
           alt: post.title,
         },
       ],
@@ -249,10 +248,14 @@ export default async function BlogArticlePage({ params }: PageProps) {
             <Image
               src={post.coverImage}
               alt={post.title}
-              width={HERO_IMAGE.width}
-              height={HERO_IMAGE.height}
+              width={post.coverImageWidth}
+              height={post.coverImageHeight}
               priority
-              className="block aspect-[1376/768] h-auto w-full object-cover"
+              className={
+                post.coverImageWidth === 1200 && post.coverImageHeight === 630
+                  ? "block aspect-[1200/630] h-auto w-full object-cover"
+                  : "block aspect-[1376/768] h-auto w-full object-cover"
+              }
             />
           </div>
         </div>
