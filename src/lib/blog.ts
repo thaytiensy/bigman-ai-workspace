@@ -57,6 +57,8 @@ export interface BlogPost {
   toc: TocItem[];
   blocks: MarkdownBlock[];
   coverImage: string;
+  coverImageWidth: number;
+  coverImageHeight: number;
 }
 
 const BLOG_CONTENT_DIR = path.join(process.cwd(), "content", "blog");
@@ -97,6 +99,7 @@ interface ParsedFrontmatter {
   category: string;
   date: string;
   author: string;
+  coverImage: string;
   contact: BlogContact;
   faq: BlogFaqItem[];
 }
@@ -113,6 +116,7 @@ function parseFrontmatter(rawFrontmatter: string): ParsedFrontmatter {
     category: "Kiến thức AI",
     date: "2026-11-22",
     author: BRAND_CONFIG.name,
+    coverImage: HERO_IMAGE.src,
     contact: {
       zalo: BRAND_CONFIG.contact.zaloPhone,
       zaloUrl: BRAND_CONFIG.contact.zaloUrl,
@@ -177,6 +181,9 @@ function parseFrontmatter(rawFrontmatter: string): ParsedFrontmatter {
           break;
         case "author":
           result.author = parsedVal;
+          break;
+        case "coverImage":
+          if (parsedVal) result.coverImage = parsedVal;
           break;
       }
       continue;
@@ -472,6 +479,9 @@ function parseBlogFile(filePath: string, fileName: string): BlogPost {
   const orderMatch = fileName.match(/pillar-(\d+)/i);
   const order = orderMatch ? Number(orderMatch[1]) : 99;
 
+  const coverImage = frontmatter.coverImage || HERO_IMAGE.src;
+  const isOg1200x630 = coverImage.includes("1200x630");
+
   return {
     order,
     title: frontmatter.title,
@@ -487,7 +497,9 @@ function parseBlogFile(filePath: string, fileName: string): BlogPost {
     readingTimeMinutes: estimateReadingTime(body),
     toc,
     blocks,
-    coverImage: HERO_IMAGE.src,
+    coverImage,
+    coverImageWidth: isOg1200x630 ? 1200 : HERO_IMAGE.width,
+    coverImageHeight: isOg1200x630 ? 630 : HERO_IMAGE.height,
   };
 }
 
