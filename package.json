@@ -14,13 +14,15 @@
     "test:all": "vitest run && node tests/live-seo-smoke.mjs --self-test"
   },
   "dependencies": {
+    "@page-agent/core": "^1.12.4",
+    "@page-agent/page-controller": "^1.12.4",
     "@supabase/supabase-js": "^2.49.1",
     "lucide-react": "^0.511.0",
     "next": "^15.5.29",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "three": "^0.187.0",
-    "zod": "^3.24.2"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.7",

@@ -5,6 +5,7 @@ import { HERO_IMAGE } from "@/lib/blog";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { FloatingContact } from "@/components/FloatingContact";
+import { PageAgentCopilot } from "@/components/page-agent/PageAgentCopilot";
 import "./globals.css";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -84,6 +85,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <FloatingContact />
+        <PageAgentCopilot />
       </body>
     </html>
   );
