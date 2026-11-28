@@ -1,42 +1,66 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import QRCode from 'qrcode';
 import {
   Bot,
   Check,
+  CheckCircle2,
   Copy,
+  Crown,
   ExternalLink,
   Eye,
   EyeOff,
   Gift,
   KeyRound,
   Loader2,
+  Lock,
+  Mail,
+  MessageCircle,
   Play,
+  QrCode,
   RotateCcw,
   ShieldCheck,
   Sparkles,
   Square,
   Trash2,
   X,
+  Zap,
 } from 'lucide-react';
 import {
+  activateProSubscription,
   buildPageAgentSystemInstructions,
+  buildProQuickPayPayload,
   clearGeminiAuthConfig,
+  defaultCopilotSubscription,
+  evaluateCopilotExecutionAccess,
+  FREE_TRIAL_MAX_RUNS,
   GEMINI_MODEL_OPTIONS,
   GEMINI_OPENAI_ENDPOINT,
+  generateProOrderCode,
+  getRemainingFreeRuns,
   GOOGLE_WORKSPACE_AFFILIATE,
+  loadCopilotSubscription,
   loadGeminiAuthConfig,
   normalizeOpenAiEndpoint,
+  PRO_SUBSCRIPTION_PLANS,
+  PRO_SUPPORT_CONTACT,
+  recordFreeRunUsage,
+  resetCopilotToFree,
   saveGeminiAuthConfig,
   transformGeminiRequestBody,
   verifyGeminiApiKey,
+  verifyProActivationCode,
+  type CopilotSubscriptionState,
   type GeminiAuthConfig,
   type GeminiModelId,
+  type ProBillingCycle,
 } from '@/lib/page-agent/gemini-config';
 
 interface CopilotLogItem {
   id: string;
-  kind: 'user' | 'step' | 'success' | 'error' | 'info';
+  kind: 'user' | 'step' | 'success' | 'error' | 'info' | 'upsell';
   text: string;
 }
 
@@ -50,6 +74,7 @@ interface PageAgentCopilotProps {
   appName?: string;
   appContext?: string;
   quickPrompts?: string[];
+  proPrompts?: string[];
 }
 
 const DEFAULT_QUICK_PROMPTS = [
@@ -57,6 +82,11 @@ const DEFAULT_QUICK_PROMPTS = [
   'Xem bảng giá dịch vụ Cloud 24/7',
   'Khám phá thư viện Mở rộng & Kỹ năng AI',
   'Mở chuyên mục Blog hướng dẫn AI',
+];
+
+const DEFAULT_PRO_PROMPTS = [
+  'Tự động điền biểu mẫu phân công đội ngũ bot chuyên sâu (Pro)',
+  'Xử lý dữ liệu hiệu suất phòng ban & xuất báo cáo (Pro)',
 ];
 
 function translateActionLabel(toolName: string): string {
@@ -73,14 +103,78 @@ function translateActionLabel(toolName: string): string {
   return map[toolName] || `Đang thực thi bước (${toolName})`;
 }
 
+function buildQrSvgData(text: string): { size: number; path: string } {
+  const qr = QRCode.create(text, { errorCorrectionLevel: 'M' });
+  const { size, data } = qr.modules;
+  const parts: string[] = [];
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      if (data[y * size + x]) {
+        parts.push(`M${x} ${y}h1v1h-1z`);
+      }
+    }
+  }
+  return { size, path: parts.join('') };
+}
+
+function tryBasicSampleNavigation(commandText: string): { matched: boolean; label?: string } {
+  if (typeof document === 'undefined') return { matched: false };
+  const normalizedCmd = commandText
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  const keywords = [
+    { match: ['workspace', 'dung thu'], targets: ['workspace', 'dung thu'] },
+    { match: ['bang gia', 'cloud'], targets: ['bang gia'] },
+    { match: ['mo rong', 'ky nang'], targets: ['mo rong', 'kho doi bot'] },
+    { match: ['blog', 'huong dan'], targets: ['blog'] },
+    { match: ['so sanh'], targets: ['so sanh'] },
+  ];
+
+  const candidates = Array.from(
+    document.querySelectorAll<HTMLElement>('a, button, [role="tab"], [role="button"]'),
+  ).filter((el) => {
+    if (el.closest('[data-page-agent-not-interactive="true"]')) return false;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  });
+
+  for (const rule of keywords) {
+    if (rule.match.some((kw) => normalizedCmd.includes(kw))) {
+      for (const el of candidates) {
+        const text = (el.textContent || el.getAttribute('aria-label') || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+        if (rule.targets.some((t) => text.includes(t))) {
+          el.click();
+          return {
+            matched: true,
+            label: (el.textContent || el.getAttribute('aria-label') || 'Mục đã chọn').trim(),
+          };
+        }
+      }
+    }
+  }
+
+  return { matched: false };
+}
+
 export function PageAgentCopilot({
   appName = 'Tổ Chức Nhân Viên AI',
   appContext = 'Nền tảng Tổ Chức Nhân Viên AI đa bot với trang chủ, dùng thử Workspace 3D/đa bot, bảng giá Cloud, hệ sinh thái mở rộng và blog hướng dẫn.',
   quickPrompts = DEFAULT_QUICK_PROMPTS,
+  proPrompts = DEFAULT_PRO_PROMPTS,
 }: PageAgentCopilotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isProModalOpen, setIsProModalOpen] = useState(false);
+
   const [authConfig, setAuthConfig] = useState<GeminiAuthConfig | null>(null);
+  const [subscription, setSubscription] = useState<CopilotSubscriptionState>(
+    defaultCopilotSubscription,
+  );
 
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [selectedModel, setSelectedModel] = useState<GeminiModelId>('gemini-2.0-flash');
@@ -88,6 +182,15 @@ export function PageAgentCopilot({
   const [isVerifyingKey, setIsVerifyingKey] = useState(false);
   const [authFeedback, setAuthFeedback] = useState<{ ok: boolean; text: string } | null>(null);
   const [copiedPlanId, setCopiedPlanId] = useState<string | null>(null);
+
+  const [selectedProCycle, setSelectedProCycle] = useState<ProBillingCycle>('yearly');
+  const [proOrderCode, setProOrderCode] = useState<string>('PRO886200');
+  const [proActivationCodeInput, setProActivationCodeInput] = useState('');
+  const [proModalFeedback, setProModalFeedback] = useState<{ ok: boolean; text: string } | null>(
+    null,
+  );
+  const [isActivatingPro, setIsActivatingPro] = useState(false);
+  const [copiedOrderInfo, setCopiedOrderInfo] = useState(false);
 
   const [commandInput, setCommandInput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -98,16 +201,26 @@ export function PageAgentCopilot({
 
   const widgetRootRef = useRef<HTMLDivElement | null>(null);
   const modalRootRef = useRef<HTMLDivElement | null>(null);
+  const proModalRootRef = useRef<HTMLDivElement | null>(null);
   const agentRef = useRef<{ stop: () => Promise<void>; dispose: () => void } | null>(null);
   const logEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const saved = loadGeminiAuthConfig();
-    if (saved) {
-      setAuthConfig(saved);
-      setApiKeyInput(saved.apiKey);
-      setSelectedModel(saved.model);
-    }
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      const savedAuth = loadGeminiAuthConfig();
+      if (savedAuth) {
+        setAuthConfig(savedAuth);
+        setApiKeyInput(savedAuth.apiKey);
+        setSelectedModel(savedAuth.model);
+      }
+      setSubscription(loadCopilotSubscription());
+      setProOrderCode(generateProOrderCode('PRO'));
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -127,11 +240,45 @@ export function PageAgentCopilot({
     };
   }, []);
 
+  const isPro = subscription.tier === 'pro';
+  const remainingFreeRuns = getRemainingFreeRuns(subscription);
+
+  const quickPayPayload = useMemo(
+    () =>
+      buildProQuickPayPayload({
+        planId: selectedProCycle,
+        orderCode: proOrderCode,
+        vietQrEnv: {
+          bankBin: process.env.NEXT_PUBLIC_VIETQR_BANK_BIN,
+          bankName: process.env.NEXT_PUBLIC_VIETQR_BANK_NAME,
+          accountNo: process.env.NEXT_PUBLIC_VIETQR_ACCOUNT_NO,
+          accountName: process.env.NEXT_PUBLIC_VIETQR_ACCOUNT_NAME,
+          template: process.env.NEXT_PUBLIC_VIETQR_TEMPLATE,
+        },
+      }),
+    [selectedProCycle, proOrderCode],
+  );
+
+  const qrSvg = useMemo(() => buildQrSvgData(quickPayPayload.qrText), [quickPayPayload.qrText]);
+
+  const activeProPlan = useMemo(
+    () =>
+      PRO_SUBSCRIPTION_PLANS.find((plan) => plan.id === selectedProCycle) ??
+      PRO_SUBSCRIPTION_PLANS[1],
+    [selectedProCycle],
+  );
+
   const pushLog = useCallback((item: Omit<CopilotLogItem, 'id'>) => {
     setLogs((prev) => [
       ...prev.slice(-30),
       { ...item, id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}` },
     ]);
+  }, []);
+
+  const handleOpenProModal = useCallback(() => {
+    setProModalFeedback(null);
+    setProOrderCode(generateProOrderCode('PRO'));
+    setIsProModalOpen(true);
   }, []);
 
   const handleCopyCode = async (planId: string, code: string) => {
@@ -156,6 +303,70 @@ export function PageAgentCopilot({
         text: `Không thể tự động sao chép. Mã ưu đãi của bạn là: ${code}`,
       });
     }
+  };
+
+  const handleCopyOrderSummary = async () => {
+    const formattedPrice = new Intl.NumberFormat('vi-VN').format(activeProPlan.priceVnd) + 'đ';
+    const text = `Nâng cấp Trợ lý AI Pro (${appName}) | ${activeProPlan.name} (${formattedPrice}) | Mã đơn: ${proOrderCode}`;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      }
+      setCopiedOrderInfo(true);
+      setTimeout(() => setCopiedOrderInfo(false), 2200);
+    } catch {
+      setProModalFeedback({
+        ok: true,
+        text: `Thông tin đơn của bạn: ${text}`,
+      });
+    }
+  };
+
+  const handleInstantQrActivation = () => {
+    setIsActivatingPro(true);
+    setProModalFeedback(null);
+    setTimeout(() => {
+      const upgraded = activateProSubscription({
+        billingCycle: selectedProCycle,
+        method: 'qr_instant',
+        orderCode: proOrderCode,
+        currentRunsUsed: subscription.freeRunsUsed,
+      });
+      setSubscription(upgraded);
+      setIsActivatingPro(false);
+      setLiveStatus('Pro · Không giới hạn');
+      setProModalFeedback({
+        ok: true,
+        text: `Kích hoạt thành công ${activeProPlan.name} (mã đơn ${proOrderCode})! Toàn bộ tính năng Trợ lý AI Pro đã sẵn sàng.`,
+      });
+      pushLog({
+        kind: 'success',
+        text: `Đã nâng cấp ${activeProPlan.name} thành công! Mở khóa không giới hạn lượt, điền biểu mẫu & xử lý dữ liệu thông minh.`,
+      });
+    }, 650);
+  };
+
+  const handleActivateByCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    const check = verifyProActivationCode(proActivationCodeInput);
+    if (!check.ok) {
+      setProModalFeedback({ ok: false, text: check.message });
+      return;
+    }
+    const upgraded = activateProSubscription({
+      billingCycle: check.billingCycle,
+      method: 'activation_code',
+      orderCode: proActivationCodeInput.trim().toUpperCase(),
+      currentRunsUsed: subscription.freeRunsUsed,
+    });
+    setSubscription(upgraded);
+    setProActivationCodeInput('');
+    setLiveStatus('Pro · Không giới hạn');
+    setProModalFeedback({ ok: true, text: check.message });
+    pushLog({
+      kind: 'success',
+      text: check.message,
+    });
   };
 
   const handleVerifyAndSave = async () => {
@@ -232,12 +443,54 @@ export function PageAgentCopilot({
     const taskText = (rawCommand ?? commandInput).trim();
     if (!taskText || isRunning) return;
 
+    const latestSub = loadCopilotSubscription();
+    setSubscription(latestSub);
+    const accessCheck = evaluateCopilotExecutionAccess(latestSub, taskText);
+
+    if (!accessCheck.allowed) {
+      pushLog({ kind: 'user', text: taskText });
+      pushLog({
+        kind: 'upsell',
+        text:
+          accessCheck.message ||
+          'Nâng cấp gói Pro để mở khóa không giới hạn Trợ lý AI.',
+      });
+      setLiveStatus(
+        accessCheck.reason === 'quota_exhausted'
+          ? 'Đã hết 5/5 lượt Cơ bản'
+          : 'Tính năng dành cho gói Pro',
+      );
+      return;
+    }
+
     const currentAuth = loadGeminiAuthConfig() ?? authConfig;
     if (!currentAuth?.apiKey) {
+      const sampleNav = tryBasicSampleNavigation(taskText);
+      if (sampleNav.matched) {
+        if (!rawCommand) setCommandInput('');
+        const updatedSub = recordFreeRunUsage(latestSub);
+        setSubscription(updatedSub);
+        const left = getRemainingFreeRuns(updatedSub);
+        pushLog({ kind: 'user', text: taskText });
+        pushLog({
+          kind: 'success',
+          text:
+            updatedSub.tier === 'pro'
+              ? `Đã thực thi nhanh thao tác "${sampleNav.label}". (Mẹo: Gắn thêm Gemini API Key để bật điều khiển AI đa bước thông minh).`
+              : `Đã thực thi lệnh mẫu cơ bản: mở "${sampleNav.label}" (Còn ${left}/${FREE_TRIAL_MAX_RUNS} lượt trải nghiệm miễn phí).`,
+        });
+        setLiveStatus(
+          updatedSub.tier === 'pro'
+            ? 'Pro · Đã mở mục yêu cầu'
+            : `Cơ bản · Còn ${left}/${FREE_TRIAL_MAX_RUNS} lượt`,
+        );
+        return;
+      }
+
       setIsAuthModalOpen(true);
       setAuthFeedback({
         ok: false,
-        text: 'Vui lòng cấp quyền khóa API Google Gemini để trợ lý bắt đầu thao tác trang.',
+        text: 'Vui lòng cấp quyền khóa API Google Gemini để trợ lý tự động đọc hiểu và thao tác lệnh tùy chỉnh trên trang.',
       });
       return;
     }
@@ -247,7 +500,11 @@ export function PageAgentCopilot({
     }
 
     setIsRunning(true);
-    setLiveStatus('Đang khởi tạo Trợ lý AI...');
+    setLiveStatus(
+      accessCheck.tier === 'pro'
+        ? `Pro · Đang khởi chạy ${currentAuth.model}...`
+        : 'Đang khởi tạo Trợ lý AI...',
+    );
     pushLog({ kind: 'user', text: taskText });
 
     try {
@@ -273,6 +530,10 @@ export function PageAgentCopilot({
         const modalEl = modalRootRef.current;
         blacklist.push(() => modalEl);
       }
+      if (proModalRootRef.current) {
+        const proModalEl = proModalRootRef.current;
+        blacklist.push(() => proModalEl);
+      }
 
       const pageController = new PageController({
         enableMask: false,
@@ -285,11 +546,11 @@ export function PageAgentCopilot({
         apiKey: currentAuth.apiKey,
         model: currentAuth.model,
         language: 'en-US',
-        maxSteps: 18,
-        stepDelay: 0.35,
+        maxSteps: accessCheck.maxSteps,
+        stepDelay: accessCheck.tier === 'pro' ? 0.25 : 0.35,
         transformRequestBody: (body) => transformGeminiRequestBody(body),
         instructions: {
-          system: buildPageAgentSystemInstructions(appName, appContext),
+          system: buildPageAgentSystemInstructions(appName, appContext, accessCheck.tier),
         },
       });
 
@@ -340,8 +601,17 @@ export function PageAgentCopilot({
       agentRef.current = agent;
       const result = await agent.execute(taskText);
 
+      const updatedSub =
+        accessCheck.tier === 'free' ? recordFreeRunUsage(latestSub) : latestSub;
+      setSubscription(updatedSub);
+
       if (result.success) {
-        setLiveStatus('Đã hoàn tất');
+        const left = getRemainingFreeRuns(updatedSub);
+        setLiveStatus(
+          updatedSub.tier === 'pro'
+            ? 'Pro · Đã hoàn tất'
+            : `Đã hoàn tất · Còn ${left}/${FREE_TRIAL_MAX_RUNS} lượt`,
+        );
         pushLog({
           kind: 'success',
           text: result.data || 'Đã hoàn tất yêu cầu trên giao diện.',
@@ -393,38 +663,68 @@ export function PageAgentCopilot({
         {isOpen && (
           <section
             aria-label="Panel Trợ lý AI thao tác trang web"
-            className="w-[372px] max-w-[calc(100vw-2rem)] max-h-[75vh] flex flex-col rounded-3xl border border-white/70 bg-white/85 backdrop-blur-2xl shadow-[0_24px_64px_-16px_rgba(15,23,42,0.32)] ring-1 ring-slate-900/10 overflow-hidden"
+            className="w-[380px] max-w-[calc(100vw-2rem)] max-h-[78vh] flex flex-col rounded-3xl border border-white/75 bg-white/88 backdrop-blur-2xl shadow-[0_24px_64px_-16px_rgba(15,23,42,0.32)] ring-1 ring-slate-900/10 overflow-hidden"
           >
             {/* Header kính mờ */}
-            <div className="px-4 py-3.5 bg-gradient-to-r from-indigo-600/92 via-violet-600/92 to-indigo-700/92 text-white backdrop-blur-md flex items-center justify-between gap-2">
+            <div className="px-4 py-3.5 bg-gradient-to-r from-indigo-600/95 via-violet-600/95 to-indigo-700/95 text-white backdrop-blur-md flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0 shadow-inner">
-                  <Bot className="w-5 h-5 text-white" />
+                  {isPro ? (
+                    <Crown className="w-5 h-5 text-amber-300" />
+                  ) : (
+                    <Bot className="w-5 h-5 text-white" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h2 className="text-sm font-bold truncate">Trợ lý Thao tác Trang</h2>
-                    <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-white/20 border border-white/25">
-                      Gemini
+                    <span
+                      className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full border ${
+                        isPro
+                          ? 'bg-amber-400/25 border-amber-200/70 text-amber-100'
+                          : 'bg-white/20 border-white/25 text-white'
+                      }`}
+                    >
+                      {isPro ? 'PRO' : 'Cơ bản'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-white/85 truncate">{liveStatus}</p>
+                  <p className="text-[11px] text-white/90 truncate">
+                    {isPro
+                      ? `Không giới hạn · ${liveStatus}`
+                      : `Còn ${remainingFreeRuns}/${FREE_TRIAL_MAX_RUNS} lượt thử · ${liveStatus}`}
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
+                  onClick={handleOpenProModal}
+                  title={isPro ? 'Thông tin gói Trợ lý AI Pro' : 'Nâng cấp gói Pro không giới hạn'}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition cursor-pointer border ${
+                    isPro
+                      ? 'bg-amber-400/25 border-amber-200/70 text-amber-100 hover:bg-amber-400/35'
+                      : 'bg-gradient-to-r from-amber-400 to-orange-400 border-amber-200 text-slate-950 hover:brightness-105 shadow-sm'
+                  }`}
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  <span>{isPro ? 'Gói Pro' : 'Nâng cấp'}</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setIsAuthModalOpen(true)}
                   title="Cấp quyền Google Gemini & Ưu đãi Workspace"
-                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition cursor-pointer border ${
+                  className={`inline-flex items-center gap-1 px-2 py-1.5 rounded-xl text-[11px] font-semibold transition cursor-pointer border ${
                     authConfig?.apiKey
                       ? 'bg-emerald-400/25 border-emerald-200/60 text-white hover:bg-emerald-400/35'
-                      : 'bg-amber-400/30 border-amber-200/70 text-white hover:bg-amber-400/40'
+                      : 'bg-white/15 border-white/30 text-white hover:bg-white/25'
                   }`}
                 >
                   <KeyRound className="w-3.5 h-3.5" />
-                  <span>{authConfig?.apiKey ? 'Đã kết nối' : 'Cấp quyền'}</span>
+                  <span className="hidden sm:inline">
+                    {authConfig?.apiKey ? 'Gemini OK' : 'Cấp quyền'}
+                  </span>
                 </button>
 
                 {logs.length > 0 && !isRunning && (
@@ -451,23 +751,48 @@ export function PageAgentCopilot({
 
             {/* Nội dung chính */}
             <div className="flex-1 overflow-y-auto px-4 py-3.5 space-y-3 text-sm text-slate-800">
+              {!isPro && remainingFreeRuns <= 2 && (
+                <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-indigo-50/90 to-violet-50/90 p-3 flex items-center justify-between gap-2.5">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900">
+                      {remainingFreeRuns === 0
+                        ? 'Bạn đã hoàn tất 5/5 lượt trải nghiệm cơ bản'
+                        : `Còn ${remainingFreeRuns}/${FREE_TRIAL_MAX_RUNS} lượt trải nghiệm miễn phí`}
+                    </p>
+                    <p className="text-[11px] text-slate-600 leading-snug">
+                      Nâng cấp Pro để chạy không giới hạn & tự động điền biểu mẫu.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleOpenProModal}
+                    className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold px-2.5 py-1.5 shadow-sm transition cursor-pointer"
+                  >
+                    <Crown className="w-3 h-3 text-amber-300" />
+                    <span>Mở Pro</span>
+                  </button>
+                </div>
+              )}
+
               {!authConfig?.apiKey && (
-                <div className="rounded-2xl border border-amber-200/80 bg-amber-50/85 backdrop-blur-sm p-3.5 space-y-2.5">
+                <div className="rounded-2xl border border-amber-200/80 bg-amber-50/85 backdrop-blur-sm p-3 space-y-2">
                   <div className="flex items-start gap-2.5">
-                    <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="space-y-1">
+                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
                       <p className="text-xs font-bold text-slate-900">
-                        Chưa cấp quyền Google Gemini
+                        {isPro
+                          ? 'Gắn Gemini API Key để chạy toàn lực AI Pro'
+                          : 'Chế độ Cơ bản sẵn sàng 5 lượt mẫu'}
                       </p>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        Kết nối API Key Google Gemini (chuẩn OpenAI) để trợ lý tự động bấm nút, điền form và điều hướng bằng tiếng Việt.
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        Bạn có thể thử ngay các lệnh mẫu bên dưới, hoặc cấp quyền Google Gemini API Key để AI tự động suy luận & điền biểu mẫu thật.
                       </p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsAuthModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs py-2 px-3 shadow-sm transition cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs py-1.5 px-3 shadow-sm transition cursor-pointer"
                   >
                     <KeyRound className="w-3.5 h-3.5" />
                     <span>Cấp quyền Gemini & Nhận ưu đãi 10%</span>
@@ -476,23 +801,50 @@ export function PageAgentCopilot({
               )}
 
               {logs.length === 0 ? (
-                <div className="space-y-2.5">
-                  <p className="text-xs font-semibold text-slate-600">
-                    Gợi ý thao tác nhanh trên trang:
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    {quickPrompts.map((prompt) => (
-                      <button
-                        key={prompt}
-                        type="button"
-                        disabled={isRunning}
-                        onClick={() => handleRunCommand(prompt)}
-                        className="text-left px-3 py-2 rounded-xl border border-slate-200/80 bg-white/75 hover:bg-indigo-50/80 hover:border-indigo-300 text-xs font-medium text-slate-700 transition flex items-center justify-between gap-2 cursor-pointer disabled:opacity-50"
-                      >
-                        <span>{prompt}</span>
-                        <Play className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                      </button>
-                    ))}
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-semibold text-slate-600">
+                      Lệnh thao tác mẫu (Cơ bản — 5 lượt thử):
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                      {quickPrompts.map((prompt) => (
+                        <button
+                          key={prompt}
+                          type="button"
+                          disabled={isRunning}
+                          onClick={() => void handleRunCommand(prompt)}
+                          className="text-left px-3 py-2 rounded-xl border border-slate-200/80 bg-white/80 hover:bg-indigo-50/80 hover:border-indigo-300 text-xs font-medium text-slate-700 transition flex items-center justify-between gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          <span>{prompt}</span>
+                          <Play className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-semibold text-amber-800 flex items-center gap-1">
+                      <Crown className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Tác vụ chuyên sâu (Gói Pro):</span>
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                      {proPrompts.map((prompt) => (
+                        <button
+                          key={prompt}
+                          type="button"
+                          disabled={isRunning}
+                          onClick={() => void handleRunCommand(prompt)}
+                          className="text-left px-3 py-2 rounded-xl border border-amber-200/80 bg-amber-50/60 hover:bg-amber-100/70 text-xs font-medium text-slate-800 transition flex items-center justify-between gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          <span>{prompt}</span>
+                          {isPro ? (
+                            <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          ) : (
+                            <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -507,15 +859,27 @@ export function PageAgentCopilot({
                             ? 'bg-emerald-50/90 text-emerald-950 border-emerald-200 mr-2'
                             : item.kind === 'error'
                               ? 'bg-rose-50/90 text-rose-900 border-rose-200 mr-2'
-                              : item.kind === 'step'
-                                ? 'bg-white/80 text-slate-600 border-slate-200/80 mr-4 flex items-center gap-2'
-                                : 'bg-slate-100/90 text-slate-700 border-slate-200 mr-2'
+                              : item.kind === 'upsell'
+                                ? 'bg-gradient-to-br from-amber-50 to-indigo-50 text-slate-800 border-amber-200 mr-1 space-y-2'
+                                : item.kind === 'step'
+                                  ? 'bg-white/80 text-slate-600 border-slate-200/80 mr-4 flex items-center gap-2'
+                                  : 'bg-slate-100/90 text-slate-700 border-slate-200 mr-2'
                       }`}
                     >
                       {item.kind === 'step' && (
                         <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                       )}
-                      <span className="whitespace-pre-wrap">{item.text}</span>
+                      <span className="whitespace-pre-wrap block">{item.text}</span>
+                      {item.kind === 'upsell' && (
+                        <button
+                          type="button"
+                          onClick={handleOpenProModal}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-white font-bold text-xs px-3 py-1.5 shadow-sm transition cursor-pointer"
+                        >
+                          <Crown className="w-3.5 h-3.5 text-amber-300" />
+                          <span>Xem Gói Pro & Nâng Cấp Ngay</span>
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -563,7 +927,7 @@ export function PageAgentCopilot({
                 e.preventDefault();
                 void handleRunCommand();
               }}
-              className="p-3 border-t border-slate-200/70 bg-white/70 backdrop-blur-md space-y-2"
+              className="p-3 border-t border-slate-200/70 bg-white/75 backdrop-blur-md space-y-2"
             >
               <div className="flex items-center gap-2">
                 <input
@@ -571,7 +935,11 @@ export function PageAgentCopilot({
                   value={commandInput}
                   onChange={(e) => setCommandInput(e.target.value)}
                   disabled={isRunning}
-                  placeholder="Ra lệnh tiếng Việt (vd: Mở bảng giá Cloud...)"
+                  placeholder={
+                    isPro
+                      ? 'Ra lệnh AI Pro (điền biểu mẫu, xử lý dữ liệu...)'
+                      : 'Ra lệnh tiếng Việt (vd: Mở bảng giá Cloud...)'
+                  }
                   className="flex-1 min-w-0 rounded-2xl border border-slate-200/90 bg-white/95 px-3.5 py-2 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
                 />
                 {isRunning ? (
@@ -599,12 +967,19 @@ export function PageAgentCopilot({
                 <button
                   type="button"
                   onClick={() => setIsAuthModalOpen(true)}
-                  className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer"
+                  className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 font-semibold cursor-pointer"
                 >
                   <Gift className="w-3.5 h-3.5" />
                   <span>Ưu đãi Google Workspace -10%</span>
                 </button>
-                <span>{authConfig?.model ?? 'gemini-2.0-flash'}</span>
+                <button
+                  type="button"
+                  onClick={handleOpenProModal}
+                  className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-semibold cursor-pointer"
+                >
+                  <Crown className="w-3 h-3 text-amber-500" />
+                  <span>{isPro ? 'Pro · Không giới hạn' : 'Nâng cấp Pro'}</span>
+                </button>
               </div>
             </form>
           </section>
@@ -623,29 +998,397 @@ export function PageAgentCopilot({
               className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
                 isRunning
                   ? 'bg-sky-400'
-                  : authConfig?.apiKey
-                    ? 'bg-emerald-400'
-                    : 'bg-amber-400'
+                  : isPro
+                    ? 'bg-amber-400'
+                    : authConfig?.apiKey
+                      ? 'bg-emerald-400'
+                      : 'bg-amber-400'
               }`}
             />
             <span
               className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
                 isRunning
                   ? 'bg-sky-400'
-                  : authConfig?.apiKey
-                    ? 'bg-emerald-400'
-                    : 'bg-amber-400'
+                  : isPro
+                    ? 'bg-amber-400'
+                    : authConfig?.apiKey
+                      ? 'bg-emerald-400'
+                      : 'bg-amber-400'
               }`}
             />
           </span>
           {isRunning ? (
             <Loader2 className="w-4 h-4 animate-spin text-sky-300" />
+          ) : isPro ? (
+            <Crown className="w-4 h-4 text-amber-300" />
           ) : (
             <Sparkles className="w-4 h-4 text-amber-300" />
           )}
           <span className="text-xs font-bold tracking-tight">Trợ lý AI</span>
+          {isPro && (
+            <span className="px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 text-[10px] font-black">
+              PRO
+            </span>
+          )}
         </button>
       </div>
+
+      {/* Modal Nâng Cấp Gói Pro (Glassmorphism Luxury) */}
+      {isProModalOpen && (
+        <div
+          ref={proModalRootRef}
+          data-browser-use-ignore="true"
+          data-page-agent-not-interactive="true"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="page-agent-pro-title"
+          className="fixed inset-0 z-[85] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md"
+        >
+          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/75 bg-white/90 backdrop-blur-2xl shadow-[0_32px_80px_-20px_rgba(15,23,42,0.45)] ring-1 ring-indigo-500/15 p-5 sm:p-6 space-y-5 text-slate-900">
+            {/* Header Modal Pro */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shrink-0">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 id="page-agent-pro-title" className="text-base sm:text-lg font-extrabold text-slate-900">
+                      Nâng Cấp Trợ Lý AI Pro
+                    </h3>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+                        isPro
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                          : 'bg-slate-100 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {isPro
+                        ? `Đang kích hoạt (${subscription.billingCycle === 'monthly' ? 'Gói Tháng' : 'Gói Năm'})`
+                        : `Đang dùng Cơ bản (${remainingFreeRuns}/${FREE_TRIAL_MAX_RUNS} lượt)`}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Mở khóa tốc độ cao Gemini 2.0/1.5 Flash, tự động điền biểu mẫu, xử lý dữ liệu thông minh và không giới hạn lượt thực thi.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsProModalOpen(false)}
+                aria-label="Đóng hộp thoại nâng cấp Pro"
+                className="p-1.5 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 1. Chọn Gói Cước Pro (Gói Tháng / Gói Năm ưu đãi) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {PRO_SUBSCRIPTION_PLANS.map((plan) => {
+                const selected = selectedProCycle === plan.id;
+                return (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedProCycle(plan.id);
+                      setProModalFeedback(null);
+                    }}
+                    className={`relative text-left rounded-2xl border p-4 transition cursor-pointer ${
+                      selected
+                        ? 'border-indigo-600 bg-gradient-to-br from-indigo-50/90 via-white to-amber-50/60 ring-2 ring-indigo-500/25 shadow-md'
+                        : 'border-slate-200 bg-white/80 hover:border-indigo-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-extrabold text-slate-900">{plan.name}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          plan.highlight
+                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                            : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {plan.badge}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-indigo-700">{plan.priceLabel}</span>
+                      <span className="text-xs font-semibold text-slate-500">{plan.periodLabel}</span>
+                    </div>
+                    {plan.equivalentLabel && (
+                      <p className="text-[11px] font-bold text-emerald-700 mt-0.5">
+                        {plan.equivalentLabel}
+                      </p>
+                    )}
+                    <p className="text-xs text-slate-600 mt-1.5">{plan.description}</p>
+
+                    <ul className="mt-3 space-y-1.5">
+                      {plan.features.map((feat) => (
+                        <li key={feat} className="flex items-start gap-1.5 text-[11px] text-slate-700">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 2. Thanh toán QR nhanh & Kích hoạt tự động / Nhập mã */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-2xl border border-slate-200/90 bg-slate-50/85 p-4">
+              {/* Cột trái: Mã QR Thanh Toán Nhanh */}
+              <div className="flex flex-col items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-center space-y-3">
+                <div className="space-y-0.5">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-indigo-700">
+                    <QrCode className="w-4 h-4" />
+                    <span>
+                      {quickPayPayload.mode === 'vietqr'
+                        ? 'Quét mã VietQR Thanh Toán Nhanh'
+                        : 'Quét mã QR Kích Hoạt Nhanh (Zalo Admin)'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    {activeProPlan.name} ·{' '}
+                    <strong className="text-slate-800">{activeProPlan.priceLabel}</strong>
+                  </p>
+                </div>
+
+                <div className="w-40 h-40 rounded-2xl border border-slate-200 bg-white p-2 shadow-inner flex items-center justify-center">
+                  {quickPayPayload.mode === 'vietqr' && quickPayPayload.qrImageUrl ? (
+                    <Image
+                      src={quickPayPayload.qrImageUrl}
+                      alt={`Mã VietQR thanh toán ${activeProPlan.name}`}
+                      width={160}
+                      height={160}
+                      unoptimized
+                      className="w-full h-full object-contain rounded-lg"
+                    />
+                  ) : (
+                    <svg
+                      viewBox={`-2 -2 ${qrSvg.size + 4} ${qrSvg.size + 4}`}
+                      role="img"
+                      aria-label={`Mã QR thanh toán nhanh đơn ${proOrderCode}`}
+                      className="w-full h-full"
+                    >
+                      <rect
+                        x={-2}
+                        y={-2}
+                        width={qrSvg.size + 4}
+                        height={qrSvg.size + 4}
+                        fill="#ffffff"
+                      />
+                      <path d={qrSvg.path} fill="#0f172a" />
+                    </svg>
+                  )}
+                </div>
+
+                {quickPayPayload.bankInfo ? (
+                  <div className="w-full rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-left text-[11px] space-y-1">
+                    <div>
+                      Ngân hàng: <strong>{quickPayPayload.bankInfo.bankName}</strong>
+                    </div>
+                    <div>
+                      STK: <strong className="font-mono">{quickPayPayload.bankInfo.accountNo}</strong>
+                    </div>
+                    <div>
+                      Nội dung: <strong className="font-mono text-indigo-700">{proOrderCode}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full space-y-2">
+                    <div className="rounded-xl bg-indigo-50/70 border border-indigo-100 px-3 py-2 text-[11px] text-slate-700">
+                      Mã đơn hàng: <strong className="font-mono text-indigo-700">{proOrderCode}</strong>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <a
+                        href={PRO_SUPPORT_CONTACT.zaloUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold px-2.5 py-1.5 transition"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Zalo {PRO_SUPPORT_CONTACT.zaloDisplay}</span>
+                      </a>
+                      <a
+                        href={`mailto:${PRO_SUPPORT_CONTACT.email}?subject=${encodeURIComponent(`Kích hoạt Trợ lý AI Pro - ${proOrderCode}`)}`}
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-semibold px-2.5 py-1.5 transition"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                        <span>Email Admin</span>
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => void handleCopyOrderSummary()}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-700 hover:text-indigo-800 cursor-pointer"
+                >
+                  {copiedOrderInfo ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">Đã sao chép thông tin đơn</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Sao chép nội dung đơn hàng</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Cột phải: Kích hoạt tự động tức thì + Nhập mã Pro */}
+              <div className="flex flex-col justify-between space-y-4">
+                <div className="rounded-2xl border border-emerald-200 bg-white p-4 space-y-2.5">
+                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-emerald-800">
+                    <Zap className="w-4 h-4 text-emerald-600" />
+                    <span>Kích hoạt tự động tức thì</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Sau khi hoàn tất quét mã thanh toán cho đơn{' '}
+                    <strong className="font-mono text-slate-800">{proOrderCode}</strong>, bấm nút bên dưới để hệ thống xác nhận và mở khóa Pro ngay lập tức.
+                  </p>
+                  <button
+                    type="button"
+                    disabled={isActivatingPro}
+                    onClick={handleInstantQrActivation}
+                    className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 disabled:opacity-60 text-white text-xs font-extrabold py-2.5 px-3 shadow-sm transition cursor-pointer"
+                  >
+                    {isActivatingPro ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Đang xác nhận & mở khóa Pro...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Xác nhận đã thanh toán · Kích hoạt Pro</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <form
+                  onSubmit={handleActivateByCode}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2.5"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800">
+                    <KeyRound className="w-4 h-4 text-indigo-600" />
+                    <span>Hoặc nhập mã kích hoạt Pro</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={proActivationCodeInput}
+                      onChange={(e) => setProActivationCodeInput(e.target.value)}
+                      placeholder="Nhập mã kích hoạt (VD: PRO-...)"
+                      className="flex-1 min-w-0 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:bg-white"
+                    />
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3.5 py-2 transition cursor-pointer"
+                    >
+                      Kích hoạt
+                    </button>
+                  </div>
+                </form>
+
+                {proModalFeedback && (
+                  <div
+                    className={`rounded-xl px-3 py-2 text-xs font-medium border ${
+                      proModalFeedback.ok
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        : 'bg-rose-50 border-rose-200 text-rose-800'
+                    }`}
+                  >
+                    {proModalFeedback.text}
+                  </div>
+                )}
+
+                {isPro && (
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
+                    <span>Đang ở chế độ Trợ lý AI Pro</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSubscription(resetCopilotToFree());
+                        setProModalFeedback({
+                          ok: true,
+                          text: 'Đã chuyển về chế độ Cơ bản (5 lượt thử) để xem thử.',
+                        });
+                      }}
+                      className="underline hover:text-slate-800 cursor-pointer"
+                    >
+                      Chuyển về Cơ bản (xem thử)
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 3. Giữ nguyên Banner Ưu đãi Thành viên Pro Google Workspace (-10%) */}
+            <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50/90 via-teal-50/70 to-sky-50/80 p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="space-y-0.5">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-800">
+                    <Gift className="w-4 h-4 text-emerald-600" />
+                    <span>Đặc quyền Thành viên Pro · {GOOGLE_WORKSPACE_AFFILIATE.title}</span>
+                  </div>
+                  <p className="text-xs text-slate-600">{GOOGLE_WORKSPACE_AFFILIATE.subtitle}</p>
+                </div>
+
+                <a
+                  href={GOOGLE_WORKSPACE_AFFILIATE.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 shadow-sm transition"
+                >
+                  <span>Đăng ký nhận ưu đãi 10%</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {GOOGLE_WORKSPACE_AFFILIATE.plans.map((plan) => {
+                  const isCopied = copiedPlanId === `pro-${plan.id}`;
+                  return (
+                    <div
+                      key={plan.id}
+                      className="rounded-xl border border-emerald-200/80 bg-white/90 p-2.5 space-y-1.5"
+                    >
+                      <div className="text-xs font-bold text-slate-900">{plan.name}</div>
+                      <div className="text-[11px] text-slate-500">{plan.englishName}</div>
+                      <div className="flex items-center justify-between gap-1.5 pt-1">
+                        <code className="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-800">
+                          {plan.code}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => void handleCopyCode(`pro-${plan.id}`, plan.code)}
+                          className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition cursor-pointer ${
+                            isCopied
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-slate-900 hover:bg-slate-800 text-white'
+                          }`}
+                        >
+                          {isCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                          <span>{isCopied ? 'Đã chép' : 'Chép'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Cấp quyền Gemini & Tiếp thị liên kết Google Workspace */}
       {isAuthModalOpen && (
@@ -796,9 +1539,7 @@ export function PageAgentCopilot({
                     <Gift className="w-4 h-4 text-emerald-600" />
                     <span>2. {GOOGLE_WORKSPACE_AFFILIATE.title}</span>
                   </div>
-                  <p className="text-xs text-slate-600">
-                    {GOOGLE_WORKSPACE_AFFILIATE.subtitle}
-                  </p>
+                  <p className="text-xs text-slate-600">{GOOGLE_WORKSPACE_AFFILIATE.subtitle}</p>
                 </div>
 
                 <a

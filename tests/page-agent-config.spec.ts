@@ -1,14 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  activateProSubscription,
   buildPageAgentSystemInstructions,
+  buildProQuickPayPayload,
+  createChecksummedProCode,
+  defaultCopilotSubscription,
+  evaluateCopilotExecutionAccess,
+  FREE_TRIAL_MAX_RUNS,
   GEMINI_OPENAI_ENDPOINT,
   GOOGLE_WORKSPACE_AFFILIATE,
   normalizeOpenAiEndpoint,
+  PRO_SUBSCRIPTION_PLANS,
+  recordFreeRunUsage,
   transformGeminiRequestBody,
   verifyGeminiApiKey,
+  verifyProActivationCode,
 } from '../src/lib/page-agent/gemini-config';
 
-describe('Cấu hình Page Agent & Google Gemini Affiliate (Tổ Chức Nhân Viên AI)', () => {
+describe('Cấu hình Page Agent, SaaS Freemium/Pro & Google Gemini Affiliate (Tổ Chức Nhân Viên AI)', () => {
   it('chuẩn hóa endpoint OpenAI-compatible của Google Gemini chính xác', () => {
     expect(GEMINI_OPENAI_ENDPOINT).toBe('https://generativelanguage.googleapis.com/v1beta/openai/');
     expect(normalizeOpenAiEndpoint(GEMINI_OPENAI_ENDPOINT)).toBe(
@@ -41,13 +50,67 @@ describe('Cấu hình Page Agent & Google Gemini Affiliate (Tổ Chức Nhân Vi
     ]);
   });
 
-  it('tạo hướng dẫn hệ thống thuần tiếng Việt cho ứng dụng', () => {
+  it('áp dụng đúng chính sách Freemium 5 lượt cơ bản & mở khóa toàn diện ở gói Pro', () => {
+    expect(FREE_TRIAL_MAX_RUNS).toBe(5);
+    expect(PRO_SUBSCRIPTION_PLANS).toHaveLength(2);
+    expect(PRO_SUBSCRIPTION_PLANS.map((p) => p.id)).toEqual(['monthly', 'yearly']);
+
+    let state = defaultCopilotSubscription();
+    for (let i = 0; i < 5; i += 1) {
+      const check = evaluateCopilotExecutionAccess(state, 'Xem bảng giá dịch vụ Cloud 24/7');
+      expect(check.allowed).toBe(true);
+      expect(check.remainingRuns).toBe(5 - i);
+      state = recordFreeRunUsage(state);
+    }
+
+    const sixthCheck = evaluateCopilotExecutionAccess(state, 'Mở chuyên mục Blog hướng dẫn AI');
+    expect(sixthCheck.allowed).toBe(false);
+    expect(sixthCheck.reason).toBe('quota_exhausted');
+
+    const freshFree = defaultCopilotSubscription();
+    const deepCheck = evaluateCopilotExecutionAccess(
+      freshFree,
+      'Xử lý dữ liệu hiệu suất phòng ban & xuất báo cáo',
+    );
+    expect(deepCheck.allowed).toBe(false);
+    expect(deepCheck.reason).toBe('pro_feature_required');
+
+    const proState = activateProSubscription({
+      billingCycle: 'monthly',
+      method: 'activation_code',
+      orderCode: 'PRO654321',
+    });
+    const proCheck = evaluateCopilotExecutionAccess(
+      proState,
+      'Xử lý dữ liệu hiệu suất phòng ban & xuất báo cáo',
+    );
+    expect(proCheck.allowed).toBe(true);
+    expect(proCheck.maxSteps).toBeGreaterThanOrEqual(24);
+  });
+
+  it('xác thực mã kích hoạt Pro hợp lệ và từ chối mã giả mạo', () => {
+    const validCode = createChecksummedProCode('M999');
+    expect(verifyProActivationCode(validCode).ok).toBe(true);
+    expect(verifyProActivationCode(validCode).billingCycle).toBe('monthly');
+    expect(verifyProActivationCode('BAD-CODE').ok).toBe(false);
+  });
+
+  it('tạo payload QR thanh toán VietQR khi đủ biến môi trường và fallback Zalo QR an toàn', () => {
+    const fallback = buildProQuickPayPayload({ planId: 'yearly', orderCode: 'PRO777888' });
+    expect(fallback.mode).toBe('zalo_qr');
+    expect(fallback.qrImageUrl).toBeNull();
+    expect(fallback.qrText).toContain('zalo.me');
+  });
+
+  it('tạo hướng dẫn hệ thống thuần tiếng Việt cho cả chế độ Cơ bản và Pro', () => {
     const prompt = buildPageAgentSystemInstructions(
       'Tổ Chức Nhân Viên AI',
       'Nền tảng đa bot',
+      'pro',
     );
     expect(prompt).toContain('tiếng Việt');
     expect(prompt).toContain('Tổ Chức Nhân Viên AI');
+    expect(prompt).toContain('CHẾ ĐỘ PRO');
   });
 
   it('kiểm tra xác thực API key hợp lệ và xử lý lỗi 401 rõ ràng bằng tiếng Việt', async () => {
